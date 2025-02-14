@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative h-screen flex items-center justify-center">
+        <!-- Background Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-900 to-black opacity-75"></div>
+        
+        <!-- Main Content -->
+        <div class="relative z-10 text-center fade-in">
+            <h1 class="text-6xl font-bold mb-6">
+                <span class="bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+                    Android Developer
+                </span>
+            </h1>
+            <p class="text-xl mb-8 text-gray-300">
+                Creating Beautiful & Interactive Java Experiences
+            </p>
+            
+            <!-- Social Links -->
+            <div class="flex justify-center space-x-6 mb-12">
+                <a href="#" class="hover:text-purple-400 transition-colors">
+                    <img src="static/icons/github.svg" alt="GitHub" class="w-6 h-6">
+                </a>
+                <a href="#" class="hover:text-purple-400 transition-colors">
+                    <img src="static/icons/linkedin.svg" alt="LinkedIn" class="w-6 h-6">
+                </a>
+                <a href="#" class="hover:text-purple-400 transition-colors">
+                    <img src="static/icons/email.svg" alt="Email" class="w-6 h-6">
+                </a>
+            </div>
+            
+            <!-- CTA Button -->
+            <button class="px-8 py-3 bg-purple-600 rounded-full hover:bg-purple-700 transition-colors text-lg font-semibold">
+                View My Work
+            </button>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bounce">
+            <img src="static/icons/chevron-down.svg" alt="Scroll Down" class="w-8 h-8 text-gray-400">
+        </div>
+    </div>
+
+    <!-- Featured Projects -->
+    <div class="py-20 px-4">
+        <h2 class="text-4xl font-bold text-center mb-16">Featured Projects</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <!-- Project 1 -->
+            <div class="bg-gray-900 rounded-lg overflow-hidden scale-on-hover">
+                <div class="h-48 bg-purple-800"></div>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Project 1</h3>
+                    <p class="text-gray-400 mb-4">
+                        A brief description of the project and the technologies used.
+                    </p>
+                    <a href="#" class="text-purple-400 hover:text-purple-300">
+                        Learn More →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="bg-gray-900 rounded-lg overflow-hidden scale-on-hover">
+                <div class="h-48 bg-purple-800"></div>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Project 2</h3>
+                    <p class="text-gray-400 mb-4">
+                        A brief description of the project and the technologies used.
+                    </p>
+                    <a href="#" class="text-purple-400 hover:text-purple-300">
+                        Learn More →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="bg-gray-900 rounded-lg overflow-hidden scale-on-hover">
+                <div class="h-48 bg-purple-800"></div>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">Project 3</h3>
+                    <p class="text-gray-400 mb-4">
+                        A brief description of the project and the technologies used.
+                    </p>
+                    <a href="#" class="text-purple-400 hover:text-purple-300">
+                        Learn More →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
