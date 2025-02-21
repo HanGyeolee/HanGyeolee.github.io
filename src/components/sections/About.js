@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 
 const AboutSection = () => {
   const sectionRef = useRef(null);
-  const titleRef = useRef(null);
+  const highlightRef = useRef(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -19,11 +19,16 @@ const AboutSection = () => {
       });
 
       // 애니메이션 시퀀스
-      tl.from(titleRef.current, {
+      tl.from(".title-header", {
         y: 50,
         opacity: 0,
         duration: 1
       })
+      .from(highlightRef.current, {
+        y: -50,
+        opacity: 0,
+        duration: 1
+      }, "<")
       .from(".about-quote", {
         scale: 0.75,
         opacity: 0,
@@ -49,13 +54,15 @@ const AboutSection = () => {
   return (
     <div ref={sectionRef} className="h-dvh bg-[#1B365D] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
-      <div className="absolute inset-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#66A5AD] to-[#1B365D]"></div>
 
       {/* 메인 컨텐츠 */}
-      <div className="section-content text-center z-10 max-w-4xl mx-auto px-4">
-        <h2 ref={titleRef} className="text-5xl font-bold text-white mb-12">
-          저는 이런 개발자입니다
-        </h2>
+      <div className="section-content text-center z-10 max-w-5xl mx-auto px-4">
+        <h1 className="section-title text-7xl text-white mb-6">
+          <span className="title-header">저는&nbsp;</span>
+          <span ref={highlightRef} className='font-bold'>개발자</span>
+          <span className="title-header">입니다.</span>
+        </h1>
         
         <div className="space-y-8 text-left">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
