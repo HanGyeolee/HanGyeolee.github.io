@@ -16,7 +16,7 @@ const IntroSection = () => {
           end: "+=300%",
           pin: true,
           scrub: 1.5,
-          markers: true, // 개발 시 마커 표시 (나중에 제거)
+          //markers: true, // 개발 시 마커 표시 (나중에 제거)
         }
       });
 

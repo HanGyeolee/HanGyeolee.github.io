@@ -13,8 +13,7 @@ const AboutSection = () => {
           start: "top top",
           end: "+=300%",
           pin: true,
-          scrub: 1.5,
-          markers: true,
+          scrub: 1.5
         }
       });
 
