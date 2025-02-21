@@ -2,7 +2,7 @@
   "name": "blog",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://hangyeolee.github.io/",
+  "homepage": "https://hangyeolee.github.io",
   "dependencies": {
     "@csstools/selector-specificity": "^4.0.0",
     "@gsap/react": "^2.1.2",
