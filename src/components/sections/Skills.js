@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { animate, motion, useMotionValue } from 'framer-motion';
+import { animate, motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 const SkillsSection = () => {
   const sectionRef = useRef(null);
@@ -43,6 +44,7 @@ const SkillsSection = () => {
 
     return () => ctx.revert();
   }, []);
+
   return (
     <div ref={sectionRef} className="h-dvh bg-[#1B365D] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
@@ -68,115 +70,152 @@ const SkillsSection = () => {
   );
 };
 
-const SkillsCarousel = ({ className }) => {
+const SkillsCarousel = () => {
+  // 모션 값 설정
   const dragX = useMotionValue(0);
-  const [rotation, setRotation] = useState(0);
+  const rotation = useTransform(dragX, [-200, 200], [30, -30]);
+  const dragDeltaX = useMotionValue(0);
+  const rotationDesc = useTransform(dragDeltaX, [-20, 20], [-10, 10]);
+  
+  // 스프링 설정
+  const springConfig = { stiffness: 400, damping: 30 };
+  const springRotation = useSpring(rotation, springConfig);
+  const springDescConfig = { stiffness: 200, damping: 10 };
+  const springDescRotation = useSpring(rotationDesc, springDescConfig);
 
   const skills = [
-    { name: "C/C++", description: "STL, 멀티프로세싱/스레딩, SIMD 최적화" },
-    { name: "C#", description: "WPF, WinForm, Xamarin, Unity3D" },
-    { name: "Java", description: "Android, Android Library, Spring Boot" },
-    { name: "Python", description: "머신러닝, TensorFlow, PyTorch" },
-    { name: "Matlab", description: "데이터 분석 및 시각화, Parallel Computing" },
-    { name: "JavaScript", description: "React, RESTful API" },
-    { name: "Rust", description: "시스템 프로그래밍" }
+    { name: "Program Langauge", description: "활용할 수 있는 언어들입니다.\n프레임워크 및 기술을 포함합니다.", 
+      footer: <ArrowRight className='w-4 h-4 text-white/60'/> },
+    { name: "C", description: "STL, Java Native Interface\n멀티프로세싱/스레딩\nSIMD 최적화\nArduino, ARM",
+      additionDesc:"Modul Pattern, Observer Pattern\nMemory Pool Pattern\n"},
+    { name: "C++", description: "DLL, P/Invoke, OpenCL\nMutex, Semaphore\nAbstract, friends",
+      additionDesc:"SmartPointer, Pimpl\nPerfect Forwarding" },
+    { name: "C#", description: "WPF, WinForm, Xamarin, Unity3D\n",
+      additionDesc:"MVVM Pattern, Dependency Injection\nExtension Methods" },
+    { name: "Java", description: "Android, Android Library\nSpring Boot\n",
+      additionDesc:"Singleton Pattern, Builder Pattern\nStrategy Pattern, Adapter Pattern\nThread Pool" },
+    { name: "Python", description: "TensorFlow, PyTorch\nmatplotlib\n",
+      additionDesc:"Context Manager" },
+    { name: "JavaScript", description: "React, RESTful API\n",
+      additionDesc:"Promise Pattern, Closures" },
+    { name: "Matlab", description: "Parallel Computing\n데이터 분석 및 시각화\n"},
+    { name: "Rust", description: "문법 학습 중..." },
   ];
 
-  // 원통의 반지름을 동적으로 계산
-  const calculateRadius = () => {
-    const cardWidth = 300; // 카드 너비
-    const cardSpacing = 50; // 카드 사이 최소 간격
-    const numCards = skills.length;
-    
-    // 원의 둘레 = 2πr
-    // 필요한 둘레 = (카드 너비 + 간격) * 카드 개수
-    // 따라서 r = (카드 너비 + 간격) * 카드 개수 / (2π)
-    const minRadius = (cardWidth + cardSpacing) * numCards / (2 * Math.PI);
-    
-    // 여유 공간을 위해 20% 정도 더 큰 반지름 사용
+  // 반지름 계산 - useMemo로 캐싱
+  const radius = useMemo(() => {
+    const cardWidth = 300;
+    const cardSpacing = 50;
+    const minRadius = (cardWidth + cardSpacing) * skills.length / (2 * Math.PI);
     return Math.max(600, Math.ceil(minRadius * 1.1));
-  };
+  }, [skills.length]);
 
-  const radius = calculateRadius();
-
-  // 드래그 값을 회전 각도로 변환
-  const handleDrag = (event, info) => {
-    // 드래그 중에는 raw 값으로 업데이트
-    setRotation(prev => prev + info.delta.x * 0.25);
-  };
-
-  const calculateCardTransform = (angle) => {
-    const radius = calculateRadius();
-    
-    const x = radius * Math.sin(angle * Math.PI / 180);
-    const z = radius * Math.cos(angle * Math.PI / 180);
-    
-    // 카드 개수에 따라 scale 범위도 조정
-    const minScale = Math.max(0.3, 1 - (skills.length / 20)); // 카드가 많을수록 작아지는 최소 크기
-    
+  // 카드 위치 계산 - useCallback으로 캐싱
+  const calculateMainCardStyle = useCallback((index) => {
+    const angle = (index * (360 / skills.length)) + springRotation.getPrevious();
+    const deg2rad = angle * Math.PI / 180;
+    const z = radius * Math.cos(deg2rad);
     const zIndex = Math.round(1000 + z);
-    
+    const opacity = (z + radius) / (radius * 2);
+
+    if (opacity > 0.05) {
+      return {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        x: radius * Math.sin(deg2rad),
+        y: -108,
+        z: z - radius/2,
+        rotateY: angle,
+        translateX: '-50%',
+        translateY: '-50%',
+        zIndex,
+        opacity
+      }
+    }  
+    return { visibility: "hidden" };
+  }, [radius, skills.length, springRotation]);
+
+  const calculateAdditionCardStyle = useCallback((index) => {
+    const angle = (index * (360 / skills.length)) + springDescRotation.getPrevious();
+    const deg2rad = angle * Math.PI / 180;
+    const z = radius * Math.cos(deg2rad);
+    const zIndex = Math.round(1000 + z);
+    const opacity = (z + radius) / (radius * 2);
     return {
-      transform: `
-        translate3d(${x}px, 0, ${z - radius/2}px)
-        rotateY(${angle}deg)
-      `,
-      transformStyle: 'preserve-3d',
+      position: 'absolute',
+      left: '50%',
+      top: '50%',
+      x: radius * Math.sin(deg2rad),
+      y: 108,
+      z: z - radius/2,
+      rotateY: angle,
+      translateX: '-50%',
+      translateY: '-50%',
       zIndex,
-      opacity: (z + radius) / (radius * 2)
-    };
-  };
+      opacity
+    }
+  }, [radius, skills.length, springDescRotation]);
 
-  // 가장 가까운 카드의 각도 계산
-  const calculateClosestAngle = (currentRotation) => {
-    const cardAngle = 360 / skills.length;
-    const targetIndex = Math.round(currentRotation / cardAngle);
-    return targetIndex * cardAngle;
-  };
-
-  // 드래그 종료 핸들러 추가
-  const handleDragEnd = () => {
-    const targetAngle = calculateClosestAngle(rotation);
-    
-    // framer-motion의 animate 함수를 사용하여 부드러운 스냅 애니메이션
-    animate(rotation, targetAngle, {
-      type: "spring",
-      stiffness: 150,
-      damping: 20,
-      onUpdate: (latest) => setRotation(latest)
-    });
-  };
-
-  // perspective도 반지름에 따라 동적 계산
-  const calculatePerspective = () => {
-    const radius = calculateRadius();
-    return `${radius * 3}px`; // 반지름의 3배 정도로 설정
-  };
+  // 메인 카드 렌더링
+  const MainCards = useCallback(() => {
+    return <>
+      {skills.map((skill, index) => (
+        <motion.div
+          key={skill.name}
+          style={{
+            ...calculateMainCardStyle(index),
+            transform:springRotation,
+          }}
+          layoutId={`main-${skill.name}`}
+        >
+          <div className='w-[300px] h-[200px] bg-white/15 backdrop-blur-sm rounded-xl p-6'>
+            <h3 className="text-2xl font-bold text-white mb-4">{skill.name}</h3>
+            <p className="text-white/80 whitespace-pre-line">{skill.description}</p>
+            {/* Footer 영역 */}
+            {skill.footer && (
+              <div className="absolute bottom-1 w-[252px] pb-5 border-white/10 flex items-center justify-end">
+                <span className="text-sm text-white/60">{skill.footer}</span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      ))}
+    </>
+  }, [calculateMainCardStyle, springRotation]);
+  
+  // 추가 카드 렌더링
+  const AdditionCards = useCallback(() => {
+    return (<>
+      {skills.map((skill, index) => 
+        skill.additionDesc ? (
+          <motion.div
+            key={`${skill.name}-addition`}
+            style={{
+              ...calculateAdditionCardStyle(index),
+              rotate:springDescRotation,
+            }}
+            layoutId={`addition-${skill.name}`}
+          >
+            <div className='w-[300px] h-[200px] bg-white/15 backdrop-blur-sm rounded-xl p-6'>
+              <p className="text-white/80 whitespace-pre-line">{skill.additionDesc}</p>
+            </div>
+          </motion.div>
+        ) : null
+      )}
+    </>)
+  }, [calculateAdditionCardStyle, springDescRotation]);
 
   return (
     <div className="w-dvw h-[600px] relative"
-      style={{ perspective: calculatePerspective() }}>
+      style={{ perspective: `${radius * 3}px` }}>
       <div className="absolute w-full h-full flex items-center justify-center"
       style={{
         transformStyle: 'preserve-3d', // 3D 공간 보존
         userSelect:"none"
       }}>
-        {skills.map((skill, index) => {
-          const angle = (index * (360 / skills.length)) + rotation;
-            const style = calculateCardTransform(angle);
-
-          return (
-            <motion.div
-              key={skill.name}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
-                        w-[300px] h-[200px] bg-white/10 backdrop-blur-sm rounded-xl p-6"
-              style={style}
-            >
-              <h3 className="text-2xl font-bold text-white mb-4">{skill.name}</h3>
-              <p className="text-white/80">{skill.description}</p>
-            </motion.div>
-          );
-        })}
+        <MainCards />
+        <AdditionCards />
       </div>
       
       {/* 드래그 가능한 투명한 영역 */}
@@ -184,9 +223,14 @@ const SkillsCarousel = ({ className }) => {
         className="absolute inset-0 cursor-grab active:cursor-grabbing"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        onDrag={handleDrag}
-        onDragEnd={handleDragEnd}
-        style={{ touchAction: 'none', zIndex:10000 }}
+        onDragEnd={() => {
+          dragX.set(0);
+          dragDeltaX.set(0);
+        }}
+        onDrag={(event) => {
+          dragDeltaX.set(event.movementX);
+        }}
+        style={{ x:dragX, touchAction: 'none', zIndex:10000 }}
       />
     </div>
   );
