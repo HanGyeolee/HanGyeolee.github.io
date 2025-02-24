@@ -75,7 +75,7 @@ const SkillsCarousel = () => {
   const [rotation, setRotation] = useState(0);
 
   const dragDeltaX = useMotionValue(0);
-  const rotationDesc = useTransform(dragDeltaX, [-20, 20], [-30, 30]);
+  const rotationDesc = useTransform(dragDeltaX, [-20, 20], [-5, 5]);
   const deltaSensitivity = 0.5;
   
   // 스프링 설정
@@ -221,7 +221,7 @@ const SkillsCarousel = () => {
                 animate={addStyle}
                 transition={{
                   type: "tween",
-                  duration: 0.01,
+                  duration: 0.02,
                   ease: 'linear',
                 }}
                 className='card'>

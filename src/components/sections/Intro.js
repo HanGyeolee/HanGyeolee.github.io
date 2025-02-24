@@ -74,7 +74,7 @@ const IntroSection = () => {
           혁신적인 솔루션을 만드는 개발자
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
           <div className="highlight-left-item p-6 bg-white/30 rounded-lg backdrop-blur-sm">
             <div className="flex justify-center mb-4">
               <Activity className="w-12 h-12 text-black" />
