@@ -66,13 +66,13 @@ const AboutSection = () => {
         <div className="space-y-8 text-left">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="about-quote border-l-4 border-white/30 pl-6 my-8">
-              <p className="text-white/80 italic text-lg">
+              <p className="text-white/90 italic text-lg">
                 "열정으로 쓰는 코드,
               </p>
-              <p className="text-white/80 italic text-lg text-center">
+              <p className="text-white/90 italic text-lg text-center">
                 책임으로 마주하는 오류"
               </p>
-              <p className="text-gray-400 mt-2">
+              <p className="text-gray-300 mt-2">
                 - 저의 개발 철학입니다
               </p>
             </div>
@@ -83,25 +83,25 @@ const AboutSection = () => {
               <p className="text-white/80 italic text-lg text-center">
                 깊은 통찰은 뿌리처럼"
               </p>
-              <p className="text-gray-400 mt-2">
+              <p className="text-gray-300 mt-2">
                 - 끊임없는 배움의 자세로 임합니다
               </p>
             </div>
           </div>
           
-          <p className="about-paragraph text-gray-300 text-lg leading-relaxed">
+          <p className="about-paragraph text-gray-200 text-lg leading-relaxed">
             대학 연구실에서 시작된 <span className="text-white font-semibold">생체신호 처리</span>에 대한 관심은 
             현재 의료 헬스케어 플랫폼 개발로 이어졌습니다. 논문 속 알고리즘을 실제 서비스에 최적화하는 과정에서,
             기술적 도전을 즐기며 성장해왔습니다.
           </p>
 
-          <p className="about-paragraph text-gray-300 text-lg leading-relaxed">
+          <p className="about-paragraph text-gray-200 text-lg leading-relaxed">
             <span className="text-white font-semibold">멀티스레딩과 SIMD</span>를 활용한 성능 최적화부터,
             <span className="text-white font-semibold">Android, Windows, iOS</span> 플랫폼 개발까지.
             다양한 기술 스택을 활용하여 최적의 솔루션을 만들어내는 것을 좋아합니다.
           </p>
 
-          <p className="about-paragraph text-gray-300 text-lg leading-relaxed">
+          <p className="about-paragraph text-gray-200 text-lg leading-relaxed">
             팀 리더로서 <span className="text-white font-semibold">적극적인 소통과 협업</span>을 통해 
             더 나은 서비스를 만들어가는 것을 중요하게 생각합니다. Github Action을 활용한 CI/CD 환경 구축,
             코드 리뷰 문화 정착 등 팀의 개발 문화를 발전시키는 데도 기여하고 있습니다.

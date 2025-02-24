@@ -1,3 +1,11 @@
-h1.section-title > span {
-    display: inline-block;
+@font-face {
+    font-family: 'Pretendard';
+    src: url('./fonts/Pretendard-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 전역 적용 */
+* {
+  font-family: 'Pretendard', sans-serif;
 }
