@@ -1,11 +1,11 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {  useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { animate, motion, MotionValue, useAnimation, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, X } from 'lucide-react';
+import { animate, motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { ResponsiveContainer } from '../ui';
 
 const SkillsSection = () => {
   const sectionRef = useRef(null);
-  const highlightRef = useRef(null);
   
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -25,7 +25,7 @@ const SkillsSection = () => {
         opacity: 0,
         duration: 1
       })
-      .from(highlightRef.current, {
+      .from(".title-header-highlight", {
         y: -50,
         opacity: 0,
         duration: 1
@@ -50,17 +50,20 @@ const SkillsSection = () => {
       {/* 배경 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1B365D] to-[#0F2342]"></div>
 
-      <div className="section-content text-center z-10 mx-auto px-4">
-        <h1 className="section-title text-7xl text-white mb-6 max-w-5xl mx-auto">
-          <span className="title-header">이런&nbsp;</span>
-          <span ref={highlightRef} className='font-bold'>스킬</span>
-          <span className="title-header">이 있습니다.</span>
-        </h1>
-        <div className="space-y-8 text-left about-skills">
-          <SkillsCarousel/>
+      {/* 메인 컨텐츠 */}
+      <ResponsiveContainer>
+        <div className="section-content text-center z-10 mx-auto px-4">
+          <h1 className="section-title text-7xl text-white mb-6 max-w-5xl mx-auto">
+            <span className="title-header">이런&nbsp;</span>
+            <span className='title-header-highlight font-bold'>스킬</span>
+            <span className="title-header">이 있습니다.</span>
+          </h1>
+          <div className="space-y-8 text-left about-skills">
+            <SkillsCarousel/>
+          </div>
+          <div className='nothing'></div>
         </div>
-        <div className='nothing'></div>
-      </div>
+      </ResponsiveContainer>
 
       {/* 스크롤 안내 */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce">
@@ -190,7 +193,7 @@ const SkillsCarousel = () => {
   }, [rotation, rotations, calculateCardStyle]);
 
   return (
-    <div className="w-dvw h-[600px] relative"
+    <div className="w-full h-[600px] relative"
       style={{ perspective: `${radius * 3}px` }}>
       <div className="absolute w-full h-full flex items-center justify-center"
       style={{
