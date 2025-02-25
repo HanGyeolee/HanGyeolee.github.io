@@ -251,7 +251,7 @@ const SkillsCarousel = () => {
         dragConstraints={{ left: 0, right: 0 }}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
-        style={{ touchAction: 'none', zIndex:10000 }}
+        style={{ touchAction: 'none', zIndex:100000 }}
       />
     </div>
   );
