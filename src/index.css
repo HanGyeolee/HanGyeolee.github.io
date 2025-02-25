@@ -13,8 +13,8 @@
 /* Tailwind에서 사용된 클래스들의 CSS 구현 */
 
 /* 레이아웃 관련 */
-.h-dvh {
-  height: 100dvh;
+.h-lvh {
+  height: 100lvh;
 }
 
 .h-full {

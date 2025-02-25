@@ -59,7 +59,7 @@ const IntroSection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="h-dvh bg-[#3d4852] flex flex-col items-center justify-center relative overflow-hidden">
+    <div ref={sectionRef} className="h-lvh bg-[#3d4852] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#B2D8E5] to-[#66A5AD]"></div>
       {/* 메인 컨텐츠 */}

@@ -51,7 +51,7 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="h-dvh bg-[#1B365D] flex flex-col items-center justify-center relative overflow-hidden">
+    <div ref={sectionRef} className="h-lvh bg-[#1B365D] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#66A5AD] to-[#1B365D]"></div>
 
