@@ -1,16 +1,20 @@
 {
   "files": {
-    "main.css": "/static/css/main.ec9f91fe.css",
-    "main.js": "/static/js/main.3c4c7d7a.js",
+    "main.css": "/static/css/main.2a886606.css",
+    "main.js": "/static/js/main.322a7910.js",
     "static/js/488.11f14f95.chunk.js": "/static/js/488.11f14f95.chunk.js",
     "static/media/Pretendard-Regular.ttf": "/static/media/Pretendard-Regular.fbe5b096111efa3e3bc2.ttf",
+    "static/media/medical-platform.png": "/static/media/medical-platform.ab1690d8d6fe0a818468.png",
+    "static/media/emotion-ai-app.png": "/static/media/emotion-ai-app.f665186d9e00cac6301c.png",
+    "static/media/emg-middleware.png": "/static/media/emg-middleware.5c01b5b9ca30fc5dfdca.png",
+    "static/media/music-app.png": "/static/media/music-app.77a05d041b15f6c48d9e.png",
     "index.html": "/index.html",
-    "main.ec9f91fe.css.map": "/static/css/main.ec9f91fe.css.map",
-    "main.3c4c7d7a.js.map": "/static/js/main.3c4c7d7a.js.map",
+    "main.2a886606.css.map": "/static/css/main.2a886606.css.map",
+    "main.322a7910.js.map": "/static/js/main.322a7910.js.map",
     "488.11f14f95.chunk.js.map": "/static/js/488.11f14f95.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ec9f91fe.css",
-    "static/js/main.3c4c7d7a.js"
+    "static/css/main.2a886606.css",
+    "static/js/main.322a7910.js"
   ]
 }
