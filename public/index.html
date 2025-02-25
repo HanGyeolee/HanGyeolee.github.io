@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -56,12 +57,12 @@
             }, timeoutMs);
 
             // 실제로 unpkg에 접근 가능한지 추가 확인
-            fetch('https://cdn.tailwindcss.com', { method: 'HEAD', mode: 'no-cors', signal})
+            fetch('https://unpkg.com/@tailwindcss/browser@4', { method: 'HEAD', mode: 'no-cors', signal})
                 .then(() => {
                   clearTimeout(timeoutId);
                   // 접근 가능하면 CDN에서 스크립트 로드
                   const script = document.createElement('script');
-                  script.src = 'https://cdn.tailwindcss.com';
+                  script.src = 'https://unpkg.com/@tailwindcss/browser@4';
                   document.head.appendChild(script);
                   console.log('CDN에서 Tailwind CSS를 로드했습니다.');
                 })

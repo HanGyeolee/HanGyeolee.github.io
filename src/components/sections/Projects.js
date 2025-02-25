@@ -40,70 +40,109 @@ const ProjectsSection = () => {
   ].sort((a, b) => b.period.localeCompare(a.period)));
   
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    var ctx;
+    const handleFullyLoaded  = () => {
+      // 기존 컨텍스트가 있으면 정리
+      if (ctx) {
+        ctx.revert();
+        ctx = null;
+      }
+
       const Height = window.innerHeight;
-      const projectHeight = document.querySelector('.about-projects')?.getBoundingClientRect().height || 0;
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: `+=${(3 + projectHeight/Height) * 100}%`,
-          pin: true,
-          scrub: 1.5
+      var projectHeight = (document.querySelector('.about-projects')?.getBoundingClientRect().height || Height);
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: `+=${(3 + projectHeight/Height) * 100}%`,
+            pin: true,
+            scrub: 1.5
+          }
+        });
+        projectHeight += 32;
+        const titleHeight = gsap.getProperty('.section-title', 'height');
+        const gapHeight = Height/2 - titleHeight/2;
+
+        const stagger = 0.75;
+
+        // 애니메이션 시퀀스
+        tl.fromTo(".title-header", {
+          y: 50 + gapHeight,
+          opacity: 0,
+          duration: 0
+        },
+        {
+          y: gapHeight,       // 끝 위치
+          opacity: 1,
+          duration: 1
+        })
+        .fromTo('.title-header-highlight', {
+          y: -50 + gapHeight,
+          opacity: 0,
+          duration: 0
+        },
+        {
+          y: gapHeight,       // 끝 위치
+          opacity: 1,
+          duration: 1
+        }, "<")
+        .from(".nothing", {
+          opacity: 0,
+          duration: 0.25,
+        })
+        .to([".title-header", '.title-header-highlight'], {
+          y: 16,
+          duration: 1
+        })
+        .from(".project-card", {
+          y: gapHeight,
+          opacity: 0,
+          duration: projects.current.length,
+          stagger
+        }, `-=${ 1 - stagger}`)
+        .from(".nothing", {
+          opacity:0,
+          duration: stagger,
+        }, `-=${projects.current.length - 1 * stagger}`)
+        .to(".section-content", {
+          y:(projectHeight >= gapHeight * 2) ? gapHeight * 2 - projectHeight : 0,
+          duration: projects.current.length,
+        }, `<`);
+      }, sectionRef);
+    }
+  
+    // 디바운스 함수 - resize 이벤트 최적화
+    const debounceResize = (func, delay) => {
+      let timeoutId;
+      return function(...args) {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
         }
-      });
-      const titleHalfHeight = gsap.getProperty('.section-title', 'height');
-      const gapHeight = Height/2 - titleHalfHeight/2;
-      console.log(`${gapHeight} = ${Height/2} - ${titleHalfHeight}`)
+        timeoutId = setTimeout(() => {
+          func.apply(this, args);
+        }, delay);
+      };
+    };
 
-      const stagger = 0.75;
+    // 디바운스된 리사이즈 핸들러
+    const debouncedResize = debounceResize(handleFullyLoaded, 200);
 
-      // 애니메이션 시퀀스
-      tl.fromTo(".title-header", {
-        y: 50 + gapHeight,
-        opacity: 0,
-        duration: 0
-      },
-      {
-        y: gapHeight,       // 끝 위치
-        opacity: 1,
-        duration: 1
-      })
-      .fromTo('.title-header-highlight', {
-        y: -50 + gapHeight,
-        opacity: 0,
-        duration: 0
-      },
-      {
-        y: gapHeight,       // 끝 위치
-        opacity: 1,
-        duration: 1
-      }, "<")
-      .from(".nothing", {
-        opacity: 0,
-        duration: 0.25,
-      })
-      .to([".title-header", '.title-header-highlight'], {
-        y: 16,
-        duration: 1
-      })
-      .from(".project-card", {
-        y: gapHeight,
-        opacity: 0,
-        duration: projects.current.length,
-        stagger
-      }, `-=${ 1 - stagger}`)
-      .from(".nothing", {
-        opacity:0,
-        duration: stagger,
-      }, `-=${projects.current.length - 3 * stagger}`)
-      .to(".section-content", {
-        y:(projectHeight > Height) ? Height - projectHeight : 0,
-        duration: projects.current.length / 3,
-      }, `<`);
-    }, sectionRef);
+    // 모든 리소스(이미지, 스타일시트 등)가 로드된 후
+    if (document.readyState === 'complete') {
+      // 이미 로드가 완료된 경우
+      handleFullyLoaded();
+    } else {
+      // 아직 로드 중인 경우 이벤트 리스너 추가
+      window.addEventListener('load', handleFullyLoaded);
+    }
 
-    return () => ctx.revert();
+    window.addEventListener('resize', debouncedResize);
+    return () => {
+      window.removeEventListener('load', handleFullyLoaded);
+      window.removeEventListener('resize', debouncedResize);
+      if(ctx) ctx.revert();
+    }
   }, []);
 
   return (
