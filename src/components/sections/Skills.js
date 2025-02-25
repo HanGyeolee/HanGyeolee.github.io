@@ -74,6 +74,36 @@ const SkillsSection = () => {
 };
 
 const SkillsCarousel = () => {
+  // 디바이스 타입 감지를 위한 상태 추가
+  const [isDesktop, setIsDesktop] = useState(false);
+  const checkDevice = () => {
+    // 1. 화면 크기 체크 (기본)
+    const isLargeScreen = window.innerWidth >= 1024; // 태블릿보다 더 큰 화면
+    
+    // 2. 유저 에이전트 체크 (옵션)
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    
+    // 3. 마우스/포인터 이벤트 지원 체크
+    const hasMouseEvents = 'onmousemove' in window;
+    
+    // 조합된 조건으로 판단
+    // 큰 화면 + 모바일 UA가 아님 + 마우스 이벤트 지원 = 데스크톱 환경 가능성↑
+    setIsDesktop(isLargeScreen && !isMobileUA && hasMouseEvents);
+  };
+
+  useEffect(()=>{
+    // 초기 체크
+    checkDevice();
+    
+    // 리사이즈 이벤트에 대한 리스너 등록
+    window.addEventListener('resize', checkDevice);
+    
+    return () => {
+      window.removeEventListener('resize', checkDevice);
+    };
+  }, [])
+
   // 모션 값 설정
   const [rotation, setRotation] = useState(0);
 
@@ -90,8 +120,10 @@ const SkillsCarousel = () => {
     // 드래그 중에는 raw 값으로 업데이트
     const sensitivity = 30/200;
     setRotation(prev => prev + (info.delta.x * sensitivity));
-    dragDeltaX.set(event.movementX * deltaSensitivity);
-  }, [dragDeltaX]);
+    if(isDesktop){
+      dragDeltaX.set(event.movementX * deltaSensitivity);
+    }
+  }, [dragDeltaX, isDesktop]);
 
   // 드래그 종료 핸들러 추가
   const handleDragEnd = async () => {
@@ -139,33 +171,44 @@ const SkillsCarousel = () => {
     { name: "Rust", description: "문법 학습 중..." },
   ];
 
-  // 카드 위치 계산 - useCallback으로 캐싱
-  const calculateCardStyle = (angle, y) => {
+  // 카드 위치 계산
+  const calculateCardStyle = (angle) => {
     const rad = Math.PI / 180;
     const deg2rad = angle * rad;
     const x = radius * Math.sin(deg2rad);
     const cos = radius * Math.cos(deg2rad);
-    const zIndex = Math.round(1000 + cos);
+    const zIndex = Math.round(radius + cos);
     const opacity = (cos + radius) / (radius * 2);
     const z = cos - radius/2;
 
-    return [{
+    return {
       transform: `
-        translate3d(${x}px, ${-y}px, ${z}px)
+        translate3d(${x}px, -108px, ${z}px)
         rotateY(${angle}deg)
       `,
       transformStyle: 'preserve-3d',
       zIndex,
       opacity
-    }, {
+    }
+  };
+  const calculateAdditionCardStyle = (angle) => {
+    const rad = Math.PI / 180;
+    const deg2rad = angle * rad;
+    const x = radius * Math.sin(deg2rad);
+    const cos = radius * Math.cos(deg2rad);
+    const zIndex = Math.round(radius + cos);
+    const opacity = (cos + radius) / (radius * 2);
+    const z = cos - radius/2;
+
+    return {
       x: x,
-      y,
+      y: 108,
       z: z,
       rotateY: angle,
       transformStyle: 'preserve-3d',
       zIndex,
       opacity
-    }]
+    }
   };
 
   // 반지름 계산 - useMemo로 캐싱
@@ -188,59 +231,106 @@ const SkillsCarousel = () => {
   const memoizedCardStyles = useMemo(() => {
     return skills.map((_, index) => {
       const angle = rotations[index] + rotation;
-      return calculateCardStyle(angle, 108);
+      return calculateCardStyle(angle);
     });
   }, [rotation, rotations, calculateCardStyle]);
+  
+  const memoizedAddCardStyles = useMemo(() => {
+    return skills.map((_, index) => {
+      if(isDesktop){
+        const angle = rotations[index] + rotation;
+        return calculateAdditionCardStyle(angle);
+      }
+      return null;
+    });
+  }, [isDesktop, rotation, rotations, calculateAdditionCardStyle]);
 
   return (
     <div className="w-full h-[600px] relative"
       style={{ perspective: `${radius * 3}px` }}>
       <div className="absolute w-full h-full flex items-center justify-center"
-      style={{
-        transformStyle: 'preserve-3d', // 3D 공간 보존
-        userSelect:"none"
-      }}>
+        style={{
+          transformStyle: 'preserve-3d', // 3D 공간 보존
+          userSelect:"none",
+          pointerEvents: "none"
+        }}>
         {skills.map((skill, index) => {
-          const [mainStyle, addStyle] = memoizedCardStyles[index];
+          const mainStyle = memoizedCardStyles[index];
+          
+          if(isDesktop){
+            const addStyle = memoizedAddCardStyles[index];
 
-          return (<>
-            <div
-              key={`main-${skill.name}`}
-              style={mainStyle}
-              className="card absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
-                        w-[300px] h-[200px] bg-white/10 rounded-xl p-6" >
-              <h3 className="text-2xl font-bold text-white mb-4">{skill.name}</h3>
-              <p className="text-white/80 whitespace-pre-line">{skill.description}</p>
-              {/* Footer 영역 */}
-              {skill.footer && (
-                <div className="absolute bottom-1 w-[252px] pb-5 border-white/10 flex items-center justify-end">
-                  <span className="text-sm text-white/60">{skill.footer}</span>
-                </div>
-              )}
-            </div>
-            {skill.additionDesc ? (
-              <motion.div
-                key={`addition-${skill.name}`}
-                animate={addStyle}
-                transition={{
-                  type: "tween",
-                  duration: 0.02,
-                  ease: 'linear',
-                }}
-                className='card'>
+            return (<>
+              <div
+                key={`main-${skill.name}-${index}`}
+                style={mainStyle}
+                className="card absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                          w-[300px] h-[200px] bg-white/10 rounded-xl p-6" >
+                <h3 className="text-2xl font-bold text-white mb-4">{skill.name}</h3>
+                <p className="text-white/80 whitespace-pre-line">{skill.description}</p>
+                {/* Footer 영역 */}
+                {skill.footer && (
+                  <div className="absolute bottom-1 w-[252px] pb-5 border-white/10 flex items-center justify-end">
+                    <span className="text-sm text-white/60">{skill.footer}</span>
+                  </div>
+                )}
+              </div>
+              {skill.additionDesc ? (
                 <motion.div
-                  style={{
-                    rotate:springDescRotation,
+                  key={`addition-${skill.name}-${index}`}
+                  animate={addStyle}
+                  transition={{
+                    type: "tween",
+                    duration: 0.025,
+                    ease: 'linear',
                   }}
-                  className="card absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
-                            w-[300px] h-[200px] bg-white/10 backdrop-blur-sm rounded-xl p-6"
-                >
-                  <p className="text-white/80 whitespace-pre-line">{skill.additionDesc}</p>
+                  className='card'>
+                  <motion.div
+                    style={{
+                      rotate:springDescRotation,
+                    }}
+                    className="card absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                              w-[300px] h-[200px] bg-white/10 backdrop-blur-sm rounded-xl p-6"
+                  >
+                    <p className="text-white/80 whitespace-pre-line">{skill.additionDesc}</p>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            ) : null}
-          </>
-          )
+              ) : null}
+            </>)
+          } else {
+            return (<>
+              <div
+                key={`main-${skill.name}-${index}m`}
+                style={mainStyle}
+                className="card absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                          w-[300px] h-[200px] bg-white/10 rounded-xl p-6" >
+                <h3 className="text-2xl font-bold text-white mb-4">{skill.name}</h3>
+                <p className="text-white/80 whitespace-pre-line">{skill.description}</p>
+                {/* Footer 영역 */}
+                {skill.footer && (
+                  <div className="absolute bottom-1 w-[252px] pb-5 border-white/10 flex items-center justify-end">
+                    <span className="text-sm text-white/60">{skill.footer}</span>
+                  </div>
+                )}
+              </div>
+              {skill.additionDesc ? (
+                <div
+                    key={`addition-${skill.name}-${index}m`}
+                    style={{
+                      ...mainStyle,
+                      transform: mainStyle.transform.replace(
+                        "-108px", 
+                        "108px"  // 위치 조정
+                      )
+                    }}
+                    className="card absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                              w-[300px] h-[200px] bg-white/10 backdrop-blur-sm rounded-xl p-6"
+                  >
+                  <p className="text-white/80 whitespace-pre-line">{skill.additionDesc}</p>
+                </div>
+              ) : null}
+            </>)
+          }
         })}
       </div>
       
@@ -251,7 +341,7 @@ const SkillsCarousel = () => {
         dragConstraints={{ left: 0, right: 0 }}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
-        style={{ touchAction: 'none', zIndex:100000 }}
+        style={{ touchAction: 'none'}}
       />
     </div>
   );

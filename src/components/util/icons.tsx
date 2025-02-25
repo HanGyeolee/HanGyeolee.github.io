@@ -1,6 +1,7 @@
 export enum IconType {
-  GITHUB = 0x01,
-  PERSONAL = 0x02,
+  PERSONAL = 0x01,
+  TEAM = 0x02,
   COMPANY = 0x04,
-  BLOG_DOCUMENT = 0x08,
+  GITHUB = 0x08,
+  BLOG_DOCUMENT = 0x10,
 }

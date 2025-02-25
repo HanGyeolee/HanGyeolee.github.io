@@ -4,36 +4,66 @@ import { Link } from 'react-router-dom';
 import { IconType } from '../util/icons.tsx';
 import { DynamicIcon } from '../util/IconMapper.tsx';
 import { ResponsiveContainer } from '../ui/ResponsiveContainer.js';
+// 이미지
+import medicalPlatformImage  from '../../image/medical-platform.png'
+import musicAppImage  from '../../image/music-app.png'
+import emotionAIAppImage  from '../../image/emotion-ai-app.png'
+import emgMiddlewareImage  from '../../image/emg-middleware.png'
+
 
 const ProjectsSection = () => {
   const sectionRef = useRef(null);
-
+  /**
+   * @typedef {import('../util/projects.tsx').ProjectProps} ProjectProps
+   * @type {React.RefObject<ProjectProps[]>}
+   */
   const projects = useRef([
     {
-      slug: 'https://github.com/HanGyeolee/AndroidPdfWriter',
       title: 'Android PDF Library',
-      thumbnail: '/images/projects/android-pdf-writer.jpg',
-      type: IconType.GITHUB,
+      document: 'https://github.com/HanGyeolee/AndroidPdfWriter',
+      type: IconType.PERSONAL,
       description: 'PDF1.4 기반 바이너리 파일 작성 라이브러리 배포',
       techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary'],
       period: '2024.11 ~'
     },
     {
-      slug: 'medical-platform',
-      title: '의료 헬스케어 멀티 플랫폼',
-      thumbnail: '/images/projects/medical-platform.jpg',
-      type: IconType.COMPANY | IconType.BLOG_DOCUMENT,
-      description: '생체 신호 기반 의료 헬스케어 멀티 플랫폼 안드로이드 개발 및 런칭',
+      title: '의료, 헬스케어 어플리케이션',
+      thumbnail: medicalPlatformImage,
+      document: 'medical-platform',
+      type: IconType.COMPANY,
+      description: '생체 신호 기반 의료 헬스케어 안드로이드 개발 및 런칭',
       techStack: ['Android', 'Java', 'MVVM', 'JNI', 'SIMD', 'DataBinding'],
-      period: '2022.06 ~ 2023.08'
+      period: '2022.06 ~ 2022.12'
     },
     {
-      slug: 'music-app',
+      title: '감정 데이터 분석 인공지능 다이어리',
+      thumbnail: emotionAIAppImage,
+      type: IconType.TEAM,
+      description: '일기에서 감정을 분류하는 인공지능을 탑재한 다이어리 앱 개발',
+      techStack: ['Android', 'JAVA', 'Python', 'Pytorch', 'Tokenizer'],
+      period: '2021.03 - 2021.06'
+    },
+    {
+      title: 'EMG 활용 재활 치료 디바이스 개발',
+      thumbnail: emgMiddlewareImage,
+      type: IconType.TEAM,
+      description: '아두이노가 송신하는 근육의 활성도를 수신하고 EMG 신호 처리를 통해 키보드 입력으로 변환하는 미들웨어를 개발, 재활 치료용 게임에 연결',
+      techStack: ['Windows', 'C#', 'WinForm', 'Arduino', 'C'],
+      period: '2021.03 - 2021.06'
+    },
+    {
+      title: 'EOG 활용 음악 연주 프로그램 개발',
+      type: IconType.TEAM,
+      description: '눈의 움직이는 각도에 따라 선택할 수 있는 HCI를 개발하고, 해당 HCI로 동작 가능한 윈도우 프로그램 개발',
+      techStack: ['Windows', 'C#', 'WinForm', 'ARM', 'C'],
+      period: '2020.08 - 2020.12'
+    },
+    {
       title: '음악 동아리 어플리케이션',
-      thumbnail: '/images/projects/music-app.jpg',
-      type: IconType.BLOG_DOCUMENT,
+      thumbnail: musicAppImage,
+      type: IconType.TEAM,
       description: '크로스 플랫폼 음악 동아리 앱 개발 및 배포',
-      techStack: ['Xamarin', 'C#', 'Firebase', 'Android', 'iOS'],
+      techStack: ['Android', 'iOS', 'Xamarin', 'C#', 'Firebase'],
       period: '2019.01 - 2019.09'
     },
     // ... 더 많은 프로젝트
@@ -104,7 +134,7 @@ const ProjectsSection = () => {
         .from(".nothing", {
           opacity:0,
           duration: stagger,
-        }, `-=${projects.current.length - 1 * stagger}`)
+        }, `-=${projects.current.length - 3.5 * stagger}`)
         .to(".section-content", {
           y:(projectHeight >= gapHeight * 2) ? gapHeight * 2 - projectHeight : 0,
           duration: projects.current.length,
@@ -160,27 +190,38 @@ const ProjectsSection = () => {
 
         <div className='about-projects grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 pb-4'>
           {projects.current.map((project, index) => {
-            const isExternalLink = project.slug.startsWith('http');
-
+            const hasDocument = !!project.document;
+            let isGithubLink = false;
+            if(hasDocument) {
+              isGithubLink = project.document.includes('github');
+            }
             const CardContent = (
-              <div className="aspect-[11/20] rounded-2xl overflow-hidden bg-white/20 transition-all duration-300 hover:bg-white/20">
+              <div className="aspect-[11/20] rounded-2xl overflow-hidden transition-colors duration-300 bg-white/15 hover:bg-white/20 ">
                 {/* 썸네일 이미지 */}
                 <div className="aspect-[1/1] relative overflow-hidden">
-                  <img 
-                    src={project.thumbnail} 
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  {project.thumbnail ? (
+                    // 썸네일이 있는 경우
+                    <img 
+                      src={project.thumbnail} 
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-scale duration-300 group-hover:scale-110"
+                    />
+                  ) : (
+                    // 썸네일이 없는 경우
+                    <div className="w-full h-full flex items-center justify-center bg-black/30">
+                      <span className="text-white/50">No Image</span>
+                    </div>
+                  )}
                   {/* 타입 뱃지 */}
                   <div className="absolute bottom-4 right-4 flex">
-                    <DynamicIcon type={project.type} />
+                    <DynamicIcon type={project.type | (hasDocument?(isGithubLink?IconType.GITHUB:IconType.BLOG_DOCUMENT):null)} className='ml-1' />
                   </div>
                 </div>
 
                 {/* 프로젝트 정보 */}
                 <div className="p-4">
                   <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
-                  <p className="text-white/80 text-sm min-h-[40px] mb-4 line-clamp-2">
+                  <p className="text-white/80 text-sm min-h-[60px] mb-4 line-clamp-3">
                     {project.description}
                   </p>
                   
@@ -189,7 +230,7 @@ const ProjectsSection = () => {
                     {project.techStack.map((tech) => (
                       <span 
                         key={tech} 
-                        className="bg-[#061529] px-2 py-1 rounded-full text-xs text-white/80"
+                        className="bg-[#061529] px-2.5 py-1 rounded-full text-s text-white/80"
                       >
                         {tech}
                       </span>
@@ -203,25 +244,32 @@ const ProjectsSection = () => {
                 </div>
               </div>
             );
-
-            return isExternalLink ? (
-              <a
-                key={index}
-                href={project.slug}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="project-card group relative"
-              >
-                {CardContent}
-              </a>
-            ) : (
-              <Link
-                key={index}
-                to={`/projects/${project.slug}`}
-                className="project-card group relative"
-              >
-                {CardContent}
-              </Link>
+            if(hasDocument) {
+              const isExternalLink = project.document.startsWith('http');
+              return isExternalLink ? (
+                <a
+                  key={index}
+                  href={project.document}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-card group relative"
+                >
+                  {CardContent}
+                </a>
+              ) : (
+                <Link
+                  key={index}
+                  to={`/projects/${project.document}`}
+                  className="project-card group relative"
+                >
+                  {CardContent}
+                </Link>
+              );
+            }
+            return (
+              <div key={index} className="project-card group relative">
+                  {CardContent}
+              </div>
             );
           })}
         </div>
