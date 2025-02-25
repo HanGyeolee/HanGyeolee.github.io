@@ -83,7 +83,7 @@ const ProjectsSection = () => {
         opacity: 0,
         duration: 0.25,
       })
-      .to(".section-title", {
+      .to([".title-header", '.title-header-highlight'], {
         y: 16,
         duration: 1
       })

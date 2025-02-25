@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" /><script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -40,4 +40,40 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  
+  <!-- 조건부 스크립트 로딩 -->
+  <script>
+    function loadTailwindCSS() {
+        // 온라인 상태인지 확인
+        if (navigator.onLine) {
+            // 실제로 unpkg에 접근 가능한지 추가 확인
+            fetch('https://unpkg.com/@tailwindcss/browser@4', { method: 'HEAD', mode: 'no-cors' })
+                .then(() => {
+                    // 접근 가능하면 CDN에서 스크립트 로드
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/@tailwindcss/browser@4';
+                    document.head.appendChild(script);
+                    console.log('CDN에서 Tailwind CSS를 로드했습니다.');
+                })
+                .catch(() => {
+                    // 접근 불가능하면 로컬 스크립트 로드
+                    loadLocalTailwind();
+                });
+        } else {
+            // 오프라인 상태면 로컬 스크립트 로드
+            loadLocalTailwind();
+        }
+    }
+
+    function loadLocalTailwind() {
+        const script = document.createElement('script');
+        // %PUBLIC_URL%는 빌드 시 실제 경로로 대체됩니다
+        script.src = "%PUBLIC_URL%/tailwindcss.js";
+        document.head.appendChild(script);
+        console.log('로컬에서 Tailwind CSS를 로드했습니다.');
+    }
+
+    // 페이지 로딩 시 실행
+    loadTailwindCSS();
+  </script>
 </html>
