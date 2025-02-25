@@ -46,16 +46,27 @@
     function loadTailwindCSS() {
         // 온라인 상태인지 확인
         if (navigator.onLine) {
+          const timeoutMs = 1000;
+            const controller = new AbortController();
+            const { signal } = controller;
+
+            // timeout 설정
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+            }, timeoutMs);
+
             // 실제로 unpkg에 접근 가능한지 추가 확인
-            fetch('https://unpkg.com/@tailwindcss/browser@4', { method: 'HEAD', mode: 'no-cors' })
+            fetch('https://unpkg.com/@tailwindcss/browser@4', { method: 'HEAD', mode: 'no-cors', signal})
                 .then(() => {
-                    // 접근 가능하면 CDN에서 스크립트 로드
-                    const script = document.createElement('script');
-                    script.src = 'https://unpkg.com/@tailwindcss/browser@4';
-                    document.head.appendChild(script);
-                    console.log('CDN에서 Tailwind CSS를 로드했습니다.');
+                  clearTimeout(timeoutId);
+                  // 접근 가능하면 CDN에서 스크립트 로드
+                  const script = document.createElement('script');
+                  script.src = 'https://unpkg.com/@tailwindcss/browser@4';
+                  document.head.appendChild(script);
+                  console.log('CDN에서 Tailwind CSS를 로드했습니다.');
                 })
                 .catch(() => {
+                  clearTimeout(timeoutId);
                     // 접근 불가능하면 로컬 스크립트 로드
                     loadLocalTailwind();
                 });
