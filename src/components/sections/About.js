@@ -38,7 +38,7 @@ const AboutSection = () => {
         y: 30,
         opacity: 0,
         stagger: 0.5,
-        duration: 1
+        duration: 1.6
       }, "-=0.5")
       .from(".nothing", {
         opacity: 0,
@@ -112,11 +112,6 @@ const AboutSection = () => {
           <div className='nothing'></div>
         </div>
       </ResponsiveContainer>
-
-      {/* 스크롤 안내 */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce">
-        <p className="text-sm tracking-widest">SCROLL</p>
-      </div>
     </div>
   );
 };

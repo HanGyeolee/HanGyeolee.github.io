@@ -1,4 +1,4 @@
-import { IconType } from "./icons";
+import { IconType } from "./icons.ts";
 
 export interface ProjectProps {
   title: string;

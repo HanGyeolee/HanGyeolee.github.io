@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconType } from './icons.tsx';
+import { IconType } from './icons.ts';
 import { BookText, Building, Github, UserRound, UsersRound } from 'lucide-react';
 
 // 아이콘 매핑 객체

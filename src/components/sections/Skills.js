@@ -33,7 +33,7 @@ const SkillsSection = () => {
       .from(".about-skills", {
         y: 200,
         opacity: 0,
-        duration: 0.5
+        duration: 2.6
       }, "-=0.3")
       .from(".nothing", {
         opacity: 0,
@@ -46,7 +46,7 @@ const SkillsSection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="h-lvh bg-[#1B365D] flex flex-col items-center justify-center relative overflow-hidden">
+    <div ref={sectionRef} className="h-lvh bg-[#0F2342] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1B365D] to-[#0F2342]"></div>
 
@@ -64,11 +64,6 @@ const SkillsSection = () => {
           <div className='nothing'></div>
         </div>
       </ResponsiveContainer>
-
-      {/* 스크롤 안내 */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce">
-        <p className="text-sm tracking-widest">SCROLL</p>
-      </div>
     </div>
   );
 };
@@ -154,7 +149,16 @@ const SkillsCarousel = () => {
 
   const skills = [
     { name: "Program Langauge", description: "활용할 수 있는 언어들입니다.\n프레임워크 및 기술을 포함합니다.", 
-      footer: <ArrowRight className='w-4 h-4 text-white/60'/> },
+      footer: 
+      <>
+        <div className="pr-2 text-xs text-white/60 whitespace-nowrap md:block sm:none">
+          <kbd className="px-1 py-0.5 bg-black/30 rounded">←</kbd>
+          <kbd className="px-1 py-0.5 bg-black/30 rounded ml-1">→</kbd>
+          <span className="ml-1 mix-blend-difference">키로 이동</span>
+        </div>
+        <ArrowRight className='w-4 h-4 text-white/60'/>
+      </>
+     },
     { name: "C", description: "STL, Java Native Interface\n멀티프로세싱/스레딩\nSIMD 최적화\nArduino, ARM",
       additionDesc:"Modul Pattern, Observer Pattern\nMemory Pool Pattern\n"},
     { name: "C++", description: "DLL, P/Invoke, OpenCL\nMutex, Semaphore\nAbstract, friends",
@@ -245,6 +249,48 @@ const SkillsCarousel = () => {
     });
   }, [isDesktop, rotation, rotations, calculateAdditionCardStyle]);
 
+  // 화살표 키로 카드 회전 제어하는 함수
+  const navigateCards = useCallback((direction) => {
+    const cardAngle = 360 / skills.length;
+
+    if (direction === 'next') {
+      // 다음 카드로 이동 (시계 방향 회전)
+      setRotation(prev => prev - cardAngle);
+    } else if (direction === 'prev') {
+      // 이전 카드로 이동 (반시계 방향 회전)
+      setRotation(prev => prev + cardAngle);
+    }
+    
+    dragDeltaX.set(0);
+    // 변경 후 드래그 델타 리셋
+  }, [skills.length, dragDeltaX]);
+
+  // 키보드 이벤트 핸들러 추가
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 입력 필드에서 키 이벤트가 발생한 경우 처리하지 않음
+      if (e.target instanceof HTMLInputElement || 
+          e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      // 방향키 처리
+      if (e.key === 'ArrowRight') {
+        e.preventDefault(); // 기본 스크롤 동작 방지
+        navigateCards('next');
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault(); // 기본 스크롤 동작 방지
+        navigateCards('prev');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigateCards]);
+
   return (
     <div className="w-full h-[600px] relative"
       style={{ perspective: `${radius * 3}px` }}>
@@ -271,7 +317,7 @@ const SkillsCarousel = () => {
                 {/* Footer 영역 */}
                 {skill.footer && (
                   <div className="absolute bottom-1 w-[252px] pb-5 border-white/10 flex items-center justify-end">
-                    <span className="text-sm text-white/60">{skill.footer}</span>
+                    {skill.footer}
                   </div>
                 )}
               </div>

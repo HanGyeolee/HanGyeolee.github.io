@@ -59,7 +59,7 @@ const IntroSection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="h-lvh bg-[#3d4852] flex flex-col items-center justify-center relative overflow-hidden">
+    <div ref={sectionRef} className="h-lvh bg-[#66A5AD] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#B2D8E5] to-[#66A5AD]"></div>
       {/* 메인 컨텐츠 */}
@@ -128,11 +128,6 @@ const IntroSection = () => {
           <div className='nothing'></div>
         </div>
       </ResponsiveContainer>
-
-      {/* 스크롤 안내 */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-black/70 animate-bounce">
-        <p className="text-sm tracking-widest">SCROLL</p>
-      </div>
     </div>
   );
 };
