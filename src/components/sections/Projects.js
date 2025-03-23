@@ -80,6 +80,7 @@ const ProjectsSection = () => {
 
       const Height = window.innerHeight;
       var projectHeight = (document.querySelector('.about-projects')?.getBoundingClientRect().height || Height);
+      const element = document.querySelector('.section-content-wrapper');
       ctx = gsap.context(() => {
         const mainTl = gsap.timeline({
           scrollTrigger: {
@@ -90,11 +91,16 @@ const ProjectsSection = () => {
             scrub: 1.5,
             onLeave: (self) => {
               // 메인 애니메이션이 완료되면 내부 스크롤 활성화
-              gsap.set(".section-content-wrapper", { overflow: "auto" });
+              gsap.set(element, { overflow: "auto" });
             },
             onEnterBack: (self) => {
               // 다시 메인 영역으로 돌아오면 내부 스크롤 비활성화
-              gsap.set(".section-content-wrapper", { overflow: "hidden" });
+              gsap.set(element, { overflow: "hidden" });
+              gsap.to(element, {
+                scrollTop: 0,
+                duration: 0.6, // 애니메이션 지속 시간(초)
+                ease: "power2.out" // 이징 함수 (여러 옵션 중 선택 가능)
+              });
             }
           }
         });
