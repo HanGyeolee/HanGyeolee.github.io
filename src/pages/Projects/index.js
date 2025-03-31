@@ -1,1 +1,2 @@
-export {APW} from './apw';
+export {APW} from './apw.tsx';
+export {Tonality} from './tonality.tsx';
