@@ -1,2 +1,2 @@
-export {APW, Tonality} from './Projects';
+export {Projects} from './Projects';
 export {Home} from './Home';

@@ -5,6 +5,7 @@ import { IconType } from '../util/icons.ts';
 import { DynamicIcon } from '../util/IconMapper.tsx';
 import { ResponsiveContainer } from '../ui/ResponsiveContainer.tsx';
 // 이미지
+import keySignImage  from '../../image/key-sign.png'
 import medicalPlatformImage  from '../../image/medical-platform.png'
 import musicAppImage  from '../../image/music-app.png'
 import emotionAIAppImage  from '../../image/emotion-ai-app.png'
@@ -19,17 +20,26 @@ const ProjectsSection = () => {
    */
   const projects = useRef([
     {
-      title: 'Android PDF Library',
-      document: 'https://github.com/HanGyeolee/AndroidPdfWriter',
+      title: '조성 검색 사이트',
+      thumbnail: keySignImage,
+      document: 'https://hangyeolee.github.io/projects/tonality',
+      type: IconType.PERSONAL,
+      description: '조표에 따라 기능 화성이 어떻게 작성되는 지, 한 눈에 볼 수 있는 사이트. 직접 사용하기 위해 개발',
+      techStack: ['React.js', 'Javascript'],
+      period: '2025.03 ~ 2025.04'
+    },
+    {
+      title: '안드로이드 PDF 라이브러리',
+      document: 'https://github.com/HanGyeolee/AndroidPdfWriter/blob/main/README-ko.md#androidpdfwriter',
       type: IconType.PERSONAL,
       description: 'PDF1.4 기반 바이너리 파일 작성 라이브러리 배포',
       techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary'],
       period: '2024.11 ~'
     },
     {
-      title: '의료, 헬스케어 어플리케이션',
+      title: '의료 및 헬스케어 어플리케이션',
       thumbnail: medicalPlatformImage,
-      document: 'medical-platform',
+      document: 'https://play.google.com/store/apps/details?id=com.neurowiztek.brainmeasure',
       type: IconType.COMPANY,
       description: '생체 신호 기반 의료 헬스케어 안드로이드 개발 및 런칭',
       techStack: ['Android', 'Java', 'MVVM', 'JNI', 'SIMD', 'DataBinding'],
@@ -219,8 +229,10 @@ const ProjectsSection = () => {
             {projects.current.map((project, index) => {
               const hasDocument = !!project.document;
               let isGithubLink = false;
+              let isExternalLink = false;
               if(hasDocument) {
-                isGithubLink = project.document.includes('github');
+                isGithubLink = project.document.includes('github.com');
+                isExternalLink = project.document.startsWith('https');
               }
               const CardContent = (
                 <div className="aspect-[11/20] rounded-2xl overflow-hidden transition-colors duration-300 bg-white/15 hover:bg-white/20 ">
@@ -241,7 +253,7 @@ const ProjectsSection = () => {
                     )}
                     {/* 타입 뱃지 */}
                     <div className="absolute bottom-4 right-4 flex">
-                      <DynamicIcon type={project.type | (hasDocument?(isGithubLink?IconType.GITHUB:IconType.BLOG_DOCUMENT):null)} className='ml-1' />
+                      <DynamicIcon type={project.type | (hasDocument?(isGithubLink?IconType.GITHUB:(isExternalLink?IconType.EXTERNAL:IconType.BLOG_DOCUMENT)):null)} className='ml-1' />
                     </div>
                   </div>
 
@@ -272,7 +284,6 @@ const ProjectsSection = () => {
                 </div>
               );
               if(hasDocument) {
-                const isExternalLink = project.document.startsWith('http');
                 return isExternalLink ? (
                   <a
                     key={index}

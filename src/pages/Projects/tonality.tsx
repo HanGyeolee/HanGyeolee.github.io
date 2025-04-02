@@ -5,8 +5,8 @@ import { StaffNotation, Harmony, Scale } from "../../components/ui/StaffNotation
 const Tonality = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const key = decodeURIComponent(searchParams.get('key')); // 'react'
-    const scale = getScaleFromString(searchParams.get('scale')); // 'react'
+    const key = decodeURIComponent(searchParams.get('key'));
+    const scale = getScaleFromString(searchParams.get('scale'));
   
     const [mainHarmony, setMainHarmony] = useState<Harmony[]>([]);
     const [subHarmony, setSubHarmony] = useState<Harmony[]>([]);
@@ -35,6 +35,8 @@ const Tonality = () => {
         e.preventDefault();
         // 입력에서 조표와 장/단조 추출하는 로직
         let { key, scale } = parseInput(e.target[0].value);
+
+        // 설마 이거 까지 시도하는 사람이 있겠어???
         if(key === "G#") key = "Ab";
         else if(key === "D#") key = "Eb";
         else if(key === "A#") key = "Bb";
@@ -43,7 +45,7 @@ const Tonality = () => {
         
         // 유효한 입력이면 해당 파라미터로 라우팅
         if (key && scale) {
-            navigate(`/tonality?key=${key}&scale=${scale}`);
+            navigate(`?key=${key}&scale=${scale}`);
         }
     };
 
@@ -58,7 +60,7 @@ const Tonality = () => {
         // 영어 음계 패턴
         const englishNotePattern = /([A-G][b#]?)/i;
         
-        // 한국어 음계 패턴 (올림/내림 포함)
+        // 한국어 음계 패턴
         const koreanNotePattern = /(?:(올림|내림)\s*)?([가나다라마바사])/i;
         
         // 영어 조성 패턴
@@ -306,9 +308,9 @@ const Tonality = () => {
             <form className="flex items-center mb-4 justify-between" onSubmit={handleSearch}>
               <input
                 type="text"
-                placeholder="예: C major, F# minor, G 장조, 라 단조"
+                placeholder="예: Bb major, F# minor, G 장조, 내림라 단조"
                 defaultValue={initValue()}
-                className="px-4 py-2 border rounded-md w-auto mr-2"
+                className="px-4 py-2 border rounded-md w-[50%] mr-2"
               />
               <button 
                 type="submit"
