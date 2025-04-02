@@ -1,32 +1,45 @@
 import React, { useEffect, useState } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
-import { StaffNotation } from "../../components/ui";
-import { Harmony } from "../../components/ui/StaffNotation";
+import { StaffNotation, Harmony, Scale } from "../../components/ui/StaffNotation.tsx";
 
 const Tonality = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const key = decodeURIComponent(searchParams.get('key')); // 'react'
-    const scale = searchParams.get('scale'); // 'react'
+    const scale = getScaleFromString(searchParams.get('scale')); // 'react'
   
-    const [harmony, setHarmony] = useState<Harmony[]>([]);
+    const [mainHarmony, setMainHarmony] = useState<Harmony[]>([]);
+    const [subHarmony, setSubHarmony] = useState<Harmony[]>([]);
+    const [seventhHarmony, setSeventhHarmony] = useState<Harmony[]>([]);
+    const [sseventhHarmony, setsSeventhHarmony] = useState<Harmony[]>([]);
+    const [sixthHarmony, setSixthHarmony] = useState<Harmony[]>([]);
 
     // URL 파라미터가 바뀌면 화성 계산
     useEffect(() => {
-        if (key && scale) {
-            const calculatedHarmony = calculateHarmony(key, scale);
-            setHarmony(calculatedHarmony);
+      if (key) {
+        setMainHarmony(calculateHarmony(key, scale));
+        setSeventhHarmony(calculateSeventhHarmony(key, scale))
+        setSixthHarmony(calculateSixthHarmony(key));
+        if(scale === Scale.minor) {
+          setSubHarmony(calculateHarmony(key, Scale.harmonic_minor));
+          setsSeventhHarmony(calculateSeventhHarmony(key, Scale.harmonic_minor));
         }
+      }
     }, [key, scale]);
 
     useEffect(() => {
 
-    },[harmony])
+    },[mainHarmony, subHarmony])
 
     const handleSearch = (e:React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // 입력에서 조표와 장/단조 추출하는 로직
-        const { key, scale } = parseInput(e.target[0].value);
+        let { key, scale } = parseInput(e.target[0].value);
+        if(key === "G#") key = "Ab";
+        else if(key === "D#") key = "Eb";
+        else if(key === "A#") key = "Bb";
+        else if(key === "E#") key = "F";
+        else if(key === "Fb") key = "E";
         
         // 유효한 입력이면 해당 파라미터로 라우팅
         if (key && scale) {
@@ -124,7 +137,7 @@ const Tonality = () => {
     }
 
     // 기능 화성 계산 함수
-    function calculateHarmony(key: string, scale: string, harmonic: boolean = false) {
+    function calculateHarmony(key: string, scale: Scale) {
         // 음계 정의 (반음 간격)
         const majorIntervals:number[] = [0, 2, 4, 5, 7, 9, 11];
         const naturalMinorIntervals:number[] = [0, 2, 3, 5, 7, 8, 10];       // 자연 단음계
@@ -135,32 +148,24 @@ const Tonality = () => {
         
         // 장조/단조에 따른 간격 선택
         let intervals:number[];
-        if (scale === 'major') {
-            intervals = majorIntervals;
-        } else { // 기본 minor
-            if(harmonic){
-                intervals = harmonicMinorIntervals;
-            }
-            else{
-                intervals = naturalMinorIntervals;
-            }
-        }
-        
         // 기능 화성 생성
         const harmony:Harmony[] = [];
         // 각 스케일에 따른 로마 숫자 표기
         let romanNumerals;
-        
-        if (scale === 'major') {
+
+        switch (scale){
+          case Scale.major:
+            intervals = majorIntervals;
             romanNumerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
-        } else {
-            if(harmonic){
-                // 하모닉 마이너의 화성 표기: 5도와 7도 화음의 특성이 변함
-                romanNumerals = ['i', 'ii°', 'III+', 'iv', 'V', 'VI', 'vii°'];
-            }
-            else{
-                romanNumerals = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
-            }
+            break;
+          case Scale.minor:
+            intervals = naturalMinorIntervals;
+            romanNumerals = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+            break;
+          case Scale.harmonic_minor:
+            intervals = harmonicMinorIntervals;
+            romanNumerals = ['i', 'ii°', 'III+', 'iv', 'V', 'VI', 'vii°'];
+            break;
         }
         
         for (let i = 0; i < 7; i++) {
@@ -173,23 +178,124 @@ const Tonality = () => {
 
             // 근음보다 항상 위에 존재.
             for(let j = 1; j < 3; j++) {
-                while(chordNotes[j-1]>chordNotes[j])
-                    chordNotes[j]+=12;
+                while(chordNotes[j-1]>chordNotes[j]){
+                  chordNotes[j]+=12;
+                }
             }
             
             harmony.push({
                 roman: romanNumerals[i],
-                notes: chordNotes,
-                degree: i + 1 // 음계 내 도수
+                notes: chordNotes
             });
         }
         
         return harmony;
     }
 
+    function calculateSeventhHarmony(key: string, scale: Scale) {
+      // 음계 정의 (반음 간격)
+      const majorIntervals:number[] = [0, 2, 4, 5, 7, 9, 11];
+      const naturalMinorIntervals:number[] = [0, 2, 3, 5, 7, 8, 10];       // 자연 단음계
+      const harmonicMinorIntervals:number[] = [0, 2, 3, 5, 7, 8, 11];      // 하모닉 단음계
+      
+      // 조표에 따른 시작점 계산
+      let rootIndex = getNoteIndex(key);
+      
+      // 장조/단조에 따른 간격 선택
+      let intervals:number[];
+      // 기능 화성 생성
+      const harmony:Harmony[] = [];
+      // 각 스케일에 따른 로마 숫자 표기
+      let romanNumerals;
+
+      switch (scale){
+        case Scale.major:
+          intervals = majorIntervals;
+          romanNumerals = ['IM7', 'ii7', 'iii7', 'IVM7', 'V7', 'vi7', 'viiø7'];
+          break;
+        case Scale.minor:
+          intervals = naturalMinorIntervals;
+          romanNumerals = ['i7', 'iiø7', 'IIIM7', 'iv7', 'v7', 'VIM7', 'VII7'];
+          break;
+        case Scale.harmonic_minor:
+          intervals = harmonicMinorIntervals;
+          romanNumerals = ['imM7', 'iiø7', 'III+M7', 'iv7', 'V7', 'VIM7', 'vii°7'];
+          break;
+      }
+      
+      for (let i = 0; i < 7; i++) {
+          // 3도 간격으로 화음 구성
+          const chordNotes = [
+              rootIndex + intervals[i],
+              rootIndex + intervals[(i + 2) % 7],
+              rootIndex + intervals[(i + 4) % 7],
+              rootIndex + intervals[(i + 6) % 7],
+          ];
+
+          // 근음보다 항상 위에 존재.
+          for(let j = 1; j < chordNotes.length; j++) {
+              while(chordNotes[j-1]>chordNotes[j]){
+                chordNotes[j]+=12;
+              }
+          }
+
+          let roman = romanNumerals[i]
+          
+          harmony.push({
+            roman,
+            notes: chordNotes,
+          });
+      }
+      
+      return harmony;
+    }
+
+    function calculateSixthHarmony(key: string) {
+      // 조표에 따른 시작점 계산
+      let rootIndex = getNoteIndex(key);
+      // 기능 화성 생성
+      const harmony:Harmony[] = [];
+
+      const chordNotes:Record<string,number[]> = {
+        'It+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 6 + 12],
+        'Fr+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 2 + 12, rootIndex + 6 + 12],
+        'Ger+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 3 + 12, rootIndex + 6 + 12],
+      };
+
+      let optionNotes:Record<string,string[]>;
+      switch (scale){
+        case Scale.major:
+          optionNotes = {
+            'It+6':['b6','1','#4'],
+            'Fr+6':['b6','1','2','#4'],
+            'Ger+6':['b6','1','b3','#4'],
+          };
+          break;
+        case Scale.minor:
+        case Scale.harmonic_minor:
+          optionNotes = {
+            'It+6':['6','1','#4'],
+            'Fr+6':['6','1','2','#4'],
+            'Ger+6':['6','1','3','#4'],
+          };
+          break;
+      }
+
+      console.log(chordNotes)
+      for(const roman in chordNotes){
+        harmony.push({
+            roman,
+            notes: chordNotes[roman],
+            option: optionNotes[roman]
+        });
+      }
+      
+      return harmony;
+    }
+
     function initValue(){
-        if (key && scale){
-            return `${key} ${scale}`;
+        if (key && key != null && key !== 'null'){
+            return `${key} ${getStringFromScale(scale)}`;
         }
         return undefined;
     }
@@ -197,32 +303,84 @@ const Tonality = () => {
     return (
         <div className="container mx-auto p-4">
           <div className="mb-6">
-            <form className="flex items-center mb-4" onSubmit={handleSearch}>
+            <form className="flex items-center mb-4 justify-between" onSubmit={handleSearch}>
               <input
                 type="text"
                 placeholder="예: C major, F# minor, G 장조, 라 단조"
                 defaultValue={initValue()}
-                className="px-4 py-2 border rounded-md w-full mr-2"
+                className="px-4 py-2 border rounded-md w-auto mr-2"
               />
               <button 
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-500 w-auto text-white rounded-md"
               >
                 검색
               </button>
             </form>
           </div>
           
-          {key && scale ? (
+          {key && key != null && key !== 'null' ? (
             <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold mb-4">
-                {key} {scale === 'major' ? 'Major' : 'Minor'} 
-              </h2>
-              
+
               {/* 오선 및 기능 화성 표시 */}
-              <div className="overflow-x-auto">
+              <h2 key={"main"} className="text-xl font-bold mb-4">
+                {key} {scale === Scale.major ? 'Major' : 'Minor'} 
+              </h2>
+              <div key={"main-div"} className="overflow-x-auto">
                 <StaffNotation 
-                  harmony={harmony} 
+                  harmony={mainHarmony} 
+                  keySignature={key} 
+                  scale={scale} 
+                />
+              </div>
+
+              {/* 하모닉 마이너 표시 */}
+              {scale === Scale.minor ? [
+                <h2 key={"harmonic minor"} className="text-xl font-bold mb-4">
+                  {key} Harmonic Minor
+                </h2>,
+                <div key={"harmonic minor-div"} className="overflow-x-auto">
+                  <StaffNotation 
+                    harmony={subHarmony} 
+                    keySignature={key} 
+                    scale={Scale.harmonic_minor} 
+                  />
+                </div>
+              ] : (null)}
+
+              {/* 7 화성 표시 */}
+              <h2 key={"main7"} className="text-xl font-bold mb-4">
+                Seventh Chords of {key} {scale === Scale.major ? 'Major' : 'Minor'} 
+              </h2>
+              <div key={"main7-div"} className="overflow-x-auto">
+                <StaffNotation 
+                  harmony={seventhHarmony} 
+                  keySignature={key} 
+                  scale={scale} 
+                />
+              </div>
+
+              {/* 하모닉 마이너의 7 화성 표시 */}
+              {scale === Scale.minor ? [
+                <h2 key={"harmonic minor7"} className="text-xl font-bold mb-4">
+                  Seventh Chords of {key} Harmonic Minor 
+                </h2>,
+                <div key={"harmonic minor7-div"} className="overflow-x-auto">
+                  <StaffNotation 
+                    harmony={sseventhHarmony} 
+                    keySignature={key} 
+                    scale={Scale.harmonic_minor} 
+                  />
+                </div>
+              ] : (null)}
+
+              {/* 감 6 화성 표시 */}
+              <h2 key={"aug six"} className="text-xl font-bold mb-4">
+                Augmented Sixth Chords
+              </h2>
+              <div key={"aug six-div"} className="overflow-x-auto">
+                <StaffNotation 
+                  harmony={sixthHarmony} 
                   keySignature={key} 
                   scale={scale} 
                 />
@@ -235,6 +393,27 @@ const Tonality = () => {
           )}
         </div>
       );
+}
+
+function getScaleFromString(scaleString: string | null): Scale {
+  if (scaleString === 'major') {
+    return Scale.major;
+  } else if (scaleString === 'minor') {
+    return Scale.minor;
+  } else if (scaleString === 'harmonic_minor') {
+    return Scale.harmonic_minor;
+  }
+  
+  // 기본값 설정 (예: major)
+  return Scale.major;
+}
+function getStringFromScale(scale:Scale):string{
+  switch(scale){
+    case Scale.minor:
+      return 'minor';
+    default:
+      return 'major';
+  }
 }
 
 export {Tonality};
