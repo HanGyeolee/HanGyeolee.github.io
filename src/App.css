@@ -1,0 +1,7 @@
+h1.section-title > span {
+    display: inline-block;
+}
+.card {
+    will-change: transform, rotation, zIndex, opacity; /* 변환 최적화 힌트 제공 */
+    backface-visibility: hidden; /* 렌더링 최적화 */
+}
