@@ -22,7 +22,7 @@ const ProjectsSection = () => {
     {
       title: '조성 검색 사이트',
       thumbnail: keySignImage,
-      document: 'https://hangyeolee.github.io/projects/tonality',
+      document: 'https://hangyeolee.github.io/#/projects/tonality',
       type: IconType.PERSONAL,
       description: '조표에 따라 기능 화성이 어떻게 작성되는 지, 한 눈에 볼 수 있는 사이트. 직접 사용하기 위해 개발',
       techStack: ['React.js', 'Javascript'],
