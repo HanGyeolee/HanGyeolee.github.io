@@ -1,3 +1,16 @@
+export interface LibraryProps{
+    name: string;
+    methods: {
+        name: string;
+        returnType: string;
+        params: string[];
+        isStatic?:boolean;
+    }[];
+    variableDeclaration: RegExp,
+    staticMethods?: RegExp,
+    methodChain: RegExp
+}
+
 export enum Color {
     TRANSPARENT='transparent',
     BLACK= 'black',

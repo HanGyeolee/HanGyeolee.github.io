@@ -1,6 +1,6 @@
-import { Color, Orientation } from "./ENUM";
-import { PDFComponent } from "./PDFComponent";
-import { PDFGridCell } from "./PDFGridCell";
+import { Color, LibraryProps, Orientation } from "./enum.tsx";
+import { IPDFComponent, PDFComponent } from "./PDFComponent.tsx";
+import { PDFGridCell } from "./PDFGridCell.tsx";
 
 export class PDFLayout extends PDFComponent {
     fitChildrenToLayout:boolean;
@@ -18,7 +18,7 @@ export class PDFLayout extends PDFComponent {
 }
 
 export class PDFLinearLayout extends PDFLayout {
-    children:PDFComponent[];
+    children:IPDFComponent[];
     weights:number[];
     constructor(){
         super();
@@ -42,7 +42,7 @@ export class PDFLinearLayout extends PDFLayout {
      * @param component 하위 구성 요소
      * @return 자기자신
      */
-    addChild(component:PDFComponent):PDFLinearLayout;
+    addChild(component:IPDFComponent):PDFLinearLayout;
     /**
      * 레이아웃에 자식 추가<br>
      * Add children to layout<br>
@@ -53,8 +53,8 @@ export class PDFLinearLayout extends PDFLayout {
      *               If {@link orientation} is {@link Orientation.Horizontal} then width, {@link Orientation.Vertical} then height.
      * @return 자기자신
      */
-    addChild(component:PDFComponent, weight:number):PDFLinearLayout;
-    addChild(component:PDFComponent, weight?:number):PDFLinearLayout{
+    addChild(component:IPDFComponent, weight:number):PDFLinearLayout;
+    addChild(component:IPDFComponent, weight?:number):PDFLinearLayout{
         if(!weight){ weight = 1; }
         if(weight < 1) weight = 1;
         if(this.children.length == this.weights.length)
@@ -257,13 +257,43 @@ export class PDFLinearLayout extends PDFLayout {
      * @param parent 부모
      * @return 자기자신
      */
-    setParent(parent:PDFComponent):PDFLinearLayout{
+    setParent(parent:IPDFComponent):PDFLinearLayout{
         this.parent = parent;
         return this;
     }
 
     static build(orientation:Orientation):PDFLinearLayout{
         return new PDFLinearLayout().setOrientation(orientation);
+    }
+    
+    static toLibrary():LibraryProps{
+        return {
+            name: 'PDFLinearLayout',
+            methods: [
+                { name: 'draw', returnType: 'void', params:[] },
+                { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },
+                { name: 'wrapGridCell', returnType: 'PDFGridCell', params:['int', 'int'] },
+                { name: 'addChild', returnType: 'PDFLinearLayout', params:['PDFComponent'] },
+                { name: 'addChild', returnType: 'PDFLinearLayout', params:['PDFComponent','float'] },
+                { name: 'setWeights', returnType: 'PDFLinearLayout', params:['float...'] },
+                { name: 'setOrientation', returnType: 'PDFLinearLayout', params:['int'] },
+                { name: 'setSize', returnType: 'PDFLinearLayout', params:['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFLinearLayout', params: ['int'] },
+                { name: 'setMargin', returnType: 'PDFLinearLayout', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFLinearLayout', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFLinearLayout', params: ['float', 'float','float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFLinearLayout', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFLinearLayout', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFLinearLayout', params: ['float', 'float','float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFLinearLayout', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFLinearLayout', params: ['float', 'int'] },
+                { name: 'setParent', returnType: 'PDFLinearLayout', params: ['PDFComponent '] },
+                { name: 'build', isStatic:true, returnType: 'PDFLinearLayout', params: ['int'] },
+            ],
+            variableDeclaration: /PDFLinearLayout\s+(\w+)\s*=/g,
+            staticMethods: /PDFLinearLayout\.(build)/g,
+            methodChain: /(\w+)\.(wrapGridCell|addChild|setWeights|setOrientation|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)/g
+        }
     }
 }
 
@@ -478,7 +508,7 @@ export class PDFGridLayout extends PDFLayout {
      * @param parent 부모
      * @return 자기자신
      */
-    setParent(parent:PDFComponent):PDFGridLayout{
+    setParent(parent:IPDFComponent):PDFGridLayout{
         this.parent = parent;
         return this;
     }
@@ -507,5 +537,36 @@ export class PDFGridLayout extends PDFLayout {
     }
     static vertical(rowCount:number, height:number):PDFGridLayout {
         return new PDFGridLayout(rowCount).setVertical(height);
+    }
+    
+    static toLibrary():LibraryProps{
+        return {
+            name: 'PDFGridLayout',
+            methods: [
+                { name: 'draw', returnType: 'void', params:[] },
+                { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },
+                { name: 'wrapGridCell', returnType: 'PDFGridCell', params:['int', 'int'] },
+                { name: 'addCell', returnType: 'PDFGridLayout ', params:['PDFGridCell '] },
+                { name: 'addCell', returnType: 'PDFGridLayout ', params:['int','int','PDFGridCell'] },
+                { name: 'setHorizontal', returnType: 'PDFGridLayout ', params:[] },
+                { name: 'setVertical', returnType: 'PDFGridLayout ', params:['float'] },
+                { name: 'setSize', returnType: 'PDFGridLayout ', params:['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFGridLayout ', params: ['int'] },
+                { name: 'setMargin', returnType: 'PDFGridLayout ', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFGridLayout ', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFGridLayout ', params: ['float', 'float','float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFGridLayout ', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFGridLayout ', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFGridLayout ', params: ['float', 'float','float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFGridLayout ', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFGridLayout ', params: ['float', 'int'] },
+                { name: 'setParent', returnType: 'PDFGridLayout ', params: ['PDFComponent '] },
+                { name: 'horizontal', isStatic:true, returnType: 'PDFGridLayout ', params: ['int'] },
+                { name: 'vertical', isStatic:true, returnType: 'PDFGridLayout ', params: ['int','float'] },
+            ],
+            variableDeclaration: /PDFGridLayout\s+(\w+)\s*=/g,
+            staticMethods: /PDFGridLayout\.(horizontal|vertical)/g,
+            methodChain: /(\w+)\.(wrapGridCell|addCell|setHorizontal|setVertical|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)/g
+        }
     }
 }

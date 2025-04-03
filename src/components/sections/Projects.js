@@ -30,7 +30,7 @@ const ProjectsSection = () => {
     },
     {
       title: '안드로이드 PDF 라이브러리',
-      document: 'https://hangyeolee.github.io/#/projects/apw-webui',
+      document: 'apw-webui', //https://hangyeolee.github.io/#/projects/
       type: IconType.PERSONAL,
       description: 'PDF1.4 기반 바이너리 파일 작성 라이브러리 배포',
       techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary'],

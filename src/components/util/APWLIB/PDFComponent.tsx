@@ -1,8 +1,27 @@
-import { Color } from "./ENUM";
-import { PDFGridCell } from "./PDFGridCell";
+import { Color, LibraryProps } from "./enum.tsx";
 
-export class PDFComponent {
-    parent: PDFComponent|null;
+export interface IPDFComponent {
+    draw(): string;
+    styleToString(): string;
+    setSize(width:number|null, height:number|null):IPDFComponent;
+    setBackgroundColor(color:Color):IPDFComponent;
+    setMargin(all:number):IPDFComponent;
+    setMargin(horizontal:number, vertical:number):IPDFComponent;
+    setMargin(left:number, top:number, right:number, bottom:number):IPDFComponent;
+    setMargin(left:number, top?:number, right?:number, bottom?:number):IPDFComponent;
+    setPadding(all:number):IPDFComponent;
+    setPadding(horizontal:number, vertical:number):IPDFComponent;
+    setPadding(left:number, top:number, right:number, bottom:number):IPDFComponent;
+    setPadding(left:number, top?:number, right?:number, bottom?:number):IPDFComponent;
+    setBorder(action:Function):IPDFComponent;
+    setBorder(size:number, color:Color):IPDFComponent;
+    setBorder(size:number|Function, color?:Color):IPDFComponent;
+    setParent(parent:IPDFComponent):IPDFComponent;
+    setStyleAttribute(name:string, value:any);
+}
+
+export class PDFComponent implements IPDFComponent{
+    parent: IPDFComponent|null;
     style: React.CSSProperties;
     constructor() {
         this.parent = null;
@@ -20,10 +39,16 @@ export class PDFComponent {
         .join(' ');
     }
     
-    // GridCell로 래핑
-    wrapGridCell() {
-      return new PDFGridCell(this);
-    }
+    // // GridCell로 래핑
+    // wrapGridCell();
+    // wrapGridCell(rowSpan:number, columnSpan:number);
+    // wrapGridCell(rowSpan?:number, columnSpan?:number) {
+    //     if(rowSpan&&columnSpan){
+    //         return new PDFGridCell(this, rowSpan, columnSpan);
+    //     } else {
+    //         return new PDFGridCell(this);
+    //     }
+    // }
 
     /**
      * 컴포넌트 내의 내용(content)의 크기 설정 <br>
@@ -190,11 +215,35 @@ export class PDFComponent {
      * @param parent 부모
      * @return 자기자신
      */
-    setParent(parent:PDFComponent):PDFComponent{
+    setParent(parent:IPDFComponent):PDFComponent{
         this.parent = parent;
         return this;
     }
     setStyleAttribute(name:string, value:any){
         this.style[name]=value;
+    }
+
+    static toLibrary():LibraryProps{
+        return {
+            name: 'PDFComponent',
+            methods: [
+                { name: 'draw', returnType: 'void', params:[] },
+                { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },
+                { name: 'wrapGridCell', returnType: 'PDFGridCell', params:['int', 'int'] },
+                { name: 'setSize', returnType: 'PDFComponent', params:['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFComponent', params: ['int'] },
+                { name: 'setMargin', returnType: 'PDFComponent', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFComponent', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFComponent', params: ['float', 'float','float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFComponent', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFComponent', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFComponent', params: ['float', 'float','float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFComponent', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFComponent', params: ['float', 'int'] },
+                { name: 'setParent', returnType: 'PDFComponent', params: ['PDFComponent '] },
+            ],
+            variableDeclaration: /PDFComponent\s+(\w+)\s*=/g,
+            methodChain: /(\w+)\.(wrapGridCell|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)/g
+        }
     }
 }

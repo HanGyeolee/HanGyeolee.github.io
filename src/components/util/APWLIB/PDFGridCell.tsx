@@ -1,16 +1,16 @@
-import { Color } from "./ENUM";
-import { PDFComponent } from "./PDFComponent";
+import { Color, LibraryProps } from "./enum";
+import { IPDFComponent, PDFComponent } from "./PDFComponent";
 import { PDFLayout } from "./PDFLayout";
 
 export class PDFGridCell extends PDFLayout {
-    children:PDFComponent;
+    children:IPDFComponent;
     row:number;
     col:number;
     rowSpan:number;
     colSpan:number;
-    constructor(content:PDFComponent);
-    constructor(content:PDFComponent,rowSpan:number,columnSpan:number);
-    constructor(content:PDFComponent,rowSpan?:number,columnSpan?:number){
+    constructor(content:IPDFComponent);
+    constructor(content:IPDFComponent,rowSpan:number,columnSpan:number);
+    constructor(content:IPDFComponent,rowSpan?:number,columnSpan?:number){
         super();
         if(!!rowSpan&&!!columnSpan){
             if(rowSpan > 1) this.rowSpan = rowSpan;
@@ -37,7 +37,7 @@ export class PDFGridCell extends PDFLayout {
         this.row = row;
         this.col = col;
     }
-    setChild(content:PDFComponent):PDFGridCell{
+    setChild(content:IPDFComponent):PDFGridCell{
         content.setParent(this);
         this.children = content;
         return this;
@@ -133,18 +133,46 @@ export class PDFGridCell extends PDFLayout {
      * @param parent 부모 컴포넌트
      * @return 자기자신
      */
-    setParent(parent:PDFComponent):PDFGridCell{
+    setParent(parent:IPDFComponent):PDFGridCell{
         this.parent = parent;
         return this;
     }
 
-    static build(content:PDFComponent):PDFGridCell;
-    static build(content:PDFComponent, rowSpan:number, colSpane:number):PDFGridCell;
-    static build(content:PDFComponent, rowSpan?:number, colSpan?:number){
+    static build(content:IPDFComponent):PDFGridCell;
+    static build(content:IPDFComponent, rowSpan:number, colSpane:number):PDFGridCell;
+    static build(content:IPDFComponent, rowSpan?:number, colSpan?:number){
         if(!!rowSpan&&!!colSpan){
             return new PDFGridCell(content, rowSpan, colSpan);
         } else {
             return new PDFGridCell(content);
+        }
+    }
+        
+    static toLibrary():LibraryProps{
+        return {
+            name: 'PDFGridCell',
+            methods: [
+                { name: 'draw', returnType: 'void', params:[] },
+                { name: 'setSize', returnType: 'PDFGridCell', params:['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFGridCell', params: ['int'] },
+                { name: 'setChild', returnType: 'PDFGridCell', params:['PDFComponent'] },
+                { name: 'setColumnSpan', returnType: 'PDFGridCell', params:['int'] },
+                { name: 'setRowSpan', returnType: 'PDFGridCell', params:['int'] },
+                { name: 'setMargin', returnType: 'PDFGridCell', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFGridCell', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFGridCell', params: ['float', 'float','float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFGridCell', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFGridCell', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFGridCell', params: ['float', 'float','float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFGridCell', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFGridCell', params: ['float', 'int'] },
+                { name: 'setParent', returnType: 'PDFGridCell', params: ['PDFComponent '] },
+                { name: 'build', isStatic:true, returnType: 'PDFGridCell', params: ['PDFComponent'] },
+                { name: 'build', isStatic:true, returnType: 'PDFGridCell', params: ['PDFComponent','int','int'] },
+            ],
+            variableDeclaration: /PDFGridCell\s+(\w+)\s*=/g,
+            staticMethods: /PDFGridCell\.(build)/g,
+            methodChain: /(\w+)\.(setSize|setBackgroundColor|setChild|setColumnSpan|setRowSpan|setMargin|setPadding|setBorder|setParent)/g
         }
     }
 }
