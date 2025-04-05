@@ -225,6 +225,7 @@ export class PDFComponent implements IPDFComponent{
 
     static toLibrary():LibraryProps{
         return {
+            type: 'Class',
             name: 'PDFComponent',
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
@@ -240,10 +241,10 @@ export class PDFComponent implements IPDFComponent{
                 { name: 'setPadding', returnType: 'PDFComponent', params: ['float', 'float','float', 'float'] },
                 { name: 'setBorder', returnType: 'PDFComponent', params: ['Action'] },
                 { name: 'setBorder', returnType: 'PDFComponent', params: ['float', 'int'] },
-                { name: 'setParent', returnType: 'PDFComponent', params: ['PDFComponent '] },
+                { name: 'setParent', returnType: 'PDFComponent', params: ['PDFComponent'] },
             ],
             variableDeclaration: /PDFComponent\s+(\w+)\s*=/g,
-            methodChain: /(\w+)\.(wrapGridCell|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)/g
+            methodChain: /(\w+)\.(wrapGridCell|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
         }
     }
 }

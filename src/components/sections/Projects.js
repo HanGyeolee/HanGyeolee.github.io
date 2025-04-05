@@ -3,7 +3,6 @@ import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 import { IconType } from '../util/icons.ts';
 import { DynamicIcon } from '../util/IconMapper.tsx';
-import { ResponsiveContainer } from '../ui/ResponsiveContainer.tsx';
 // 이미지
 import keySignImage  from '../../image/key-sign.png'
 import medicalPlatformImage  from '../../image/medical-platform.png'

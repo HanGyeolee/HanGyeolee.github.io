@@ -150,7 +150,9 @@ export class PDFGridCell extends PDFLayout {
         
     static toLibrary():LibraryProps{
         return {
+            type: 'Class',
             name: 'PDFGridCell',
+            extend: 'PDFComponent',
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
                 { name: 'setSize', returnType: 'PDFGridCell', params:['Number', 'Number'] },
@@ -166,13 +168,13 @@ export class PDFGridCell extends PDFLayout {
                 { name: 'setPadding', returnType: 'PDFGridCell', params: ['float', 'float','float', 'float'] },
                 { name: 'setBorder', returnType: 'PDFGridCell', params: ['Action'] },
                 { name: 'setBorder', returnType: 'PDFGridCell', params: ['float', 'int'] },
-                { name: 'setParent', returnType: 'PDFGridCell', params: ['PDFComponent '] },
+                { name: 'setParent', returnType: 'PDFGridCell', params: ['PDFComponent'] },
                 { name: 'build', isStatic:true, returnType: 'PDFGridCell', params: ['PDFComponent'] },
                 { name: 'build', isStatic:true, returnType: 'PDFGridCell', params: ['PDFComponent','int','int'] },
             ],
             variableDeclaration: /PDFGridCell\s+(\w+)\s*=/g,
             staticMethods: /PDFGridCell\.(build)/g,
-            methodChain: /(\w+)\.(setSize|setBackgroundColor|setChild|setColumnSpan|setRowSpan|setMargin|setPadding|setBorder|setParent)/g
+            methodChain: /(\w+)\.(setSize|setBackgroundColor|setChild|setColumnSpan|setRowSpan|setMargin|setPadding|setBorder|setParent)\(.*\)/g
         }
     }
 }
