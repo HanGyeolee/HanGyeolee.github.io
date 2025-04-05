@@ -1,14 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import './apw.css';
+import { FileUploader } from '../../components/util/APWLIB/FileUploader.tsx';
+import { IndentationTracker } from "../../components/util/APWLIB/IndentationTracker.tsx";
 import { PDFComponent } from "../../components/util/APWLIB/PDFComponent.tsx";
 import { PDFGridLayout, PDFLinearLayout } from "../../components/util/APWLIB/PDFLayout.tsx";
 import { LibraryProps, PDFColorLibrary, PDFFitLibrary, PDFOrientationLibrary } from "../../components/util/APWLIB/enum.tsx";
 import { Github } from 'lucide-react';
 
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
+import { PDFImage, PDFText } from "../../components/util/APWLIB/PDFResource.tsx";
 
 const APW = () => {
     const [monaco, setMonaco] = useState<Monaco|undefined>(undefined);
+    const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({
+        file: [],
+        assets: [],
+        resource: []
+    });
 
     document.title = "Android PDF Writer 라이브러리 webui";
 
@@ -29,6 +37,8 @@ const APW = () => {
         PDFComponent.toLibrary(),
         PDFLinearLayout.toLibrary(),
         PDFGridLayout.toLibrary(),
+        PDFImage.toLibrary(),
+        PDFText.toLibrary(),
         PDFColorLibrary,
         PDFOrientationLibrary,
         PDFFitLibrary
@@ -104,7 +114,7 @@ const APW = () => {
                             }
                             return '';
                         }
-                        
+
                         // 사례 2: 매개변수가 있는 또는 없는 메서드 호출: methodName(...) 또는 chainedMethod(...)
                         const methodCallMatch = expr.match(/(\w+)\s*\((.*)\)$/);
                         if (methodCallMatch) {
@@ -280,7 +290,7 @@ const APW = () => {
                     }
 
                     // If not a simple object reference, try method chain tracking
-                    const classInfo = trackMethodChain(textUntilPosition, variableTypes, pdfLibraryClasses);
+                    const classInfo = trackMethodChain(undefined, variableTypes, pdfLibraryClasses);
                     if (classInfo) {
                         let suggestions: any[] = [];
                         
@@ -350,6 +360,7 @@ const APW = () => {
                             
                             // 파라미터 타입에 따른 제안 생성
                             let suggestions:any[] = [];
+                            /*
                             const typeList = pdfLibraryClasses.filter(c => c.name === paramType || c.extend === paramType);
                             for (const mType of typeList){
                                 // 클래스 정적 메소드 중 파라미터 타입을 반환하는 메소드 제안
@@ -400,6 +411,7 @@ const APW = () => {
                                     }))];
                                 }
                             }
+                            //*/
                             // 타입이 동일한 변수 제안
                             for(const name in variableTypes){
                                 if((variableTypes[name].name === paramType || variableTypes[name].extend === paramType) &&
@@ -492,8 +504,83 @@ const APW = () => {
             }
         });
 
+        const model = editor.getModel();
+        const tracker = new IndentationTracker();
+        if(model){
+            // Initialize tracker with current content
+            for (let i = 1; i <= model.getLineCount(); i++) {
+                tracker.updateLine(model.getLineContent(i), i);
+            }
+  
+            // Listen for content changes to update the tracker
+            model.onDidChangeContent((event) => {
+              tracker.handleModelContentChanged(event, model);
+            });
+  
+            // DOM에서 제안 위젯 상태 확인하는 함수
+            function checkSuggestionWidgetVisibility() {
+              const editorNode = editor.getDomNode();
+              if (editorNode) {
+                const suggestWidget = editorNode.querySelector('.suggest-widget');
+                return suggestWidget && !suggestWidget.classList.contains('hidden');
+              }
+              return false;
+            }
+
+            editor.onKeyDown((e) => {
+                // 키 이벤트 처리 전에 자동완성 위젯 상태 확인
+                const isSuggestionWidgetVisible = checkSuggestionWidgetVisibility();
+                
+                if (isSuggestionWidgetVisible) {
+                  // 자동완성 위젯이 보이면 사용자 키 핸들러 처리 건너뛰기
+                  return;
+                }
+                // 엔터 키가 눌렸을 때만 처리
+                if (e.keyCode === monaco.KeyCode.Enter) {
+                    const position = editor.getPosition();
+                    
+                    if(position){
+                        e.preventDefault();
+
+                        // Calculate indentation
+                        const indentationTabs = tracker.calculateIndentation(model, position);
+                            
+                        // 새 라인 삽입
+                        editor.executeEdits('indentation', [{
+                            range: {
+                                startLineNumber: position.lineNumber,
+                                startColumn: position.column,
+                                endLineNumber: position.lineNumber,
+                                endColumn: position.column
+                            },
+                            text: '\n' + '\t'.repeat(indentationTabs)
+                        }]);
+                    }
+                }
+            })
+        }
+
         runCode();
     }
+
+    const handleFileUploaded = (files:Record<string, File[]>) => {
+        setUploadedFiles(files);
+        
+        // Generate URLs for uploaded files to be used in the preview
+        const fileUrls = {};
+        Object.keys(files).forEach(type => {
+            fileUrls[type] = files[type].map(file => {
+                return {
+                  name: file.name,
+                  url: URL.createObjectURL(file),
+                  type: file.type
+                };
+            });
+        });
+        
+        // Update the preview with new files
+        window.uploadedFiles = fileUrls;
+    };
 
     // 코드 실행 함수 (구현 필요)
     const runCode = () => {
@@ -508,33 +595,48 @@ const APW = () => {
         document.getElementById('run-button')?.addEventListener('click', function() {
             runCode();
         });
-    }, []);
+        return () => {
+            document.getElementById('run-button')?.removeEventListener('click', runCode);
+
+            if(window.uploadedFiles){
+                // Clean up any created object URLs when component unmounts
+                Object.values(window.uploadedFiles).flat().forEach(file => {
+                    if (file.url) URL.revokeObjectURL(file.url);
+                });
+            }
+        };
+    }, [uploadedFiles]);
 
     return (
         <div className="container mx-auto p-4">
             <header className="header">
-            <div className="logo">AndroidPDFWriter 라이브러리 맛보기</div>
-            <div className="controls">
-                <button id="run-button" className="btn btn-primary">실행</button>
-                <a href="https://github.com/HanGyeolee/AndroidPdfWriter/blob/main/README-ko.md#androidpdfwriter" className="btn btn-primary" target="_blank"><Github></Github></a>
-            </div>
+                <div className="logo">AndroidPDFWriter 라이브러리 맛보기</div>
+                <div className="controls">
+                    <button id="run-button" className="btn btn-primary">실행</button>
+                    <a href="https://github.com/HanGyeolee/AndroidPdfWriter/blob/main/README-ko.md#androidpdfwriter" className="btn btn-primary" target="_blank"><Github></Github></a>
+                </div>
             </header>
+
+            <div className="filuploader-container">
+                <div className="filuploader-title">리소스</div>
+                <FileUploader onFileUploaded={handleFileUploaded} />
+            </div>
         
             <div className="editor-container">
-            <div className="editor-title">Java 코드</div>
-            <Editor
-                height="100%"
-                defaultLanguage="java"
-                defaultValue={defaultJavaCode}
-                language='java'
-                theme='vs-dark'
-                onMount={handleEditorDidMount}
-            />
+                <div className="editor-title">Java 코드</div>
+                <Editor
+                    height="100%"
+                    defaultLanguage="java"
+                    defaultValue={defaultJavaCode}
+                    language='java'
+                    theme='vs-dark'
+                    onMount={handleEditorDidMount}
+                />
             </div>
         
             <div className="preview-container">
-            <div className="preview-title">PDF 미리보기</div>
-            <div id="preview"></div>
+                <div className="preview-title">PDF 미리보기</div>
+                <div id="preview"></div>
             </div>
         </div>
     );

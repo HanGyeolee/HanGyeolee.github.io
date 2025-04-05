@@ -58,13 +58,16 @@ export enum PDFFont {
 };
 
 export enum TextAlign {
+  Start='start',
+  End='end',
   Left='left',
-  Center='center',
   Right='right',
+  Center='center',
   Justify='justify'
 };
 
 export enum Fit {
+  NONE='none',
   FILL='fill',
   CONTAIN='contain',
   COVER='cover'
