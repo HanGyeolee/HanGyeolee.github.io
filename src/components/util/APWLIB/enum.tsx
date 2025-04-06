@@ -9,14 +9,15 @@ export interface LibraryProps{
   variables?: {
     name: string;
     type: string;
+    isStatic?:boolean;
     document?: string;
   }[];
   methods?: {
-      name: string;
-      returnType: string;
-      params: string[];
-      isStatic?:boolean;
-      document?: string;
+    name: string;
+    returnType: string;
+    params: string[];
+    isStatic?:boolean;
+    document?: string;
   }[];
   variableDeclaration?: RegExp,
   staticMethods?: RegExp,

@@ -1,6 +1,6 @@
 import { LibraryProps } from "./enum";
 import { PDFLayout } from "./PDFLayout.tsx";
-import { PageLayout, PageLayoutFactory } from "./PDFPageLayout.tsx";
+import { PageLayout, PageLayoutFactory, RectF } from "./PDFPageLayout.tsx";
 
 export class PDFBuilder {
     readonly pageLayout:PageLayout;
@@ -12,10 +12,13 @@ export class PDFBuilder {
     }
     draw(root?:PDFLayout):PDFBuilder{
         if(root){
-            let width:number = this.pageLayout.getContentWidth();
+            const width:number = this.pageLayout.getContentWidth();
+            const height:number = this.pageLayout.getContentHeight();
 
             root.setSize(width, null);
-            this.result = root.draw();
+            const padding:RectF = this.pageLayout.getPadding();
+            this.result = `<div style="width:${width}px; height:${height}px;
+            padding:${padding.left}px ${padding.top}px ${padding.right}px ${padding.bottom}px;" class="pdf-page"> ${root.draw()}</div>`;
         }
         return this;
     }

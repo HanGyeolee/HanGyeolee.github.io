@@ -137,8 +137,8 @@ export class PDFImage extends PDFComponent {
             return image.setFit(fit);
         } else {
             let url:string = resourceId;
-            if (window.uploadedFiles && window.uploadedFiles.resource) {
-                url = window.uploadedFiles.resource.find(file => file.name === resourceId).url;
+            if (window.uploadedFiles && window.uploadedFiles['resource']) {
+                url = window.uploadedFiles['resource'].find(file => file.name === resourceId)?.url ?? '';
             }
             return new PDFImage(url);
         }
@@ -152,8 +152,8 @@ export class PDFImage extends PDFComponent {
             return image.setFit(fit);
         } else {
             let url:string = path;
-            if(window.uploadedFiles && window.uploadedFiles.file){
-                url = window.uploadedFiles.file.find(file => file.name === path).url;
+            if (window.uploadedFiles && window.uploadedFiles.file) {
+                url = window.uploadedFiles.file.find(file => file.name === path)?.url ?? '';
             }
             return new PDFImage(url);
         }
@@ -167,8 +167,8 @@ export class PDFImage extends PDFComponent {
             return image.setFit(fit);
         } else {
             let url:string = assetPath;
-            if(window.uploadedFiles && window.uploadedFiles.assets){
-                url = window.uploadedFiles.assets.find(file => file.name === assetPath).url;
+            if (window.uploadedFiles && window.uploadedFiles.assets) {
+                url = window.uploadedFiles.assets.find(file => file.name === assetPath)?.url ?? '';
             }
             return new PDFImage(assetPath);
         }
@@ -228,6 +228,7 @@ export class PDFText extends PDFComponent {
         this.style = {
             fontSize: this.fontSize + 'px',
             fontFamily: fontFamily,
+            fontWeight: fontFamily.toLowerCase().includes('bold')?'bold':'normal',
             margin: '0',
             padding: '5px',
             boxSizing: 'border-box',
@@ -324,16 +325,20 @@ export class PDFText extends PDFComponent {
     }
 
     // 폰트 등록 헬퍼 메서드
-    private registerFont(url: string, fontName: string): string {
+    private registerFont(file: FileObject): string {
+        if(file.id){
+            return file.id;
+        }
         // 고유 폰트 ID 생성
-        const fontId = `pdf-font-${Math.random().toString(36).substring(2, 9)}`;
+        const fontId = `pdf-font-${file.name}`;
+        file.id = fontId;
         
         // 스타일 태그 생성 및 @font-face 규칙 추가
         const style = document.createElement('style');
         style.textContent = `
             @font-face {
                 font-family: '${fontId}';
-                src: url('${url}') format('truetype');
+                src: url('${file.url}') format('truetype');
                 font-weight: normal;
                 font-style: normal;
             }
@@ -356,7 +361,7 @@ export class PDFText extends PDFComponent {
             const fontFile = window.uploadedFiles.assets.find(file => file.name === assetPath);
             if (fontFile && fontFile.url) {
                 // 폰트 등록 및 적용
-                const fontId = this.registerFont(fontFile.url, assetPath);
+                let fontId:string = this.registerFont(fontFile);
                 this.style.fontFamily = `'${fontId}', Arial, sans-serif`;
             }
         }
@@ -373,7 +378,7 @@ export class PDFText extends PDFComponent {
             const fontFile = window.uploadedFiles.file.find(file => file.name === path);
             if (fontFile && fontFile.url) {
                 // 폰트 등록 및 적용
-                const fontId = this.registerFont(fontFile.url, path);
+                let fontId:string = this.registerFont(fontFile);
                 this.style.fontFamily = `'${fontId}', Arial, sans-serif`;
             }
         }
@@ -391,7 +396,7 @@ export class PDFText extends PDFComponent {
             const fontFile = window.uploadedFiles.resource.find(file => file.name === resourceId);
             if (fontFile && fontFile.url) {
                 // 폰트 등록 및 적용
-                const fontId = this.registerFont(fontFile.url, resourceId);
+                let fontId:string = this.registerFont(fontFile);
                 this.style.fontFamily = `'${fontId}', Arial, sans-serif`;
             }
         }
@@ -500,6 +505,319 @@ export class PDFText extends PDFComponent {
             ],
             variableDeclaration: /PDFText\s+(\w+)\s*=/g,
             staticMethods: /PDFText\.(build)/g,
+            methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
+        };
+    }
+}
+
+export class PDFH1 extends PDFText {
+    static fontSize:number = 32;
+    constructor(text:string){
+        super(text, PDFFont.HELVETICA_BOLD);
+        this.setFontsize(this.fontSize);
+    }
+    static build(text:string):PDFH1{
+        return new PDFH1(text);
+    }
+
+    // 라이브러리 메타데이터
+    static toLibrary(): LibraryProps {
+        return {
+            type: 'Class',
+            name: 'PDFH1',
+            extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
+            variables: [
+                { name: 'fontSize', isStatic:true, type: 'float' }
+            ],
+            methods: [
+                { name: 'draw', returnType: 'string', params: [] },
+                { name: 'setText', returnType: 'PDFText', params: ['String'] },
+                { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
+                { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
+                { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },
+                { name: 'setFontFromAsset', returnType: 'PDFText', params: ['Context', 'String'] },
+                { name: 'setFontFromFile', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontFromResource', returnType: 'PDFText', params: ['Context', 'int'] },
+                { name: 'setSize', returnType: 'PDFText', params: ['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['float', 'Color'] },
+                { name: 'setParent', returnType: 'PDFText', params: ['PDFComponent'] },
+                { name: 'build', isStatic: true, returnType: 'PDFH1', params: ['String'] },
+            ],
+            variableDeclaration: /PDFH1\s+(\w+)\s*=/g,
+            staticMethods: /PDFH1\.(build)/g,
+            methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
+        };
+    }
+}
+export class PDFH2 extends PDFText {
+    static fontSize:number = 24;
+    constructor(text:string){
+        super(text, PDFFont.HELVETICA_BOLD);
+        this.setFontsize(this.fontSize);
+    }
+    static build(text:string):PDFH2{
+        return new PDFH2(text);
+    }
+
+    // 라이브러리 메타데이터
+    static toLibrary(): LibraryProps {
+        return {
+            type: 'Class',
+            name: 'PDFH2',
+            extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
+            variables: [
+                { name: 'fontSize', isStatic:true, type: 'float' }
+            ],
+            methods: [
+                { name: 'draw', returnType: 'string', params: [] },
+                { name: 'setText', returnType: 'PDFText', params: ['String'] },
+                { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
+                { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
+                { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },
+                { name: 'setFontFromAsset', returnType: 'PDFText', params: ['Context', 'String'] },
+                { name: 'setFontFromFile', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontFromResource', returnType: 'PDFText', params: ['Context', 'int'] },
+                { name: 'setSize', returnType: 'PDFText', params: ['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['float', 'Color'] },
+                { name: 'setParent', returnType: 'PDFText', params: ['PDFComponent'] },
+                { name: 'build', isStatic: true, returnType: 'PDFH2', params: ['String'] },
+            ],
+            variableDeclaration: /PDFH2\s+(\w+)\s*=/g,
+            staticMethods: /PDFH2\.(build)/g,
+            methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
+        };
+    }
+}
+export class PDFH3 extends PDFText {
+    static fontSize:number = 18.72;
+    constructor(text:string){
+        super(text, PDFFont.HELVETICA_BOLD);
+        this.setFontsize(this.fontSize);
+    }
+    static build(text:string):PDFH3{
+        return new PDFH3(text);
+    }
+
+    // 라이브러리 메타데이터
+    static toLibrary(): LibraryProps {
+        return {
+            type: 'Class',
+            name: 'PDFH3',
+            extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
+            variables: [
+                { name: 'fontSize', isStatic:true, type: 'float' }
+            ],
+            methods: [
+                { name: 'draw', returnType: 'string', params: [] },
+                { name: 'setText', returnType: 'PDFText', params: ['String'] },
+                { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
+                { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
+                { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },
+                { name: 'setFontFromAsset', returnType: 'PDFText', params: ['Context', 'String'] },
+                { name: 'setFontFromFile', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontFromResource', returnType: 'PDFText', params: ['Context', 'int'] },
+                { name: 'setSize', returnType: 'PDFText', params: ['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['float', 'Color'] },
+                { name: 'setParent', returnType: 'PDFText', params: ['PDFComponent'] },
+                { name: 'build', isStatic: true, returnType: 'PDFH3', params: ['String'] },
+            ],
+            variableDeclaration: /PDFH3\s+(\w+)\s*=/g,
+            staticMethods: /PDFH3\.(build)/g,
+            methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
+        };
+    }
+}
+export class PDFH4 extends PDFText {
+    static fontSize:number = 16;
+    constructor(text:string){
+        super(text, PDFFont.HELVETICA_BOLD);
+        this.setFontsize(this.fontSize);
+    }
+    static build(text:string):PDFH4{
+        return new PDFH4(text);
+    }
+
+    // 라이브러리 메타데이터
+    static toLibrary(): LibraryProps {
+        return {
+            type: 'Class',
+            name: 'PDFH4',
+            extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
+            variables: [
+                { name: 'fontSize', isStatic:true, type: 'float' }
+            ],
+            methods: [
+                { name: 'draw', returnType: 'string', params: [] },
+                { name: 'setText', returnType: 'PDFText', params: ['String'] },
+                { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
+                { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
+                { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },
+                { name: 'setFontFromAsset', returnType: 'PDFText', params: ['Context', 'String'] },
+                { name: 'setFontFromFile', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontFromResource', returnType: 'PDFText', params: ['Context', 'int'] },
+                { name: 'setSize', returnType: 'PDFText', params: ['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['float', 'Color'] },
+                { name: 'setParent', returnType: 'PDFText', params: ['PDFComponent'] },
+                { name: 'build', isStatic: true, returnType: 'PDFH4', params: ['String'] },
+            ],
+            variableDeclaration: /PDFH4\s+(\w+)\s*=/g,
+            staticMethods: /PDFH4\.(build)/g,
+            methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
+        };
+    }
+}
+export class PDFH5 extends PDFText {
+    static fontSize:number = 13.28;
+    constructor(text:string){
+        super(text, PDFFont.HELVETICA_BOLD);
+        this.setFontsize(this.fontSize);
+    }
+    static build(text:string):PDFH5{
+        return new PDFH5(text);
+    }
+
+    // 라이브러리 메타데이터
+    static toLibrary(): LibraryProps {
+        return {
+            type: 'Class',
+            name: 'PDFH5',
+            extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
+            variables: [
+                { name: 'fontSize', isStatic:true, type: 'float' }
+            ],
+            methods: [
+                { name: 'draw', returnType: 'string', params: [] },
+                { name: 'setText', returnType: 'PDFText', params: ['String'] },
+                { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
+                { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
+                { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },
+                { name: 'setFontFromAsset', returnType: 'PDFText', params: ['Context', 'String'] },
+                { name: 'setFontFromFile', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontFromResource', returnType: 'PDFText', params: ['Context', 'int'] },
+                { name: 'setSize', returnType: 'PDFText', params: ['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['float', 'Color'] },
+                { name: 'setParent', returnType: 'PDFText', params: ['PDFComponent'] },
+                { name: 'build', isStatic: true, returnType: 'PDFH5', params: ['String'] },
+            ],
+            variableDeclaration: /PDFH5\s+(\w+)\s*=/g,
+            staticMethods: /PDFH5\.(build)/g,
+            methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
+        };
+    }
+}
+export class PDFH6 extends PDFText {
+    static fontSize:number = 10.72;
+    constructor(text:string){
+        super(text, PDFFont.HELVETICA_BOLD);
+        this.setFontsize(this.fontSize);
+    }
+    static build(text:string):PDFH6{
+        return new PDFH6(text);
+    }
+
+    // 라이브러리 메타데이터
+    static toLibrary(): LibraryProps {
+        return {
+            type: 'Class',
+            name: 'PDFH6',
+            extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
+            variables: [
+                { name: 'fontSize', isStatic:true, type: 'float' }
+            ],
+            methods: [
+                { name: 'draw', returnType: 'string', params: [] },
+                { name: 'setText', returnType: 'PDFText', params: ['String'] },
+                { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
+                { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
+                { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },
+                { name: 'setFontFromAsset', returnType: 'PDFText', params: ['Context', 'String'] },
+                { name: 'setFontFromFile', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFontFromResource', returnType: 'PDFText', params: ['Context', 'int'] },
+                { name: 'setSize', returnType: 'PDFText', params: ['Number', 'Number'] },
+                { name: 'setBackgroundColor', returnType: 'PDFText', params: ['Color'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setMargin', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float'] },
+                { name: 'setPadding', returnType: 'PDFText', params: ['float', 'float', 'float', 'float'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['Action'] },
+                { name: 'setBorder', returnType: 'PDFText', params: ['float', 'Color'] },
+                { name: 'setParent', returnType: 'PDFText', params: ['PDFComponent'] },
+                { name: 'build', isStatic: true, returnType: 'PDFH6', params: ['String'] },
+            ],
+            variableDeclaration: /PDFH6\s+(\w+)\s*=/g,
+            staticMethods: /PDFH6\.(build)/g,
             methodChain: /(\w+)\.(setText|setTextColor|setFont|setFontsize|setTextAlign|setFit|setFontFromAsset|setFontFromFile|setFontFromResource|setSize|setBackgroundColor|setMargin|setPadding|setBorder|setParent)\(.*\)/g
         };
     }

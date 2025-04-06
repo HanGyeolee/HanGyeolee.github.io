@@ -4,24 +4,18 @@ import { FileUploader } from '../../components/util/APWLIB/FileUploader.tsx';
 import { IndentationTracker } from "../../components/util/APWLIB/IndentationTracker.tsx";
 import { PDFComponent } from "../../components/util/APWLIB/PDFComponent.tsx";
 import { PDFGridLayout, PDFLinearLayout } from "../../components/util/APWLIB/PDFLayout.tsx";
-import { LibraryProps, PDFColorLibrary, PDFFitLibrary, PDFFontLibrary, PDFOrientationLibrary, PDFPaperLibrary, PDFPaperUnitLibrary } from "../../components/util/APWLIB/enum.tsx";
+import { Color, Fit, LibraryProps, Orientation, Paper, PDFColorLibrary, PDFFitLibrary, PDFFont, PDFFontLibrary, PDFOrientationLibrary, PDFPaperLibrary, PDFPaperUnitLibrary, TextAlign } from "../../components/util/APWLIB/enum.tsx";
 import { Github } from 'lucide-react';
 
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
-import { languages } from 'monaco-editor';
-import { PDFImage, PDFText } from "../../components/util/APWLIB/PDFResource.tsx";
+import { languages, editor } from 'monaco-editor';
+import { PDFH1, PDFH2, PDFH3, PDFH4, PDFH5, PDFH6, PDFImage, PDFText } from "../../components/util/APWLIB/PDFResource.tsx";
 import { PageLayoutFactory, PDFPageLayout, RectF } from "../../components/util/APWLIB/PDFPageLayout.tsx";
 import { PDFBuilder } from "../../components/util/APWLIB/PDFBuilder.tsx";
 
-interface FileObject{
-    name: string,
-    url: string,
-    type: string
-}
-
 const APW = () => {
-    const [monaco, setMonaco] = useState<Monaco|undefined>(undefined);
-    const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({
+    const [monaco, setMonaco] = useState<Monaco>();
+    const [uploadedFiles, setUploadedFiles] = useState<RawFiles>({
         file: [],
         assets: [],
         resource: []
@@ -31,15 +25,20 @@ const APW = () => {
 
     // 기본 Java 코드 예시
     const defaultJavaCode = 
-    `PDFLinearLayout root = PDFLinearLayout.build(Orientation.Vertical)
-        .setBackgroundColor(Color.BLUE)
-        .addChild(PDFImage.fromResource(context, resourceId)
-                .setCompress(true)
-                .setHeight(200f)
-                .setFit(Fit.CONTAIN))
-        .addChild(PDFH1.build("Title", PDFFont.HELVETICA_BOLD)
-                .setBackgroundColor(Color.RED)
-                .setTextAlign(TextAlign.Center));`;
+    `PDFBuilder builder = new PDFBuilder(
+    PageLayoutFactory.createLayout(Paper.A4, 10, 10)
+); PDFLayout root = 
+    PDFLinearLayout.build(Orientation.Vertical)
+    .setBackgroundColor(Color.BLUE)
+    .addChild(PDFImage.fromResource(null, R.id.testImage)
+        .setCompress(true)
+        .setHeight(200)
+        .setFit(Fit.CONTAIN))
+    .addChild(PDFH1.build("Title")
+        .setFontFromFile("test-font.ttf")
+        .setBackgroundColor(Color.RED)
+        .setTextAlign(TextAlign.Center));
+builder.draw(root);`;
 
     // PDF 라이브러리 클래스 및 메서드 정보
     const pdfLibraryClasses:LibraryProps[] = [
@@ -51,6 +50,12 @@ const APW = () => {
         // PDFResource.tsx
         PDFImage.toLibrary(),
         PDFText.toLibrary(),
+        PDFH1.toLibrary(),
+        PDFH2.toLibrary(),
+        PDFH3.toLibrary(),
+        PDFH4.toLibrary(),
+        PDFH5.toLibrary(),
+        PDFH6.toLibrary(),
         // PDFPageLayout.tsx
         RectF.toLibrary(),
         PDFPageLayout.toLibrary(),
@@ -604,9 +609,22 @@ const APW = () => {
                 };
             }
         });
+        
+        // 보호할 라인 내용
+        const protectedContents = [
+          'PDFBuilder builder = new PDFBuilder(', 
+          '); PDFLayout root = ', 
+          'builder.draw(root)'
+        ];
 
         const model = editor.getModel();
         const tracker = new IndentationTracker();
+
+        // 보호된 라인의 원본 내용 저장
+        const protectedLinesContent = new Map<number, string>();
+        
+        // 재귀 호출 방지 플래그
+        let isRestoring = false;
         if(model){
             // Initialize tracker with current content
             for (let i = 1; i <= model.getLineCount(); i++) {
@@ -615,7 +633,51 @@ const APW = () => {
   
             // Listen for content changes to update the tracker
             model.onDidChangeContent((event) => {
-              tracker.handleModelContentChanged(event, model);
+                tracker.handleModelContentChanged(event, model);
+            
+                // 복원 중이면 추가 처리 건너뛰기
+                if (isRestoring) return;
+
+                try {
+                // 변경된 라인 확인
+                let needsRestore = false;
+                const changedLines:number[] = [];
+                
+                for (const change of event.changes) {
+                    for (let line = change.range.startLineNumber; line <= change.range.endLineNumber; line++) {
+                        changedLines.push(line);
+                    }
+                }
+                
+                // 현재 내용 가져오기
+                const currentLines = model.getValue().split('\n');
+                
+                // 보호된 라인이 변경되었는지 확인
+                for (const [lineNum, originalContent] of protectedLinesContent.entries()) {
+                    if (changedLines.includes(lineNum) && lineNum <= currentLines.length) {
+                        const currentLine = currentLines[lineNum - 1];
+                        if (currentLine !== originalContent) {
+                            currentLines[lineNum - 1] = originalContent;
+                            needsRestore = true;
+                        }
+                    }
+                }
+                
+                // 내용 복원이 필요하면 실행
+                if (needsRestore) {
+                    isRestoring = true;
+                    const position = editor.getPosition();
+                    model.setValue(currentLines.join('\n'));
+                    if (position) editor.setPosition(position);
+                }
+                } finally {
+                    // 비동기적으로 플래그 해제
+                    setTimeout(() => {
+                        updateProtectedLinesContent();
+                        updateDecorations();
+                        isRestoring = false;
+                    }, 0);
+                }
             });
   
             // DOM에서 제안 위젯 상태 확인하는 함수
@@ -627,6 +689,45 @@ const APW = () => {
               }
               return false;
             }
+            // 보호된 라인 내용 업데이트 함수
+            function updateProtectedLinesContent() {
+                if(model){
+                    const lines = model.getValue().split('\n');
+                    
+                    // 기존 맵 초기화
+                    protectedLinesContent.clear();
+                    
+                    // 새로운 보호된 라인 정보 설정
+                    lines.forEach((line, index) => {
+                        if (protectedContents.some(content => line.includes(content))) {
+                            protectedLinesContent.set(index + 1, line);
+                        }
+                    });
+                }
+            }
+            
+            // 데코레이션 업데이트 함수
+            function updateDecorations() {
+                if(model){
+                    const lines = model.getValue().split('\n');
+                    const newDecorations: editor.IModelDeltaDecoration[] = [];
+                    
+                    lines.forEach((line, index) => {
+                        if (protectedContents.some(content => line.includes(content))) {
+                            newDecorations.push({
+                                range: new monaco.Range(index + 1, 1, index + 1, line.length + 1),
+                                options: {
+                                    isWholeLine: true,
+                                    className: 'protected-line',
+                                    stickiness: monaco.editor.TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+                                }
+                            });
+                        }
+                    });
+                    
+                    decorationIds.set(newDecorations);
+                }
+            }
 
             editor.onKeyDown((e) => {
                 // 키 이벤트 처리 전에 자동완성 위젯 상태 확인
@@ -636,11 +737,11 @@ const APW = () => {
                   // 자동완성 위젯이 보이면 사용자 키 핸들러 처리 건너뛰기
                   return;
                 }
-                // 엔터 키가 눌렸을 때만 처리
-                if (e.keyCode === monaco.KeyCode.Enter) {
-                    const position = editor.getPosition();
-                    
-                    if(position){
+                const position = editor.getPosition();
+                if(position){
+                    const lineNumber = position.lineNumber;
+                    // 엔터 키가 눌렸을 때만 처리
+                    if (e.keyCode === monaco.KeyCode.Enter) {
                         e.preventDefault();
 
                         // Calculate indentation
@@ -657,18 +758,73 @@ const APW = () => {
                             text: '\n' + '\t'.repeat(indentationTabs)
                         }]);
                     }
+            
+                    // 백스페이스나 삭제 키 처리 - 보호된 라인 병합 방지
+                    if (e.keyCode === monaco.KeyCode.Backspace || e.keyCode === monaco.KeyCode.Delete) {
+                        const currentLine = lineNumber;
+                        const prevLine = lineNumber - 1;
+                        const nextLine = lineNumber + 1;
+                        
+                        // 보호된 라인 병합 방지
+                        if (
+                            (e.keyCode === monaco.KeyCode.Backspace && position.column === 1 && 
+                            (protectedLinesContent.has(currentLine) || protectedLinesContent.has(prevLine))) ||
+                            (e.keyCode === monaco.KeyCode.Delete && position.column >= model.getLineLength(lineNumber) + 1 && 
+                            (protectedLinesContent.has(currentLine) || protectedLinesContent.has(nextLine)))
+                        ) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
                 }
             })
+
+            // 초기 보호된 라인 내용 저장
+            updateProtectedLinesContent();
+            
+            // 초기 데코레이션 설정
+            const initialDecorations: editor.IModelDeltaDecoration[] = [];
+            const lines = model.getValue().split('\n');
+            
+            lines.forEach((line, index) => {
+                if (protectedContents.some(content => line.includes(content))) {
+                    initialDecorations.push({
+                        range: new monaco.Range(index + 1, 1, index + 1, line.length + 1),
+                        options: {
+                            isWholeLine: true,
+                            className: 'protected-line',
+                            stickiness: monaco.editor.TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+                        }
+                    });
+                }
+            });
+            
+            // 데코레이션 적용
+            const decorationIds = editor.createDecorationsCollection(initialDecorations);
+        
+            // CSS 스타일 추가
+            const style = document.createElement('style');
+            style.textContent = `
+            .protected-line {
+                background-color: rgba(255, 180, 180, 0.2);
+                border-left: 3px solid #ff6b6b;
+            }
+            .protected-line-glyph:before {
+                content: "🔒";
+                margin-right: 5px;
+            }
+            `;
+            document.head.appendChild(style);
         }
 
         runCode();
     }
 
-    const handleFileUploaded = (files:Record<string, File[]>) => {
+    const handleFileUploaded = (files:RawFiles) => {
         setUploadedFiles(files);
         
         // Generate URLs for uploaded files to be used in the preview
-        const fileUrls:Record<string, FileObject[]> = {};
+        const fileUrls:Files = { file:[], assets:[], resource:[] };
         Object.keys(files).forEach(type => {
             fileUrls[type] = files[type].map(file => {
                 return {
@@ -685,9 +841,27 @@ const APW = () => {
 
     // 코드 실행 함수 (구현 필요)
     const runCode = () => {
+        console.log(monaco)
         if (monaco) {
-            // 기존 코드 실행 로직
-            console.log('Running code...');
+            // 에디터에서 Java 코드 가져오기
+            const editor = monaco.editor.getModels()[0];
+            console.log(editor)
+            if (!editor) return;
+            
+            const javaCode = editor.getValue();
+            
+            // Java 코드를 JavaScript로 변환
+            const jsCode = transformToExecutableJS(javaCode);
+            eval(jsCode);
+
+            // typescript 를 javascript 로 컴파일한 이후에 실행하기
+
+            // preview 호출하기
+            const htmlResult = previewFunction();
+            const previewElement = document.getElementById('preview');
+            if(previewElement){
+                previewElement.innerHTML = htmlResult;
+            }
         }
     };
     
@@ -700,7 +874,7 @@ const APW = () => {
             document.getElementById('run-button')?.removeEventListener('click', runCode);
 
             if(window.uploadedFiles){
-                const fileUrls:Record<string, FileObject[]> = window.uploadedFiles;
+                const fileUrls:Files = window.uploadedFiles;
                 // Clean up any created object URLs when component unmounts
                 Object.values(fileUrls).flat().forEach(file => {
                     if (file.url) URL.revokeObjectURL(file.url);
@@ -742,6 +916,28 @@ const APW = () => {
             </div>
         </div>
     );
+}
+
+function transformToExecutableJS(javaCode:string) {
+    // 라인 단위로 분할하여 처리
+    const lines = javaCode.split('\n');
+    const jsLines:string[] = [];
+    
+    // 각 라인 처리
+    for (let line of lines) {
+        // 1. 변수 선언 변환 (Type variable = value 형태)
+        let jsLine:string = line.replace(/(\w+)\s+(\w+)\s*=\s*([^;]+);?/, 'var $2 = $3');
+        
+        // 2. R.id.로 시작하는 값을 문자열로 변환
+        jsLine = jsLine.replace(/(?<!")R\.id\.\w+(?!")/g, '"$&"');
+        
+        // 3. 세미콜론 제거
+        jsLine = jsLine.replace(/;/, '');
+        
+        jsLines.push(jsLine);
+    }
+    
+    return jsLines.join(' ');
 }
 
 export {APW};

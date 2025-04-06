@@ -4,17 +4,17 @@ import { FolderPlus, Upload, X, Image, Type } from 'lucide-react';
 import testImage from '../../../image/test.jpg';
 import testFont from '../../../fonts/Pretendard-Regular.ttf';
 
-export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:Record<string, File[]>)=>void}) => {
-  const [files, setFiles] = useState<Record<string, File[]>>({
+export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>void}) => {
+  const [files, setFiles] = useState<RawFiles>({
     file: [],
     assets: [],
     resource: []
   });
   
   const fileInputRefs = {
-    file: useRef(null),
-    assets: useRef(null),
-    resource: useRef(null)
+    file: useRef<HTMLInputElement>(null),
+    assets: useRef<HTMLInputElement>(null),
+    resource: useRef<HTMLInputElement>(null)
   };
   
   // Load test files from src directory on component mount
@@ -79,7 +79,7 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:Record<string
     e.currentTarget.classList.remove('drag-active');
   };
 
-  const handleDrop = (type) => (e:React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (type:FileWrapper) => (e:React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     e.currentTarget.classList.remove('drag-active');
@@ -88,14 +88,14 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:Record<string
     handleFiles(type, droppedFiles);
   };
 
-  const handleFileSelect = (type) => (e:React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (type:FileWrapper) => (e:React.ChangeEvent<HTMLInputElement>) => {
     if(e.target.files){
       const selectedFiles = Array.from(e.target.files);
       handleFiles(type, selectedFiles);
     }
   };
 
-  const handleFiles = (type, newFiles: File[]) => {
+  const handleFiles = (type:FileWrapper, newFiles: File[]) => {
     const generateRandomId = (): string => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
       let result = '';
@@ -178,7 +178,7 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:Record<string
     }
   };
 
-  const renderFileSection = (type, title) => (
+  const renderFileSection = (type:FileWrapper, title) => (
     <div className="file-section">
       <div className="file-section-title">{title}</div>
       <div 
@@ -186,7 +186,7 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:Record<string
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop(type)}
-        onClick={() => fileInputRefs[type].current.click()}
+        onClick={() => fileInputRefs[type].current?.click()}
       >
         <Upload size={20} />
         <div className="dropzone-text">Drag & drop files or click to upload</div>
