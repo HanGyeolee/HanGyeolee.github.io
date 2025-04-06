@@ -4,11 +4,20 @@ import { FileUploader } from '../../components/util/APWLIB/FileUploader.tsx';
 import { IndentationTracker } from "../../components/util/APWLIB/IndentationTracker.tsx";
 import { PDFComponent } from "../../components/util/APWLIB/PDFComponent.tsx";
 import { PDFGridLayout, PDFLinearLayout } from "../../components/util/APWLIB/PDFLayout.tsx";
-import { LibraryProps, PDFColorLibrary, PDFFitLibrary, PDFOrientationLibrary } from "../../components/util/APWLIB/enum.tsx";
+import { LibraryProps, PDFColorLibrary, PDFFitLibrary, PDFFontLibrary, PDFOrientationLibrary, PDFPaperLibrary, PDFPaperUnitLibrary } from "../../components/util/APWLIB/enum.tsx";
 import { Github } from 'lucide-react';
 
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
+import { languages } from 'monaco-editor';
 import { PDFImage, PDFText } from "../../components/util/APWLIB/PDFResource.tsx";
+import { PageLayoutFactory, PDFPageLayout, RectF } from "../../components/util/APWLIB/PDFPageLayout.tsx";
+import { PDFBuilder } from "../../components/util/APWLIB/PDFBuilder.tsx";
+
+interface FileObject{
+    name: string,
+    url: string,
+    type: string
+}
 
 const APW = () => {
     const [monaco, setMonaco] = useState<Monaco|undefined>(undefined);
@@ -34,21 +43,34 @@ const APW = () => {
 
     // PDF 라이브러리 클래스 및 메서드 정보
     const pdfLibraryClasses:LibraryProps[] = [
+        // PDFComponent.tsx
         PDFComponent.toLibrary(),
+        // PDFLayout.tsx
         PDFLinearLayout.toLibrary(),
         PDFGridLayout.toLibrary(),
+        // PDFResource.tsx
         PDFImage.toLibrary(),
         PDFText.toLibrary(),
+        // PDFPageLayout.tsx
+        RectF.toLibrary(),
+        PDFPageLayout.toLibrary(),
+        PageLayoutFactory.toLibrary(),
+        // PDFBuilder.tsx
+        PDFBuilder.toLibrary(),
+        // enum.tsx
         PDFColorLibrary,
+        PDFFontLibrary,
+        PDFFitLibrary,
         PDFOrientationLibrary,
-        PDFFitLibrary
+        PDFPaperUnitLibrary,
+        PDFPaperLibrary,
     ];
 
     const handleEditorDidMount: OnMount = (editor, monaco) => {
         setMonaco(monaco);
         // 자동완성 제공자 등록
         monaco?.languages.registerCompletionItemProvider('java', {
-            triggerCharacters:['.','=','(',','],
+            triggerCharacters:['.','=','(',',',' '],
             provideCompletionItems: function(model, position, context, token) {
                 function trackMethodChain(text: string|undefined, variableTypes: Record<string, LibraryProps>, pdfLibraryClasses: LibraryProps[]): LibraryProps | undefined {
                     // 커서 위치까지 현재 줄의 내용을 가져옵니다.
@@ -128,19 +150,27 @@ const APW = () => {
                             if (baseType) {
                                 // 이 유형에 대한 클래스 정의를 찾습니다.
                                 const classInfo = pdfLibraryClasses.find(c => c.name === baseType);
-                                if (classInfo && classInfo.methods) {
-                                    // 메서드 정의를 찾아 반환 유형을 가져옵니다.
-                                    const methodInfo = classInfo.methods.find(m => m.name === methodName);
-                                    return methodInfo?.returnType;
+                                if (classInfo){
+                                    // 생성자
+                                    if(classInfo.name === methodName){
+                                        return classInfo.constructors?classInfo.name:undefined;
+                                    }
+                                    else if(classInfo.methods) {
+                                        // 메서드 정의를 찾아 반환 유형을 가져옵니다.
+                                        const methodInfo = classInfo.methods.find(m => m.name === methodName);
+                                        return methodInfo?.returnType;
+                                    }
                                 }
                             } else {
                                 // 클래스에서 직접 정적 메서드 호출인지 확인합니다.
                                 for (const classInfo of pdfLibraryClasses) {
-                                    if (classInfo.methods) {
+                                    // 생성자
+                                    if(classInfo.name === methodName){
+                                        return classInfo.constructors?classInfo.name:undefined;
+                                    }
+                                    else if (classInfo.methods) {
                                         const methodInfo = classInfo.methods.find(m => m.name === methodName && m.isStatic);
-                                        if (methodInfo) {
-                                            return methodInfo.returnType;
-                                        }
+                                        return methodInfo?.returnType;
                                     }
                                 }
                             }
@@ -202,6 +232,10 @@ const APW = () => {
                     } else if (variableTypes[methodName]) {
                         // 자체 메소드 호출
                         targetType = variableTypes[methodName];
+                    } else {
+                        // 생성자 호출
+                        const info = pdfLibraryClasses.find(info => info.name === methodName);
+                        targetType = info?.name;
                     }
                     
                     return { methodName, paramIndex, targetType, paramText };
@@ -244,9 +278,9 @@ const APW = () => {
                                 return {
                                     suggestions: staticMethods.map(method => ({
                                         label: method.name,
-                                        kind: monaco.languages.CompletionItemKind.Method,
+                                        kind: languages.CompletionItemKind.Method,
                                         insertText: method.params.length > 0  ? `${method.name}($0)` : `${method.name}()`,
-                                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                                        insertTextRules: languages.CompletionItemInsertTextRule.InsertAsSnippet,
                                         detail: `${method.name}(${method.params.join(', ')})`,
                                         documentation: {
                                             value: `**반환 타입**: ${method.returnType}`
@@ -261,7 +295,7 @@ const APW = () => {
                                           id: 'editor.action.triggerSuggest',
                                           title: 'Suggest',
                                           arguments: []
-                                        } : null
+                                        } : undefined
                                     }))
                                 };
                             }
@@ -271,7 +305,7 @@ const APW = () => {
                                 return {
                                     suggestions: classInfo.variables.map((EnumConst, idx) => ({
                                         label: EnumConst.name,
-                                        kind: monaco.languages.CompletionItemKind.EnumMember,
+                                        kind: languages.CompletionItemKind.EnumMember,
                                         insertText: EnumConst.name,
                                         detail: `public static final int ${EnumConst.name} = ${idx}`,
                                         documentation: {
@@ -292,7 +326,7 @@ const APW = () => {
                     // If not a simple object reference, try method chain tracking
                     const classInfo = trackMethodChain(undefined, variableTypes, pdfLibraryClasses);
                     if (classInfo) {
-                        let suggestions: any[] = [];
+                        let suggestions: languages.CompletionItem[] = [];
                         
                         // Add methods
                         if (classInfo.methods) {
@@ -300,9 +334,9 @@ const APW = () => {
                             const instanceMethods = classInfo.methods.filter(m => !m.isStatic);
                             suggestions = [...suggestions, ...instanceMethods.map(method => ({
                                 label: method.name,
-                                kind: monaco.languages.CompletionItemKind.Method,
+                                kind: languages.CompletionItemKind.Method,
                                 insertText: method.params.length > 0  ? `${method.name}($0)` : `${method.name}()`,
-                                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                                insertTextRules: languages.CompletionItemInsertTextRule.InsertAsSnippet,
                                 detail: `${method.name}(${method.params.join(', ')})`,
                                 documentation: {
                                     value: `**반환 타입**: ${method.returnType}`
@@ -317,7 +351,7 @@ const APW = () => {
                                   id: 'editor.action.triggerSuggest',
                                   title: 'Suggest',
                                   arguments: []
-                                } : null
+                                } : undefined
                             }))];
                         }
                         
@@ -325,7 +359,7 @@ const APW = () => {
                         if (classInfo.variables) {
                             suggestions = [...suggestions, ...classInfo.variables.map(variable => ({
                                 label: variable.name,
-                                kind: monaco.languages.CompletionItemKind.Variable,
+                                kind: languages.CompletionItemKind.Variable,
                                 insertText: variable.name,
                                 detail: variable.name,
                                 documentation: {
@@ -350,65 +384,81 @@ const APW = () => {
                     const { methodName, paramIndex, targetType, paramText } = paramContext;
                     // 해당 클래스와 메소드 찾기
                     const classInfo = pdfLibraryClasses.find(c => c.name === targetType);
-                    if (classInfo && classInfo.methods) {
-                        const methodInfo = classInfo.methods.find(m => m.name === methodName);
-                        
-                        if (methodInfo && methodInfo.params.length > paramIndex) {
+                    if (classInfo){
+                        let methodInfo:{
+                            params: string[];
+                            document?: string;
+                        } | undefined = undefined;
+                        // 파라미터 타입에 따른 제안 생성
+                        let suggestions:languages.CompletionItem[] = [];
+                        if(classInfo.name === methodName&&classInfo.constructors){
+                            methodInfo = classInfo.constructors.find(m => m.params.length > paramIndex);
+                        }
+                        else if(classInfo.methods) {
+                            methodInfo = classInfo.methods.find(m => m.name === methodName && m.params.length > paramIndex);
+                        }
+
+                        if(methodInfo){
                             const paramType = methodInfo.params[paramIndex];
                             const param = paramText.split(',')[paramIndex].trim();
-                            const startColumn = lineContent.indexOf(methodName)+2+methodName.length+paramText.indexOf(param);
-                            
-                            // 파라미터 타입에 따른 제안 생성
-                            let suggestions:any[] = [];
-                            /*
-                            const typeList = pdfLibraryClasses.filter(c => c.name === paramType || c.extend === paramType);
+                            const startColumn = lineContent.indexOf(methodName+"(")+2+methodName.length+paramText.indexOf(param);
+
+                            ///*
+                            const typeList = pdfLibraryClasses;
                             for (const mType of typeList){
                                 // 클래스 정적 메소드 중 파라미터 타입을 반환하는 메소드 제안
                                 if(mType.type === "Class" && mType.methods) {
                                     suggestions = [...suggestions, ...mType.methods.filter(m => m.isStatic && 
                                         `${mType.name}.${m.name}`.toLowerCase().startsWith(param) &&
                                         (m.returnType === paramType ||  // 반환 값의 타입과 일치할 때
-                                        (mType.name === m.returnType && mType.extend === paramType ) || // 반환 값의 상속 타입과 일치할 때
+                                        (mType.name === m.returnType && mType.extend === paramType) || // 반환 값의 상속 타입과 일치할 때
                                         pdfLibraryClasses.find(c => c.name === m.returnType)?.extend === paramType) // 다른 클래스의 상속 타입과 일치 할 때 
                                     )
-                                    .map(method => ({
-                                        label: `${mType.name}.${method.name}`,
-                                        kind: monaco.languages.CompletionItemKind.Method,
-                                        insertText: method.params.length > 0  ? `${mType.name}.${method.name}($0)` : `${mType.name}.${method.name}()`,
-                                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                                        detail: `${mType.name}.${method.name}(${method.params.join(', ')})`,
-                                        documentation: {
-                                            value: `**반환 타입**: ${method.returnType}`
-                                        },
-                                        range: {
-                                            startLineNumber: position.lineNumber,
-                                            startColumn: startColumn,
-                                            endLineNumber: position.lineNumber,
-                                            endColumn: position.column
-                                        },
-                                        command: method.params.length > 0 ? {
-                                          id: 'editor.action.triggerSuggest',
-                                          title: 'Suggest',
-                                          arguments: []
-                                        } : null
-                                    }))];
+                                    .map(method => {
+                                        let item:languages.CompletionItem = ({
+                                            label: `${mType.name}.${method.name}`,
+                                            kind: languages.CompletionItemKind.Method,
+                                            insertText: method.params.length > 0  ? `${mType.name}.${method.name}($0)` : `${mType.name}.${method.name}()`,
+                                            insertTextRules: languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                                            detail: `${mType.name}.${method.name}(${method.params.join(', ')})`,
+                                            documentation: {
+                                                value: `**반환 타입**: ${method.returnType}`
+                                            },
+                                            range: {
+                                                startLineNumber: position.lineNumber,
+                                                startColumn: startColumn,
+                                                endLineNumber: position.lineNumber,
+                                                endColumn: position.column
+                                            },
+                                            command: method.params.length > 0 ? {
+                                                id: 'editor.action.triggerSuggest',
+                                                title: 'Suggest',
+                                                arguments: []
+                                            } : undefined
+                                        });
+                                        return item;
+                                    })];
                                 }
                                 // Enum 제안
-                                if(mType.type === "Enum" && mType.variables) {
+                                else if(mType.type === "Enum" && mType.variables) {
                                     suggestions = [...suggestions, ...mType.variables.filter(en =>
-                                        `${mType.name}.${en.name}`.toLowerCase().startsWith(param)
-                                    ).map(en => ({
-                                        label: `${mType.name}.${en.name}`,
-                                        kind: monaco.languages.CompletionItemKind.EnumMember,
-                                        insertText: `${mType.name}.${en.name}`,
-                                        detail: `${mType.name} Enum value`,
-                                        range: {
-                                            startLineNumber: position.lineNumber,
-                                            startColumn: startColumn,
-                                            endLineNumber: position.lineNumber,
-                                            endColumn: position.column
-                                        }
-                                    }))];
+                                        `${mType.name}.${en.name}`.toLowerCase().startsWith(param) &&
+                                        (mType.name === paramType || en.type === paramType)
+                                    ).map(en => {
+                                        let item:languages.CompletionItem = ({
+                                            label: `${mType.name}.${en.name}`,
+                                            kind: languages.CompletionItemKind.EnumMember,
+                                            insertText: `${mType.name}.${en.name}`,
+                                            detail: `${mType.name} Enum value`,
+                                            range: {
+                                                startLineNumber: position.lineNumber,
+                                                startColumn: startColumn,
+                                                endLineNumber: position.lineNumber,
+                                                endColumn: position.column
+                                            }
+                                        });
+                                        return item;
+                                    })];
                                 }
                             }
                             //*/
@@ -418,7 +468,7 @@ const APW = () => {
                                     variableTypes[name].name.toLowerCase().startsWith(param)){
                                     suggestions = [...suggestions, {
                                         label: name,
-                                        kind: monaco.languages.CompletionItemKind.Variable,
+                                        kind: languages.CompletionItemKind.Variable,
                                         insertText: name,
                                         detail: name,
                                         range: {
@@ -437,18 +487,69 @@ const APW = () => {
                         }
                     }
                 }
-                
-                // 5. 클래스 이름 제안 (새 변수 선언 시)
-                if (/\w+\s+\w+\s*=\s*$/.test(lineUntilPosition)) {
+
+                // 5. 직전 토큰이 'new ' 인지 확인
+                const newobjectMatch = lineUntilPosition.match(/(\w+)\s+\w+\s*=\s*(new\s+)(\w*)$/);
+                if (newobjectMatch){
+                    const className = newobjectMatch[1].toLowerCase();
+                    const token = newobjectMatch[2].toLowerCase();
+                    const objectName = newobjectMatch[3].toLowerCase();
+                    const startColumn = lineContent.indexOf(token)+2+token.length-objectName.length;
+                    const filterd = pdfLibraryClasses.filter(info => 
+                        (info.name.toLowerCase().startsWith(className)) && info.constructors
+                    );
+                    let suggestions:languages.CompletionItem[] = [];
+                    for (const info of filterd) {
+                        if(info.constructors){
+                            suggestions = [...suggestions,...info.constructors.map(c => ({
+                                label: info.name,
+                                kind: languages.CompletionItemKind.Method,
+                                insertText: c.params.length > 0  ? `${info.name}($0)` : `${info.name}()`,
+                                insertTextRules: languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                                detail: `${info.name}(${c.params.join(', ')})`,
+                                documentation: {
+                                    value: `**반환 타입**: ${info.name}`
+                                },
+                                range: {
+                                    startLineNumber: position.lineNumber,
+                                    startColumn: startColumn,
+                                    endLineNumber: position.lineNumber,
+                                    endColumn: position.column
+                                },
+                                command: c.params.length > 0 ? {
+                                id: 'editor.action.triggerSuggest',
+                                title: 'Suggest',
+                                arguments: []
+                                } : undefined
+                            }))]
+                        }
+                    }
                     return {
-                        suggestions: pdfLibraryClasses.map(classInfo => ({
+                        suggestions
+                    }
+                }
+                
+                // 6. 클래스 이름 제안 (새 변수 선언 시)
+                const variableMatch = lineUntilPosition.match(/(\w+)\s+\w+\s*=\s*(\w+)$/);
+                if (variableMatch) {
+                    const objectName = variableMatch[1].toLowerCase();
+                    const query = variableMatch[2].toLowerCase();
+                    const startColumn = lineContent.indexOf(query)+1;
+                    return {
+                        suggestions: pdfLibraryClasses.filter(info => 
+                            info.name.toLowerCase().startsWith(objectName) && info.methods && info.methods.find(m => m.isStatic && 
+                                (m.returnType === objectName ||  // 반환 값의 타입과 일치할 때
+                                (info.name === m.returnType && info.extend === objectName ) || // 반환 값의 상속 타입과 일치할 때
+                                pdfLibraryClasses.find(c => c.name === m.returnType)?.extend === objectName) // 다른 클래스의 상속 타입과 일치 할 때 )
+                            )
+                        ).map(classInfo => ({
                             label: classInfo.name,
-                            kind: (classInfo.type === 'Class') ? monaco.languages.CompletionItemKind.Class : monaco.languages.CompletionItemKind.Enum,
+                            kind: (classInfo.type === 'Class') ? languages.CompletionItemKind.Class : languages.CompletionItemKind.Enum,
                             insertText: classInfo.name,
                             detail: `${classInfo.type} ${classInfo.name}`,
                             range: {
                                 startLineNumber: position.lineNumber,
-                                startColumn: position.column,
+                                startColumn: startColumn,
                                 endLineNumber: position.lineNumber,
                                 endColumn: position.column
                             }
@@ -456,7 +557,7 @@ const APW = () => {
                     };
                 }
 
-                // 6. 기본 제안: 모든 클래스 및 열거형
+                // 7. 기본 제안: 모든 클래스 및 열거형
                 const objectNameMatch = lineUntilPosition.match(/(\w+)$/);
                 if (objectNameMatch) {
                     const objectName = objectNameMatch[1].toLowerCase();
@@ -474,7 +575,7 @@ const APW = () => {
                         )
                             .map(classInfo => ({
                             label: classInfo.name,
-                            kind: (classInfo.type === 'Class') ? monaco.languages.CompletionItemKind.Class : monaco.languages.CompletionItemKind.Enum,
+                            kind: (classInfo.type === 'Class') ? languages.CompletionItemKind.Class : languages.CompletionItemKind.Enum,
                             insertText: classInfo.name,
                             detail: `${classInfo.type} ${classInfo.name}`,
                             range: {
@@ -485,7 +586,7 @@ const APW = () => {
                             }
                         })),...result.map(name => ({
                             label: name,
-                            kind: monaco.languages.CompletionItemKind.Variable,
+                            kind: languages.CompletionItemKind.Variable,
                             insertText: name,
                             detail: name,
                             range: {
@@ -567,7 +668,7 @@ const APW = () => {
         setUploadedFiles(files);
         
         // Generate URLs for uploaded files to be used in the preview
-        const fileUrls = {};
+        const fileUrls:Record<string, FileObject[]> = {};
         Object.keys(files).forEach(type => {
             fileUrls[type] = files[type].map(file => {
                 return {
@@ -599,8 +700,9 @@ const APW = () => {
             document.getElementById('run-button')?.removeEventListener('click', runCode);
 
             if(window.uploadedFiles){
+                const fileUrls:Record<string, FileObject[]> = window.uploadedFiles;
                 // Clean up any created object URLs when component unmounts
-                Object.values(window.uploadedFiles).flat().forEach(file => {
+                Object.values(fileUrls).flat().forEach(file => {
                     if (file.url) URL.revokeObjectURL(file.url);
                 });
             }

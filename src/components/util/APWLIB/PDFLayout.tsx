@@ -1,5 +1,5 @@
 import { Color, LibraryProps, Orientation } from "./enum.tsx";
-import { IPDFComponent, PDFComponent } from "./PDFComponent.tsx";
+import { PDFComponent } from "./PDFComponent.tsx";
 import { PDFGridCell } from "./PDFGridCell.tsx";
 
 export class PDFLayout extends PDFComponent {
@@ -18,7 +18,7 @@ export class PDFLayout extends PDFComponent {
 }
 
 export class PDFLinearLayout extends PDFLayout {
-    children:IPDFComponent[];
+    children:PDFComponent[];
     weights:number[];
     constructor(){
         super();
@@ -42,7 +42,7 @@ export class PDFLinearLayout extends PDFLayout {
      * @param component 하위 구성 요소
      * @return 자기자신
      */
-    addChild(component:IPDFComponent):PDFLinearLayout;
+    addChild(component:PDFComponent):PDFLinearLayout;
     /**
      * 레이아웃에 자식 추가<br>
      * Add children to layout<br>
@@ -53,8 +53,8 @@ export class PDFLinearLayout extends PDFLayout {
      *               If {@link orientation} is {@link Orientation.Horizontal} then width, {@link Orientation.Vertical} then height.
      * @return 자기자신
      */
-    addChild(component:IPDFComponent, weight:number):PDFLinearLayout;
-    addChild(component:IPDFComponent, weight?:number):PDFLinearLayout{
+    addChild(component:PDFComponent, weight:number):PDFLinearLayout;
+    addChild(component:PDFComponent, weight?:number):PDFLinearLayout{
         if(!weight){ weight = 1; }
         if(weight < 1) weight = 1;
         if(this.children.length == this.weights.length)
@@ -257,7 +257,7 @@ export class PDFLinearLayout extends PDFLayout {
      * @param parent 부모
      * @return 자기자신
      */
-    setParent(parent:IPDFComponent):PDFLinearLayout{
+    setParent(parent:PDFComponent):PDFLinearLayout{
         this.parent = parent;
         return this;
     }
@@ -271,6 +271,9 @@ export class PDFLinearLayout extends PDFLayout {
             type: 'Class',
             name: 'PDFLinearLayout',
             extend: 'PDFComponent',
+            constructors: [
+                { params:[] },
+            ],
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
                 { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },
@@ -510,7 +513,7 @@ export class PDFGridLayout extends PDFLayout {
      * @param parent 부모
      * @return 자기자신
      */
-    setParent(parent:IPDFComponent):PDFGridLayout{
+    setParent(parent:PDFComponent):PDFGridLayout{
         this.parent = parent;
         return this;
     }
@@ -546,6 +549,9 @@ export class PDFGridLayout extends PDFLayout {
             type: 'Class',
             name: 'PDFGridLayout',
             extend: 'PDFComponent',
+            constructors: [
+                { params:['int'] },
+            ],
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
                 { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },

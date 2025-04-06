@@ -39,6 +39,7 @@ export class PDFComponent implements IPDFComponent{
         .join(' ');
     }
     
+    wrapGridCell():any{return null;}
     // // GridCell로 래핑
     // wrapGridCell();
     // wrapGridCell(rowSpan:number, columnSpan:number);
@@ -227,6 +228,9 @@ export class PDFComponent implements IPDFComponent{
         return {
             type: 'Class',
             name: 'PDFComponent',
+            constructors: [
+                { params:[] },
+            ],
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
                 { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },

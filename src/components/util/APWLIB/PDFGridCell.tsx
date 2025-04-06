@@ -1,16 +1,16 @@
 import { Color, LibraryProps } from "./enum";
-import { IPDFComponent, PDFComponent } from "./PDFComponent";
+import { PDFComponent } from "./PDFComponent";
 import { PDFLayout } from "./PDFLayout";
 
 export class PDFGridCell extends PDFLayout {
-    children:IPDFComponent;
+    children:PDFComponent;
     row:number;
     col:number;
     rowSpan:number;
     colSpan:number;
-    constructor(content:IPDFComponent);
-    constructor(content:IPDFComponent,rowSpan:number,columnSpan:number);
-    constructor(content:IPDFComponent,rowSpan?:number,columnSpan?:number){
+    constructor(content:PDFComponent);
+    constructor(content:PDFComponent,rowSpan:number,columnSpan:number);
+    constructor(content:PDFComponent,rowSpan?:number,columnSpan?:number){
         super();
         if(!!rowSpan&&!!columnSpan){
             if(rowSpan > 1) this.rowSpan = rowSpan;
@@ -37,7 +37,7 @@ export class PDFGridCell extends PDFLayout {
         this.row = row;
         this.col = col;
     }
-    setChild(content:IPDFComponent):PDFGridCell{
+    setChild(content:PDFComponent):PDFGridCell{
         content.setParent(this);
         this.children = content;
         return this;
@@ -133,14 +133,14 @@ export class PDFGridCell extends PDFLayout {
      * @param parent 부모 컴포넌트
      * @return 자기자신
      */
-    setParent(parent:IPDFComponent):PDFGridCell{
+    setParent(parent:PDFComponent):PDFGridCell{
         this.parent = parent;
         return this;
     }
 
-    static build(content:IPDFComponent):PDFGridCell;
-    static build(content:IPDFComponent, rowSpan:number, colSpane:number):PDFGridCell;
-    static build(content:IPDFComponent, rowSpan?:number, colSpan?:number){
+    static build(content:PDFComponent):PDFGridCell;
+    static build(content:PDFComponent, rowSpan:number, colSpane:number):PDFGridCell;
+    static build(content:PDFComponent, rowSpan?:number, colSpan?:number){
         if(!!rowSpan&&!!colSpan){
             return new PDFGridCell(content, rowSpan, colSpan);
         } else {
@@ -153,6 +153,10 @@ export class PDFGridCell extends PDFLayout {
             type: 'Class',
             name: 'PDFGridCell',
             extend: 'PDFComponent',
+            constructors: [
+                { params:['PDFComponent'] },
+                { params:['PDFComponent','int','int'] },
+            ],
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
                 { name: 'setSize', returnType: 'PDFGridCell', params:['Number', 'Number'] },
@@ -178,3 +182,11 @@ export class PDFGridCell extends PDFLayout {
         }
     }
 }
+
+PDFComponent.prototype.wrapGridCell = function wrapGridCell(this:PDFComponent, rowSpan?:number, columnSpan?:number):PDFGridCell {
+    if(rowSpan&&columnSpan){
+        return new PDFGridCell(this, rowSpan, columnSpan);
+    } else {
+        return new PDFGridCell(this);
+    }
+};

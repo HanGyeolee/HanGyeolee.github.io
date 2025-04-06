@@ -1,6 +1,5 @@
-import { randomUUID } from "crypto";
 import { Color, Fit, LibraryProps, PDFFont, TextAlign } from "./enum.tsx";
-import { IPDFComponent, PDFComponent } from "./PDFComponent.tsx";
+import { PDFComponent } from "./PDFComponent.tsx";
 
 export class PDFImage extends PDFComponent {
     src: string;
@@ -124,7 +123,7 @@ export class PDFImage extends PDFComponent {
         return this;
     }
 
-    setParent(parent: IPDFComponent): PDFImage {
+    setParent(parent: PDFComponent): PDFImage {
         super.setParent(parent);
         return this;
     }
@@ -181,6 +180,9 @@ export class PDFImage extends PDFComponent {
             type: 'Class',
             name: 'PDFImage',
             extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+            ],
             methods: [
                 { name: 'draw', returnType: 'string', params: [] },
                 { name: 'setHeight', returnType: 'PDFImage', params: ['Number'] },
@@ -445,7 +447,7 @@ export class PDFText extends PDFComponent {
         return this;
     }
 
-    setParent(parent: IPDFComponent): PDFText {
+    setParent(parent: PDFComponent): PDFText {
         super.setParent(parent);
         return this;
     }
@@ -467,6 +469,10 @@ export class PDFText extends PDFComponent {
             type: 'Class',
             name: 'PDFText',
             extend: 'PDFComponent',
+            constructors: [
+                { params:['String'] },
+                { params:['String','PDFFont'] },
+            ],
             methods: [
                 { name: 'draw', returnType: 'string', params: [] },
                 { name: 'setText', returnType: 'PDFText', params: ['String'] },
