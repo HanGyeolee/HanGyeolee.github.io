@@ -46,7 +46,7 @@ export function codeMapping(javaCode:string):{[key: string]: any} {
         'context':null
     };
 
-    javaCode = javaCode.replace(/R\.id\.(\w+)/, '"R.id.$1"')
+    javaCode = javaCode.replace(/R\.id\.(\w+)/g, '"R.id.$1"')
 
     const javaText = `
     public class ForParser{
@@ -313,28 +313,32 @@ export function codeMapping(javaCode:string):{[key: string]: any} {
                                         } else {
                                             // 변수로 부터 메소드 호출
                                             const obj = evaluateReference(refType, vars);
-                                            result = obj;
-                                            for(const member of memberNames){
-                                                if(member){
-                                                    if(typeof result[member] === 'function'){
-                                                        result = result[member](...args);
-                                                    }else{
-                                                        result = result[member];
+                                            if(obj){
+                                                result = obj;
+                                                for(const member of memberNames){
+                                                    if(member){
+                                                        if(typeof result[member] === 'function'){
+                                                            result = result[member](...args);
+                                                        }else{
+                                                            result = result[member];
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     } else {
                                         const obj = evaluateReference(refType, vars);
-                                        if((obj as LibraryProps).object){
-                                            const objClass = (obj as LibraryProps).object;
-                                            result = objClass;
-                                            for(const member of memberNames){
-                                                if(member){
-                                                    if(typeof result[member] === 'function'){
-                                                        result = result[member]();
-                                                    }else{
-                                                        result = result[member];
+                                        if(obj){
+                                            if((obj as LibraryProps).object){
+                                                const objClass = (obj as LibraryProps).object;
+                                                result = objClass;
+                                                for(const member of memberNames){
+                                                    if(member){
+                                                        if(typeof result[member] === 'function'){
+                                                            result = result[member]();
+                                                        }else{
+                                                            result = result[member];
+                                                        }
                                                     }
                                                 }
                                             }
@@ -356,19 +360,21 @@ export function codeMapping(javaCode:string):{[key: string]: any} {
                         }
                         // Enum 변수 호출 혹은 정적 변수 호출 패턴 (ClassName.Const)
                         const obj = evaluateReference(refType, vars);
-                        if((obj as LibraryProps).object){
-                            const objClass = (obj as LibraryProps).object;
-                            let result = objClass;
-                            for(const member of memberNames){
-                                if(member){
-                                    if(typeof result[member] === 'function'){
-                                        result = result[member]();
-                                    }else{
-                                        result = result[member];
+                        if(obj){
+                            if((obj as LibraryProps).object){
+                                const objClass = (obj as LibraryProps).object;
+                                let result = objClass;
+                                for(const member of memberNames){
+                                    if(member){
+                                        if(typeof result[member] === 'function'){
+                                            result = result[member]();
+                                        }else{
+                                            result = result[member];
+                                        }
                                     }
                                 }
+                                return result;
                             }
-                            return result;
                         }
                     } else {
                         // 변수 호출

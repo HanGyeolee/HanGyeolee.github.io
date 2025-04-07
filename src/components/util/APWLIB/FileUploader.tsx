@@ -14,10 +14,8 @@ export function storeFilesInIndexedDB(files: RawFiles) {
       const db = request.result;
  
       // 기존의 모든 객체 저장소 삭제
-      if (db.objectStoreNames.length > 0) {
-        Array.from(db.objectStoreNames).forEach(storeName => {
-          db.deleteObjectStore(storeName);
-        });
+      if (db.objectStoreNames.contains('files')){
+        db.deleteObjectStore('files');
       }
       
       if (!db.objectStoreNames.contains('files')) {

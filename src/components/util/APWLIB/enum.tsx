@@ -89,12 +89,12 @@ export const PDFFontLibrary:LibraryProps = {
   object: PDFFont,
   name:'PDFFont',
   variables: [
-    { name:'Helvetica, Arial, sans-serif',        isStatic:true, type:'PDFFont' },
-    { name:'Helvetica-Bold, Arial, sans-serif',   isStatic:true, type:'PDFFont' },
-    { name:'Times New Roman, serif',              isStatic:true, type:'PDFFont' },
-    { name:'Times-Bold, Times New Roman, serif',  isStatic:true, type:'PDFFont' },
-    { name:'Courier, monospace',                  isStatic:true, type:'PDFFont' },
-    { name:'Courier-Bold, Courier, monospace',    isStatic:true, type:'PDFFont' },
+    { name:'HELVETICA',         isStatic:true, type:'PDFFont' },
+    { name:'HELVETICA_BOLD',    isStatic:true, type:'PDFFont' },
+    { name:'TIMES_ROMAN',       isStatic:true, type:'PDFFont' },
+    { name:'TIMES_BOLD',        isStatic:true, type:'PDFFont' },
+    { name:'COURIER',           isStatic:true, type:'PDFFont' },
+    { name:'COURIER_BOLD',      isStatic:true, type:'PDFFont' },
   ],
   variableDeclaration: /PDFFont\s+(\w+)\s*=/g,
 };
