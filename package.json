@@ -7,6 +7,7 @@
     "@csstools/selector-specificity": "^4.0.0",
     "@gsap/react": "^2.1.2",
     "@headlessui/react": "2.0.0",
+    "@monaco-editor/react": "^4.7.0",
     "@react-spring/web": "^9.7.5",
     "@react-three/drei": "9.92.7",
     "@react-three/fiber": "8.15.12",
@@ -22,6 +23,7 @@
     "@types/react-table": "7.7.18",
     "framer-motion": "10.16.16",
     "gsap": "^3.12.5",
+    "java-parser": "^2.3.3",
     "lucide-react": "^0.475.0",
     "postcss-selector-parser": "^6.1.0",
     "react": "^18.0.0",
@@ -31,7 +33,7 @@
     "react-scripts": "^5.0.1",
     "react-table": "^7.8.0",
     "three": "^0.173.0",
-    "typescript": "^5.7.3",
+    "typescript": "^4.9.5",
     "web-vitals": "^4.2.4"
   },
   "devDependencies": {

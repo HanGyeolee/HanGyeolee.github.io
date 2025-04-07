@@ -3,7 +3,6 @@ import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 import { IconType } from '../util/icons.ts';
 import { DynamicIcon } from '../util/IconMapper.tsx';
-import { ResponsiveContainer } from '../ui/ResponsiveContainer.tsx';
 // 이미지
 import keySignImage  from '../../image/key-sign.png'
 import medicalPlatformImage  from '../../image/medical-platform.png'
@@ -30,7 +29,7 @@ const ProjectsSection = () => {
     },
     {
       title: '안드로이드 PDF 라이브러리',
-      document: 'https://github.com/HanGyeolee/AndroidPdfWriter/blob/main/README-ko.md#androidpdfwriter',
+      document: 'apw-webui', //https://hangyeolee.github.io/#/projects/
       type: IconType.PERSONAL,
       description: 'PDF1.4 기반 바이너리 파일 작성 라이브러리 배포',
       techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary'],

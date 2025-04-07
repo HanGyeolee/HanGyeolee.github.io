@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom"
 import { StaffNotation, Harmony, Scale } from "../../components/ui/StaffNotation.tsx";
 
 const Tonality = () => {
+  //TODO title 수정 필요
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const key = decodeURIComponent(searchParams.get('key'));
