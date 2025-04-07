@@ -151,6 +151,7 @@ export class PDFGridCell extends PDFLayout {
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PDFGridCell,
             name: 'PDFGridCell',
             extend: 'PDFComponent',
             constructors: [

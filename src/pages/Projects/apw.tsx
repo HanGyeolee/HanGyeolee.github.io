@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import './apw.css';
-import { FileUploader } from '../../components/util/APWLIB/FileUploader.tsx';
+import { FileUploader, storeFilesInIndexedDB } from '../../components/util/APWLIB/FileUploader.tsx';
 import { IndentationTracker } from "../../components/util/APWLIB/IndentationTracker.tsx";
-import { PDFComponent } from "../../components/util/APWLIB/PDFComponent.tsx";
-import { PDFGridLayout, PDFLinearLayout } from "../../components/util/APWLIB/PDFLayout.tsx";
-import { Color, Fit, LibraryProps, Orientation, Paper, PDFColorLibrary, PDFFitLibrary, PDFFont, PDFFontLibrary, PDFOrientationLibrary, PDFPaperLibrary, PDFPaperUnitLibrary, TextAlign } from "../../components/util/APWLIB/enum.tsx";
+import { LibraryProps, PaperUnit, RawFiles } from "../../components/util/APWLIB/enum.tsx";
 import { Github } from 'lucide-react';
 
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
 import { languages, editor } from 'monaco-editor';
-import { PDFH1, PDFH2, PDFH3, PDFH4, PDFH5, PDFH6, PDFImage, PDFText } from "../../components/util/APWLIB/PDFResource.tsx";
-import { PageLayoutFactory, PDFPageLayout, RectF } from "../../components/util/APWLIB/PDFPageLayout.tsx";
+
+import { codeMapping, pdfLibraryClasses } from "../../components/util/APWLIB/CodeMapper.tsx";
 import { PDFBuilder } from "../../components/util/APWLIB/PDFBuilder.tsx";
+import { RectF } from "../../components/util/APWLIB/PDFPageLayout.tsx";
+import { preloadFiles } from "../../components/util/APWLIB/PDFResource.tsx";
 
 const APW = () => {
     const [monaco, setMonaco] = useState<Monaco>();
@@ -40,41 +40,9 @@ const APW = () => {
         .setTextAlign(TextAlign.Center));
 builder.draw(root);`;
 
-    // PDF 라이브러리 클래스 및 메서드 정보
-    const pdfLibraryClasses:LibraryProps[] = [
-        // PDFComponent.tsx
-        PDFComponent.toLibrary(),
-        // PDFLayout.tsx
-        PDFLinearLayout.toLibrary(),
-        PDFGridLayout.toLibrary(),
-        // PDFResource.tsx
-        PDFImage.toLibrary(),
-        PDFText.toLibrary(),
-        PDFH1.toLibrary(),
-        PDFH2.toLibrary(),
-        PDFH3.toLibrary(),
-        PDFH4.toLibrary(),
-        PDFH5.toLibrary(),
-        PDFH6.toLibrary(),
-        // PDFPageLayout.tsx
-        RectF.toLibrary(),
-        PDFPageLayout.toLibrary(),
-        PageLayoutFactory.toLibrary(),
-        // PDFBuilder.tsx
-        PDFBuilder.toLibrary(),
-        // enum.tsx
-        PDFColorLibrary,
-        PDFFontLibrary,
-        PDFFitLibrary,
-        PDFOrientationLibrary,
-        PDFPaperUnitLibrary,
-        PDFPaperLibrary,
-    ];
-
     const handleEditorDidMount: OnMount = (editor, monaco) => {
-        setMonaco(monaco);
         // 자동완성 제공자 등록
-        monaco?.languages.registerCompletionItemProvider('java', {
+        monaco.languages.registerCompletionItemProvider('java', {
             triggerCharacters:['.','=','(',',',' '],
             provideCompletionItems: function(model, position, context, token) {
                 function trackMethodChain(text: string|undefined, variableTypes: Record<string, LibraryProps>, pdfLibraryClasses: LibraryProps[]): LibraryProps | undefined {
@@ -139,10 +107,26 @@ builder.draw(root);`;
                                 const methodInfo = classInfo.methods.find(m => m.name === methodName && m.isStatic);
                                 return methodInfo?.returnType;
                             }
-                            return '';
+                            return undefined;
+                        }
+                        
+                        // 사례 2: 클래스에서 변수 호출: ClassName.variable
+                        const variableMatch = expr.match(/(\w+)\s*\.\s*(\w+)\s*$/);
+                        if (variableMatch) {
+                            const className = variableMatch[1];
+                            const variableName = variableMatch[2];
+                            
+                            // 클래스를 찾습니다.
+                            const classInfo = pdfLibraryClasses.find(c => c.name === className);
+                            if (classInfo && classInfo.variables) {
+                                // 정적 변수를 찾고 반환 유형을 가져옵니다.
+                                const variableInfo = classInfo.variables.find(v => v.name === variableName && v.isStatic);
+                                return variableInfo?.type;
+                            }
+                            return undefined;
                         }
 
-                        // 사례 2: 매개변수가 있는 또는 없는 메서드 호출: methodName(...) 또는 chainedMethod(...)
+                        // 사례 3: 매개변수가 있는 또는 없는 메서드 호출: methodName(...) 또는 chainedMethod(...)
                         const methodCallMatch = expr.match(/(\w+)\s*\((.*)\)$/);
                         if (methodCallMatch) {
                             const methodName = methodCallMatch[1];
@@ -175,25 +159,29 @@ builder.draw(root);`;
                                     }
                                     else if (classInfo.methods) {
                                         const methodInfo = classInfo.methods.find(m => m.name === methodName && m.isStatic);
-                                        return methodInfo?.returnType;
+                                        if(methodInfo)
+                                            return methodInfo.returnType;
                                     }
                                 }
                             }
+                            return undefined;
                         }
 
-                        // 사례 3: 간단한 변수 참조 | 클래스 이름 참조
+                        // 사례 4: 간단한 변수 참조 | 클래스 이름 참조
                         const objectNameMatch = expr.match(/(\w+)$/);
                         if (objectNameMatch) {
                             const objectName = objectNameMatch[1];
                             if (objectName in variableTypes) {
                                 return variableTypes[objectName].name;
                             } else {
-                                let type = pdfLibraryClasses.find(c => c.name === objectName);
-                                return type?.name ?? undefined;
+                                const type = pdfLibraryClasses.find(c => c.name === objectName);
+                                if(type){
+                                    return type?.name;
+                                }
                             }
                         }
 
-                        // 사례 4: 앞에 '.' 로 시작하는 경우
+                        // 사례 5: 앞에 '.' 로 시작하는 경우
                         const lineTerminatorMatch = expr.match(/^\./);
                         if(lineTerminatorMatch){
                             return determineExpressionType(expr, idx + 1);
@@ -362,7 +350,8 @@ builder.draw(root);`;
                         
                         // Add enum values or properties if applicable
                         if (classInfo.variables) {
-                            suggestions = [...suggestions, ...classInfo.variables.map(variable => ({
+                            const instanceVariable = classInfo.variables.filter(m => !m.isStatic);
+                            suggestions = [...suggestions, ...instanceVariable.map(variable => ({
                                 label: variable.name,
                                 kind: languages.CompletionItemKind.Variable,
                                 insertText: variable.name,
@@ -446,7 +435,7 @@ builder.draw(root);`;
                                 }
                                 // Enum 제안
                                 else if(mType.type === "Enum" && mType.variables) {
-                                    suggestions = [...suggestions, ...mType.variables.filter(en =>
+                                    suggestions = [...suggestions, ...mType.variables.filter(en => en.isStatic &&
                                         `${mType.name}.${en.name}`.toLowerCase().startsWith(param) &&
                                         (mType.name === paramType || en.type === paramType)
                                     ).map(en => {
@@ -817,53 +806,119 @@ builder.draw(root);`;
             document.head.appendChild(style);
         }
 
-        runCode();
+        setMonaco(monaco);
     }
 
     const handleFileUploaded = (files:RawFiles) => {
         setUploadedFiles(files);
         
-        // Generate URLs for uploaded files to be used in the preview
-        const fileUrls:Files = { file:[], assets:[], resource:[] };
-        Object.keys(files).forEach(type => {
-            fileUrls[type] = files[type].map(file => {
-                return {
-                  name: file.name,
-                  url: URL.createObjectURL(file),
-                  type: file.type
-                };
-            });
-        });
-        
-        // Update the preview with new files
-        window.uploadedFiles = fileUrls;
+        return storeFilesInIndexedDB(files);
     };
 
     // 코드 실행 함수 (구현 필요)
     const runCode = () => {
-        console.log(monaco)
         if (monaco) {
-            // 에디터에서 Java 코드 가져오기
-            const editor = monaco.editor.getModels()[0];
-            console.log(editor)
-            if (!editor) return;
-            
-            const javaCode = editor.getValue();
-            
-            // Java 코드를 JavaScript로 변환
-            const jsCode = transformToExecutableJS(javaCode);
-            eval(jsCode);
-
-            // typescript 를 javascript 로 컴파일한 이후에 실행하기
-
-            // preview 호출하기
-            const htmlResult = previewFunction();
-            const previewElement = document.getElementById('preview');
-            if(previewElement){
-                previewElement.innerHTML = htmlResult;
+            preloadFiles().then(() => {
+                const dpi = document.getElementById('detectCurrentDPI');
+                if(dpi){
+                    PaperUnit.setDPI(dpi.offsetHeight/2.0);
+                }
+                // 에디터에서 Java 코드 가져오기
+                const editor = monaco.editor.getModels()[0];
+                if (!editor) return;
+                
+                const javaCode = editor.getValue();
+                
+                // Java 코드를 JavaScript로 변환
+                const vars = codeMapping(javaCode);
+                const builder:PDFBuilder = vars['builder'];
+                const page:RectF = builder.pageLayout.getPageRect();
+    
+                // typescript 를 javascript 로 컴파일한 이후에 실행하기
+    
+                // 새 창 열기
+                const popupWindow = window.open(
+                    '', 
+                    '새 창', 
+                    `width=${page.width()-16},height=${page.height()-16},resizable=yes,scrollbars=yes`
+                );
+        
+                // 새 창에 내용 작성
+                if (popupWindow) {
+                    popupWindow.document.writeln(`
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Android PDF Writer 미리보기</title>
+        <style>
+            html, body {
+                display: flex;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: #121212;
             }
+
+            /* PDF 요소 스타일 */
+            .pdf-linear-layout {
+            width: 100%;
+            }
+
+            .pdf-grid-layout {
+            width: 100%;
+            }
+
+            .pdf-grid-cell {
+            min-height: 30px;
+            }
+
+            .pdf-text {
+            word-break: break-word;
+            }
+
+            .pdf-image {
+            display: block;
+            }
+
+            @media print {
+                html, body {
+                    overflow: visible;
+                    margin: 0;
+                    padding: 0;
+                }
+                body {
+                    visibility: hidden;
+                }
+                
+                #printSection, #printSection * {
+                    visibility: visible;
+                }
+                
+                #printSection {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        ${builder.result}
+    </body>
+</html>
+                    `);
+                    popupWindow.document.close();
+                }
+            });
         }
     };
+
+    useEffect(()=>{
+        if(!monaco){
+            console.log("새로고침 필요")
+        }
+    },[monaco]);
     
     useEffect(() => {
         // 실행 버튼 이벤트 설정
@@ -872,21 +927,14 @@ builder.draw(root);`;
         });
         return () => {
             document.getElementById('run-button')?.removeEventListener('click', runCode);
-
-            if(window.uploadedFiles){
-                const fileUrls:Files = window.uploadedFiles;
-                // Clean up any created object URLs when component unmounts
-                Object.values(fileUrls).flat().forEach(file => {
-                    if (file.url) URL.revokeObjectURL(file.url);
-                });
-            }
         };
     }, [uploadedFiles]);
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="apw-container mx-auto p-4">
+            <div id="detectCurrentDPI"></div>
             <header className="header">
-                <div className="logo">AndroidPDFWriter 라이브러리 맛보기</div>
+                <div className="logo">AndroidPDFWriter Library Playground</div>
                 <div className="controls">
                     <button id="run-button" className="btn btn-primary">실행</button>
                     <a href="https://github.com/HanGyeolee/AndroidPdfWriter/blob/main/README-ko.md#androidpdfwriter" className="btn btn-primary" target="_blank"><Github></Github></a>
@@ -903,41 +951,13 @@ builder.draw(root);`;
                 <Editor
                     height="100%"
                     defaultLanguage="java"
-                    defaultValue={defaultJavaCode}
                     language='java'
+                    defaultValue={defaultJavaCode}
                     theme='vs-dark'
                     onMount={handleEditorDidMount}
                 />
             </div>
-        
-            <div className="preview-container">
-                <div className="preview-title">PDF 미리보기</div>
-                <div id="preview"></div>
-            </div>
         </div>
     );
 }
-
-function transformToExecutableJS(javaCode:string) {
-    // 라인 단위로 분할하여 처리
-    const lines = javaCode.split('\n');
-    const jsLines:string[] = [];
-    
-    // 각 라인 처리
-    for (let line of lines) {
-        // 1. 변수 선언 변환 (Type variable = value 형태)
-        let jsLine:string = line.replace(/(\w+)\s+(\w+)\s*=\s*([^;]+);?/, 'var $2 = $3');
-        
-        // 2. R.id.로 시작하는 값을 문자열로 변환
-        jsLine = jsLine.replace(/(?<!")R\.id\.\w+(?!")/g, '"$&"');
-        
-        // 3. 세미콜론 제거
-        jsLine = jsLine.replace(/;/, '');
-        
-        jsLines.push(jsLine);
-    }
-    
-    return jsLines.join(' ');
-}
-
 export {APW};

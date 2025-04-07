@@ -17,7 +17,7 @@ export class PDFBuilder {
 
             root.setSize(width, null);
             const padding:RectF = this.pageLayout.getPadding();
-            this.result = `<div style="width:${width}px; height:${height}px;
+            this.result = `<div id="printSection" style="width:${(width)}px; height:${(height)}px; box-sizing: border-box; background-color:white;
             padding:${padding.left}px ${padding.top}px ${padding.right}px ${padding.bottom}px;" class="pdf-page"> ${root.draw()}</div>`;
         }
         return this;
@@ -25,6 +25,7 @@ export class PDFBuilder {
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PDFBuilder,
             name: 'PDFBuilder',
             constructors: [
                 { params:[] },

@@ -1,5 +1,16 @@
-import { Color, Fit, LibraryProps, PDFFont, TextAlign } from "./enum.tsx";
+import { Color, FileObject, Files, Fit, LibraryProps, PDFFont, TextAlign } from "./enum.tsx";
+import { getFilesFromIndexedDB } from "./FileUploader.tsx";
 import { PDFComponent } from "./PDFComponent.tsx";
+
+// 파일 캐싱을 위한 전역 변수
+let uploadedFiles: Files | null = null;
+
+// 초기화 시 파일 미리 로드
+export function preloadFiles():Promise<void> {
+  return getFilesFromIndexedDB().then(files => {
+    uploadedFiles = files;
+  });
+}
 
 export class PDFImage extends PDFComponent {
     src: string;
@@ -137,8 +148,8 @@ export class PDFImage extends PDFComponent {
             return image.setFit(fit);
         } else {
             let url:string = resourceId;
-            if (window.uploadedFiles && window.uploadedFiles['resource']) {
-                url = window.uploadedFiles['resource'].find(file => file.name === resourceId)?.url ?? '';
+            if (uploadedFiles && uploadedFiles['resource']) {
+                url = uploadedFiles['resource'].find(file => file.name === resourceId)?.url ?? '';
             }
             return new PDFImage(url);
         }
@@ -152,8 +163,8 @@ export class PDFImage extends PDFComponent {
             return image.setFit(fit);
         } else {
             let url:string = path;
-            if (window.uploadedFiles && window.uploadedFiles.file) {
-                url = window.uploadedFiles.file.find(file => file.name === path)?.url ?? '';
+            if (uploadedFiles && uploadedFiles.file) {
+                url = uploadedFiles.file.find(file => file.name === path)?.url ?? '';
             }
             return new PDFImage(url);
         }
@@ -167,8 +178,8 @@ export class PDFImage extends PDFComponent {
             return image.setFit(fit);
         } else {
             let url:string = assetPath;
-            if (window.uploadedFiles && window.uploadedFiles.assets) {
-                url = window.uploadedFiles.assets.find(file => file.name === assetPath)?.url ?? '';
+            if (uploadedFiles && uploadedFiles.assets) {
+                url = uploadedFiles.assets.find(file => file.name === assetPath)?.url ?? '';
             }
             return new PDFImage(assetPath);
         }
@@ -178,6 +189,7 @@ export class PDFImage extends PDFComponent {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFImage,
             name: 'PDFImage',
             extend: 'PDFComponent',
             constructors: [
@@ -357,8 +369,8 @@ export class PDFText extends PDFComponent {
      * @return 자기자신
      */
     setFontFromAsset(context: any, assetPath: string): PDFText {
-        if (window.uploadedFiles && window.uploadedFiles.assets) {
-            const fontFile = window.uploadedFiles.assets.find(file => file.name === assetPath);
+        if (uploadedFiles && uploadedFiles.assets) {
+            const fontFile = uploadedFiles.assets.find(file => file.name === assetPath);
             if (fontFile && fontFile.url) {
                 // 폰트 등록 및 적용
                 let fontId:string = this.registerFont(fontFile);
@@ -374,8 +386,8 @@ export class PDFText extends PDFComponent {
      * @return 자기자신
      */
     setFontFromFile(path: string): PDFText {
-        if (window.uploadedFiles && window.uploadedFiles.file) {
-            const fontFile = window.uploadedFiles.file.find(file => file.name === path);
+        if (uploadedFiles && uploadedFiles.file) {
+            const fontFile = uploadedFiles.file.find(file => file.name === path);
             if (fontFile && fontFile.url) {
                 // 폰트 등록 및 적용
                 let fontId:string = this.registerFont(fontFile);
@@ -392,8 +404,8 @@ export class PDFText extends PDFComponent {
      * @return 자기자신
      */
     setFontFromResource(context: any, resourceId: string): PDFText {
-        if (window.uploadedFiles && window.uploadedFiles.resource) {
-            const fontFile = window.uploadedFiles.resource.find(file => file.name === resourceId);
+        if (uploadedFiles && uploadedFiles.resource) {
+            const fontFile = uploadedFiles.resource.find(file => file.name === resourceId);
             if (fontFile && fontFile.url) {
                 // 폰트 등록 및 적용
                 let fontId:string = this.registerFont(fontFile);
@@ -472,6 +484,7 @@ export class PDFText extends PDFComponent {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFText,
             name: 'PDFText',
             extend: 'PDFComponent',
             constructors: [
@@ -524,6 +537,7 @@ export class PDFH1 extends PDFText {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFH1,
             name: 'PDFH1',
             extend: 'PDFComponent',
             constructors: [
@@ -576,6 +590,7 @@ export class PDFH2 extends PDFText {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFH2,
             name: 'PDFH2',
             extend: 'PDFComponent',
             constructors: [
@@ -628,6 +643,7 @@ export class PDFH3 extends PDFText {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFH3,
             name: 'PDFH3',
             extend: 'PDFComponent',
             constructors: [
@@ -680,6 +696,7 @@ export class PDFH4 extends PDFText {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFH4,
             name: 'PDFH4',
             extend: 'PDFComponent',
             constructors: [
@@ -732,6 +749,7 @@ export class PDFH5 extends PDFText {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFH5,
             name: 'PDFH5',
             extend: 'PDFComponent',
             constructors: [
@@ -784,6 +802,7 @@ export class PDFH6 extends PDFText {
     static toLibrary(): LibraryProps {
         return {
             type: 'Class',
+            object: PDFH6,
             name: 'PDFH6',
             extend: 'PDFComponent',
             constructors: [

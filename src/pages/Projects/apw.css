@@ -7,29 +7,30 @@
     --border-color: #333;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Roboto', Arial, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  line-height: 1.6;
-}
-
-.container {
+.apw-container {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: auto 1fr;
   grid-template-rows: 60px 1fr;
   grid-template-areas:
-    "header header header"
-    "uploader editor preview";
+    "header header"
+    "uploader editor";
   height: 100vh;
   width: 100%;
   gap: 2px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#detectCurrentDPI{
+  box-sizing: border-box;
+  width: 2.046875in;
+  height: 2.046875in;
+  padding: 0;
+  margin: 0;
+  left: -100%;
+  top: -100%;
+  visibility: hidden;
+  position: absolute;
 }
 
 .header {
@@ -95,7 +96,6 @@ body {
 }
 
 .preview-container {
-  grid-area: preview;
   display: flex;
   flex-direction: column;
   background-color: white;
@@ -132,27 +132,6 @@ body {
   border-radius: 4px;
   display: none;
   z-index: 1000;
-}
-
-/* PDF 요소 스타일 */
-.pdf-linear-layout {
-  width: 100%;
-}
-
-.pdf-grid-layout {
-  width: 100%;
-}
-
-.pdf-grid-cell {
-  min-height: 30px;
-}
-
-.pdf-text {
-  word-break: break-word;
-}
-
-.pdf-image {
-  display: block;
 }
 
 /* File uploader styles */

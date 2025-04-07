@@ -3,6 +3,75 @@ import { FolderPlus, Upload, X, Image, Type } from 'lucide-react';
 
 import testImage from '../../../image/test.jpg';
 import testFont from '../../../fonts/Pretendard-Regular.ttf';
+import { Files, RawFiles } from './enum';
+
+// 파일 저장
+export function storeFilesInIndexedDB(files: RawFiles) {
+  return new Promise<boolean>((resolve, reject) => {
+    const request = indexedDB.open('FileStorage', 1);
+    
+    request.onupgradeneeded = (e) => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('files')) {
+        db.createObjectStore('files', { keyPath: 'name' });
+      }
+    };
+    
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      
+      // 모든 파일 타입에 대해 저장
+      Object.keys(files).forEach(type => {
+        files[type].forEach(file => {
+          store.put({
+            name: file.name,
+            type: file.type,
+            data: file,
+            fileType: type // file, assets, resource 구분
+          });
+        });
+      });
+      
+      transaction.oncomplete = () => resolve(true);
+      transaction.onerror = (e) => reject(e);
+    };
+    
+    request.onerror = (e) => reject(e);
+  });
+}
+
+// 파일 불러오기
+export function getFilesFromIndexedDB() {
+  return new Promise<Files>((resolve, reject) => {
+    const request = indexedDB.open('FileStorage', 1);
+    
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction(['files'], 'readonly');
+      const store = transaction.objectStore('files');
+      const files: Files = { file: [], assets: [], resource: [] };
+      
+      store.openCursor().onsuccess = (e) => {
+        const cursor = (e.target as IDBRequest).result;
+        if (cursor) {
+          const fileData = cursor.value;
+          files[fileData.fileType].push({
+            name: fileData.name,
+            url: URL.createObjectURL(fileData.data),
+            type: fileData.type
+          });
+          cursor.continue();
+        } else {
+          resolve(files);
+        }
+      };
+    };
+    
+    request.onerror = (e) => reject(e);
+  });
+}
 
 export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>void}) => {
   const [files, setFiles] = useState<RawFiles>({

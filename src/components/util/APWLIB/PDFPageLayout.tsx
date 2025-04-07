@@ -23,6 +23,7 @@ export class RectF{
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: RectF,
             name: 'RectF',
             constructors: [
                 { params:[] },
@@ -67,6 +68,7 @@ export class PDFPageLayout implements PageLayout{
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PDFPageLayout,
             name: 'PDFPageLayout',
             extend: 'PageLayout',
             constructors: [
@@ -126,6 +128,7 @@ export class PageLayoutFactory{
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PageLayoutFactory,
             name: 'PageLayoutFactory',
             methods: [
                 { name: 'createDefaultLayout',  isStatic:true, returnType: 'PageLayout', params:[] },

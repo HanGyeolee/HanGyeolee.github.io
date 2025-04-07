@@ -35,7 +35,11 @@ export class PDFComponent implements IPDFComponent{
     // CSS 스타일 객체를 문자열로 변환
     styleToString() {
       return Object.entries(this.style)
-        .map(([key, value]) => `${key}: ${value};`)
+        .map(([key, value]) => {
+            // camelCase를 kebab-case로 변환
+            const cssKey = key.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
+            return `${cssKey}: ${value};`;
+        })
         .join(' ');
     }
     
@@ -227,6 +231,7 @@ export class PDFComponent implements IPDFComponent{
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PDFComponent,
             name: 'PDFComponent',
             constructors: [
                 { params:[] },

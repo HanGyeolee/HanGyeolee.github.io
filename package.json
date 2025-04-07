@@ -23,6 +23,7 @@
     "@types/react-table": "7.7.18",
     "framer-motion": "10.16.16",
     "gsap": "^3.12.5",
+    "java-parser": "^2.3.3",
     "lucide-react": "^0.475.0",
     "postcss-selector-parser": "^6.1.0",
     "react": "^18.0.0",

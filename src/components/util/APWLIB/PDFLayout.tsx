@@ -269,6 +269,7 @@ export class PDFLinearLayout extends PDFLayout {
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PDFLinearLayout,
             name: 'PDFLinearLayout',
             extend: 'PDFComponent',
             constructors: [
@@ -547,6 +548,7 @@ export class PDFGridLayout extends PDFLayout {
     static toLibrary():LibraryProps{
         return {
             type: 'Class',
+            object: PDFGridLayout,
             name: 'PDFGridLayout',
             extend: 'PDFComponent',
             constructors: [
