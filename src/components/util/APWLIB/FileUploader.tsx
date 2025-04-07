@@ -12,11 +12,6 @@ export function storeFilesInIndexedDB(files: RawFiles) {
     
     request.onupgradeneeded = (e) => {
       const db = request.result;
- 
-      // 기존의 모든 객체 저장소 삭제
-      if (db.objectStoreNames.contains('files')){
-        db.deleteObjectStore('files');
-      }
       
       if (!db.objectStoreNames.contains('files')) {
         db.createObjectStore('files', { keyPath: 'name' });
@@ -27,6 +22,8 @@ export function storeFilesInIndexedDB(files: RawFiles) {
       const db = request.result;
       const transaction = db.transaction(['files'], 'readwrite');
       const store = transaction.objectStore('files');
+      
+      store.clear();
       
       // 모든 파일 타입에 대해 저장
       Object.keys(files).forEach(type => {
