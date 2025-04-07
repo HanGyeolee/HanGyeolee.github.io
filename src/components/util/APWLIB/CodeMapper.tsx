@@ -373,8 +373,10 @@ export function codeMapping(javaCode:string):{[key: string]: any} {
                     } else {
                         // 변수 호출
                         const obj = evaluateReference(refType, vars);
-                        if(!(obj as LibraryProps).object){
-                            return obj;
+                        if(obj){
+                            if(!((obj as LibraryProps).object)){
+                                return obj;
+                            }
                         }
                     }
                 }

@@ -227,6 +227,7 @@ export class PDFImage extends PDFComponent {
 
 export class PDFText extends PDFComponent {
     text: string;
+    fontFile: string;
     fontFamily: string;
     fontSize: number;
     fit: Fit;
@@ -252,7 +253,10 @@ export class PDFText extends PDFComponent {
         // 텍스트를 HTML로 변환
         // 줄바꿈 처리
         const formattedText = this.text.replace(/\n/g, '<br>');
-        return `<div style="${this.styleToString()}" class="pdf-text">${formattedText}</div>`;
+        return `<div style="${this.styleToString()}" class="pdf-text">
+            ${(this.fontFile&&this.fontFile.length)?`<style>${this.fontFile}</style>`:''}
+            ${formattedText}
+        </div>`;
     }
 
     /**
@@ -346,8 +350,7 @@ export class PDFText extends PDFComponent {
         file.id = fontId;
         
         // 스타일 태그 생성 및 @font-face 규칙 추가
-        const style = document.createElement('style');
-        style.textContent = `
+        this.fontFile = `
             @font-face {
                 font-family: '${fontId}';
                 src: url('${file.url}') format('truetype');
@@ -355,7 +358,6 @@ export class PDFText extends PDFComponent {
                 font-style: normal;
             }
         `;
-        document.head.appendChild(style);
         
         // 폰트 ID 저장 및 반환
         return fontId;
@@ -371,7 +373,7 @@ export class PDFText extends PDFComponent {
     setFontFromAsset(context: any, assetPath: string): PDFText {
         if (uploadedFiles && uploadedFiles.assets) {
             const fontFile = uploadedFiles.assets.find(file => file.name === assetPath);
-            if (fontFile && fontFile.url) {
+            if (fontFile) {
                 // 폰트 등록 및 적용
                 let fontId:string = this.registerFont(fontFile);
                 this.style.fontFamily = `'${fontId}', Arial, sans-serif`;
@@ -388,7 +390,7 @@ export class PDFText extends PDFComponent {
     setFontFromFile(path: string): PDFText {
         if (uploadedFiles && uploadedFiles.file) {
             const fontFile = uploadedFiles.file.find(file => file.name === path);
-            if (fontFile && fontFile.url) {
+            if (fontFile) {
                 // 폰트 등록 및 적용
                 let fontId:string = this.registerFont(fontFile);
                 this.style.fontFamily = `'${fontId}', Arial, sans-serif`;
@@ -406,7 +408,7 @@ export class PDFText extends PDFComponent {
     setFontFromResource(context: any, resourceId: string): PDFText {
         if (uploadedFiles && uploadedFiles.resource) {
             const fontFile = uploadedFiles.resource.find(file => file.name === resourceId);
-            if (fontFile && fontFile.url) {
+            if (fontFile) {
                 // 폰트 등록 및 적용
                 let fontId:string = this.registerFont(fontFile);
                 this.style.fontFamily = `'${fontId}', Arial, sans-serif`;
@@ -495,7 +497,7 @@ export class PDFText extends PDFComponent {
                 { name: 'draw', returnType: 'string', params: [] },
                 { name: 'setText', returnType: 'PDFText', params: ['String'] },
                 { name: 'setTextColor', returnType: 'PDFText', params: ['Color'] },
-                { name: 'setFont', returnType: 'PDFText', params: ['String'] },
+                { name: 'setFont', returnType: 'PDFText', params: ['PDFFont'] },
                 { name: 'setFontsize', returnType: 'PDFText', params: ['float'] },
                 { name: 'setTextAlign', returnType: 'PDFText', params: ['TextAlign'] },
                 { name: 'setFit', returnType: 'PDFText', params: ['Fit'] },

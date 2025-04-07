@@ -30,12 +30,12 @@ const APW = () => {
 ); PDFLayout root = 
     PDFLinearLayout.build(Orientation.Vertical)
     .setBackgroundColor(Color.BLUE)
-    .addChild(PDFImage.fromResource(null, R.id.testImage)
+    .addChild(PDFImage.fromResource(context, R.id.testImage)
         .setCompress(true)
         .setHeight(200)
         .setFit(Fit.CONTAIN))
     .addChild(PDFH1.build("Title")
-        .setFontFromFile("test-font.ttf")
+        .setFontFromAsset(context, "test-font.ttf")
         .setBackgroundColor(Color.RED)
         .setTextAlign(TextAlign.Center));
 builder.draw(root);`;

@@ -3,7 +3,7 @@ import { FolderPlus, Upload, X, Image, Type } from 'lucide-react';
 
 import testImage from '../../../image/test.jpg';
 import testFont from '../../../fonts/Pretendard-Regular.ttf';
-import { Files, RawFiles } from './enum';
+import { Files, FileWrapper, RawFiles } from './enum';
 
 // 파일 저장
 export function storeFilesInIndexedDB(files: RawFiles) {
@@ -12,6 +12,14 @@ export function storeFilesInIndexedDB(files: RawFiles) {
     
     request.onupgradeneeded = (e) => {
       const db = request.result;
+ 
+      // 기존의 모든 객체 저장소 삭제
+      if (db.objectStoreNames.length > 0) {
+        Array.from(db.objectStoreNames).forEach(storeName => {
+          db.deleteObjectStore(storeName);
+        });
+      }
+      
       if (!db.objectStoreNames.contains('files')) {
         db.createObjectStore('files', { keyPath: 'name' });
       }
@@ -24,7 +32,7 @@ export function storeFilesInIndexedDB(files: RawFiles) {
       
       // 모든 파일 타입에 대해 저장
       Object.keys(files).forEach(type => {
-        files[type].forEach(file => {
+        files[type].forEach((file:File) => {
           store.put({
             name: file.name,
             type: file.type,
@@ -59,7 +67,7 @@ export function getFilesFromIndexedDB() {
           const fileData = cursor.value;
           files[fileData.fileType].push({
             name: fileData.name,
-            url: URL.createObjectURL(fileData.data),
+            url: URL.createObjectURL(new Blob([fileData.data], { type: fileData.type })),
             type: fileData.type
           });
           cursor.continue();
@@ -125,15 +133,6 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>vo
     };
     
     loadTestFiles();
-    
-    // Cleanup function
-    return () => {
-      if (window.uploadedFiles) {
-        Object.values(window.uploadedFiles).flat().forEach(file => {
-          if (file.url) URL.revokeObjectURL(file.url);
-        });
-      }
-    };
   }, []);
 
   const handleDragOver = (e) => {
@@ -170,10 +169,10 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>vo
       let result = '';
       
       // 안전한 난수 생성을 위해 crypto API 사용
-      const randomValues = new Uint8Array(32);
+      const randomValues = new Uint8Array(16);
       crypto.getRandomValues(randomValues);
       
-      for (let i = 0; i < 32; i++) {
+      for (let i = 0; i < 16; i++) {
         result += chars.charAt(randomValues[i] % chars.length);
       }
       
@@ -211,9 +210,10 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>vo
         name = `R.id.${name}`;
       }
       
-      return {
-        ...file, name: name
-      };
+      return new File([file], name, {
+        type: file.type,
+        lastModified: file.lastModified
+      });
     });
 
     if (validFiles.length > 0) {
@@ -239,7 +239,7 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>vo
     });
   };
 
-  const getFileIcon = (file) => {
+  const getFileIcon = (file:File) => {
     if (file.type.startsWith('image/')) {
       return <Image size={16} className="file-icon" />;
     } else {
@@ -273,7 +273,12 @@ export const FileUploader = ({ onFileUploaded }:{onFileUploaded:(f:RawFiles)=>vo
       {files[type].length > 0 && (
         <div className="file-list">
           {files[type].map((file, index) => (
-            <div key={`${type}-${index}`} className="file-item">
+            <div key={`${type}-${index}`} onClick={(e) => {
+              if(type === 'resource')
+                navigator.clipboard.writeText(file.name);
+              else
+                navigator.clipboard.writeText(`\"${file.name}\"`);
+            }} className="file-item">
               <div className="file-name">
                 {getFileIcon(file)}
                 <span>{file.name}</span>
