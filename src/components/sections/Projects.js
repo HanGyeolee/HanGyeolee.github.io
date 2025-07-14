@@ -9,6 +9,8 @@ import medicalPlatformImage  from '../../image/medical-platform.png'
 import musicAppImage  from '../../image/music-app.png'
 import emotionAIAppImage  from '../../image/emotion-ai-app.png'
 import emgMiddlewareImage  from '../../image/emg-middleware.png'
+import eogMusicComposeImage  from '../../image/eog-music-compose.png'
+import restAPIImage  from '../../image/restapi-image.png'
 
 
 const ProjectsSection = () => {
@@ -19,20 +21,28 @@ const ProjectsSection = () => {
    */
   const projects = useRef([
     {
+      title: '의료기기 RESTful API 서버',
+      thumbnail: restAPIImage,
+      type: IconType.COMPANY,
+      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 의료기기 전자상거래 플랫폼 개발. 결제, 물류, 반품 프로세스 자동화 및 실시간 KPI 대시보드 구현',
+      techStack: ['Java', 'Kotlin', 'Spring Boot', 'CI/CD', 'MySQL', 'SMTP', 'HAProxy', 'Docker', 'Thymeleaf'],
+      period: '2023.11 ~ 2025.07'
+    },
+    {
       title: '조성 검색 사이트',
       thumbnail: keySignImage,
       document: 'https://hangyeolee.github.io/#/projects/tonality',
       type: IconType.PERSONAL,
-      description: '조표에 따라 기능 화성이 어떻게 작성되는 지, 한 눈에 볼 수 있는 사이트. 직접 사용하기 위해 개발',
-      techStack: ['React.js', 'Javascript'],
+      description: '조성별 기능화성 진행을 시각화하여 제공하는 웹 기반 음악 이론 참조 시스템 구축',
+      techStack: ['React.js', 'Javascript', 'Typescript'],
       period: '2025.03 ~ 2025.04'
     },
     {
       title: '안드로이드 PDF 라이브러리',
       document: 'apw-webui', //https://hangyeolee.github.io/#/projects/
-      type: IconType.PERSONAL,
-      description: 'PDF1.4 기반 바이너리 파일 작성 라이브러리 배포',
-      techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary'],
+      type: IconType.PERSONAL | IconType.GITHUB,
+      description: 'PDF 1.4 표준 준수 바이너리 파일 생성 라이브러리 개발 및 오픈소스 배포',
+      techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary', 'Maven'],
       period: '2024.11 ~'
     },
     {
@@ -40,30 +50,31 @@ const ProjectsSection = () => {
       thumbnail: medicalPlatformImage,
       document: 'https://play.google.com/store/apps/details?id=com.neurowiztek.brainmeasure',
       type: IconType.COMPANY,
-      description: '생체 신호 기반 의료 헬스케어 안드로이드 개발 및 런칭',
-      techStack: ['Android', 'Java', 'MVVM', 'JNI', 'SIMD', 'DataBinding'],
-      period: '2022.06 ~ 2022.12'
+      description: '생체신호 기반 의료 헬스케어 모바일 플랫폼 개발 및 구글 스토어 출시',
+      techStack: ['Android', 'Java', 'Kotlin', 'MVVM', 'CI/CD', 'JNI', 'SIMD', 'DataBinding'],
+      period: '2022.06 ~ 2023.11'
     },
     {
-      title: '감정 데이터 분석 인공지능 다이어리',
+      title: '인공지능 다이어리 어플리케이션',
       thumbnail: emotionAIAppImage,
       type: IconType.TEAM,
-      description: '일기에서 감정을 분류하는 인공지능을 탑재한 다이어리 앱 개발',
+      description: '자연어 처리 기반 감정 분석 AI 모델을 활용한 스마트 다이어리 애플리케이션 개발',
       techStack: ['Android', 'JAVA', 'Python', 'Pytorch', 'Tokenizer'],
       period: '2021.03 - 2021.06'
     },
     {
-      title: 'EMG 활용 재활 치료 디바이스 개발',
+      title: 'EMG 활용 재활 치료 프로그램',
       thumbnail: emgMiddlewareImage,
       type: IconType.TEAM,
-      description: '아두이노가 송신하는 근육의 활성도를 수신하고 EMG 신호 처리를 통해 키보드 입력으로 변환하는 미들웨어를 개발, 재활 치료용 게임에 연결',
+      description: 'EMG 신호 실시간 수집 및 디지털 신호 처리를 통한 HCI 미들웨어 시스템 개발. 재활 치료 게임과의 연동을 위한 키보드 입력 매핑 구현',
       techStack: ['Windows', 'C#', 'WinForm', 'Arduino', 'C'],
       period: '2021.03 - 2021.06'
     },
     {
-      title: 'EOG 활용 음악 연주 프로그램 개발',
+      title: 'EOG 활용 음악 연주 프로그램',
+      thumbnail: eogMusicComposeImage,
       type: IconType.TEAM,
-      description: '눈의 움직이는 각도에 따라 선택할 수 있는 HCI를 개발하고, 해당 HCI로 동작 가능한 윈도우 프로그램 개발',
+      description: 'EOG 신호 기반 시선 추적을 활용한 비접촉식 HCI 시스템 설계. 접근성 향상을 위한 음악 연주 소프트웨어 개발',
       techStack: ['Windows', 'C#', 'WinForm', 'ARM', 'C'],
       period: '2020.08 - 2020.12'
     },
@@ -71,7 +82,7 @@ const ProjectsSection = () => {
       title: '음악 동아리 어플리케이션',
       thumbnail: musicAppImage,
       type: IconType.TEAM,
-      description: '크로스 플랫폼 음악 동아리 앱 개발 및 배포',
+      description: '크로스 플랫폼 기반 대학 음악 동아리 전용 모바일 애플리케이션 개발 및 구글 스토어 출시. 서버 인프라 이슈로 인한 임시 서비스 중단 상태',
       techStack: ['Android', 'iOS', 'Xamarin', 'C#', 'Firebase'],
       period: '2019.01 - 2019.09'
     },
@@ -259,7 +270,7 @@ const ProjectsSection = () => {
                   {/* 프로젝트 정보 */}
                   <div className="p-4">
                     <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
-                    <p className="text-white/80 text-sm min-h-[60px] mb-4 line-clamp-3">
+                    <p className="text-white/80 text-sm min-h-[60px] mb-4 line-clamp-3" style={{whiteSpace:'pre-line'}}>
                       {project.description}
                     </p>
                     
@@ -268,7 +279,7 @@ const ProjectsSection = () => {
                       {project.techStack.map((tech) => (
                         <span 
                           key={tech} 
-                          className="bg-[#061529] px-2.5 py-1 rounded-full text-s text-white/80"
+                          className="bg-[#061529] px-2.5 py-1 rounded-full text-sm text-white/80"
                         >
                           {tech}
                         </span>

@@ -5,8 +5,8 @@ import { NavigationProps, SectionProps } from '../util/sections.ts';
 // 기본 섹션 정의
 const defaultSections: SectionProps[] = [
   { id: 'start', invisible: true },
-  { id: 'intro', label: '소개' },
-  { id: 'about', label: '개발자 소개' },
+  { id: 'intro', label: '짧은 소개' },
+  { id: 'about', label: '자기 소개' },
   { id: 'skills', label: '기술 스택' },
   { id: 'projects', label: '프로젝트' }
 ];

@@ -20,29 +20,47 @@ export interface RawFiles{
 export type FileWrapper = 'file' | 'assets' | 'resource';
 
 export interface LibraryProps{
+  // 타입
   type: 'Class'|'Enum',
+  // 실제 typescript 클래스
   object: any;
+  // 클래스 타입 식별자
   name: string;
+  // 클래스 상속자
   extend?: string;
+  // 클래스 생성자
   constructors?: {
+    // 생성자 파라미터
     params: string[];
     document?: string;
   }[],
+  // 클래스 내 멤버 변수
   variables?: {
+    // 멤버 변수 식별자
     name: string;
+    // 멤버 변수 타입 식별자
     type: string;
+    // true: 정적 변수
     isStatic?:boolean;
     document?: string;
   }[];
+  // 클래스 내 메소드
   methods?: {
+    // 메소드 식별자
     name: string;
+    // 메소드 반환값
     returnType: string;
+    // 메소드 매개변수 타입 식별자
     params: string[];
+    // ture: 정적 메소드
     isStatic?:boolean;
     document?: string;
   }[];
+  // 선언 시 사용되는 정규식 예시) "/Color\s+(\w+)\s*=/g"
   variableDeclaration?: RegExp,
+  // 인스턴스를 반환하는 정적 메소드 정규식 예시) "/PDFImage\.(fromResource|fromFile|fromAsset)/g"
   staticMethods?: RegExp,
+  // 사용 안함. 직접 계산
   methodChain?: RegExp
 }
 
@@ -63,15 +81,15 @@ export const PDFColorLibrary:LibraryProps = {
   object: Color,
   name:'Color',
   variables: [
-    { name:'TRANSPARENT',   isStatic:true, type:'int' },
-    { name:'BLACK',         isStatic:true, type:'int' },
-    { name:'WHITE',         isStatic:true, type:'int' },
-    { name:'RED',           isStatic:true, type:'int' },
-    { name:'GREEN',         isStatic:true, type:'int' },
-    { name:'BLUE',          isStatic:true, type:'int' },
-    { name:'YELLOW',        isStatic:true, type:'int' },
-    { name:'MAGENTA',       isStatic:true, type:'int' },
-    { name:'GRAY',          isStatic:true, type:'int' },
+    { name:'TRANSPARENT',   isStatic:true, type:'Color' },
+    { name:'BLACK',         isStatic:true, type:'Color' },
+    { name:'WHITE',         isStatic:true, type:'Color' },
+    { name:'RED',           isStatic:true, type:'Color' },
+    { name:'GREEN',         isStatic:true, type:'Color' },
+    { name:'BLUE',          isStatic:true, type:'Color' },
+    { name:'YELLOW',        isStatic:true, type:'Color' },
+    { name:'MAGENTA',       isStatic:true, type:'Color' },
+    { name:'GRAY',          isStatic:true, type:'Color' },
   ],
   variableDeclaration: /Color\s+(\w+)\s*=/g,
 };
@@ -112,12 +130,12 @@ export const PDFTextAlignLibrary:LibraryProps = {
   object: TextAlign,
   name:'TextAlign',
   variables: [
-    { name:'Start',     isStatic:true, type:'int' },
-    { name:'End',       isStatic:true, type:'int' },
-    { name:'Left',      isStatic:true, type:'int' },
-    { name:'Right',     isStatic:true, type:'int' },
-    { name:'Center',    isStatic:true, type:'int' },
-    { name:'Justify',   isStatic:true, type:'int' },
+    { name:'Start',     isStatic:true, type:'TextAlign' },
+    { name:'End',       isStatic:true, type:'TextAlign' },
+    { name:'Left',      isStatic:true, type:'TextAlign' },
+    { name:'Right',     isStatic:true, type:'TextAlign' },
+    { name:'Center',    isStatic:true, type:'TextAlign' },
+    { name:'Justify',   isStatic:true, type:'TextAlign' },
   ],
   variableDeclaration: /TextAlign\s+(\w+)\s*=/g,
 };
@@ -133,11 +151,11 @@ export const PDFFitLibrary:LibraryProps = {
   object: Fit,
   name:'Fit',
   variables: [
-    { name:'FILL',        isStatic:true, type:'int', document:'요소 콘텐츠 박스 크기에 맞춰 대체 콘텐츠의 크기를 조절합니다.\n\n콘텐츠가 콘텐츠 박스를 가득 채웁니다. 서로의 가로세로비가 일치하지 않으면 콘텐츠가 늘어납니다.' },
-    { name:'CONTAIN',     isStatic:true, type:'int', document:'대체 콘텐츠의 가로세로비를 유지하면서, 요소의 콘텐츠 박스 내부에 들어가도록 크기를 맞춤 조절합니다.\n\n콘텐츠가 콘텐츠 박스 크기에 맞도록 하면서도 가로세로비를 유지하게 되므로, 서로의 가로세로비가 일치하지 않으면 객체가 "레터박스"처럼 됩니다.' },
-    { name:'COVER',       isStatic:true, type:'int', document:'대체 콘텐츠의 가로세로비를 유지하면서, 요소 콘텐츠 박스를 가득 채웁니다.\n\n서로의 가로세로비가 일치하지 않으면 객체 일부가 잘려나갑니다.' },
-    { name:'NONE',        isStatic:true, type:'int', document:'대체 콘텐츠의 크기를 조절하지 않습니다.' },
-    { name:'SCALE_DOWN',  isStatic:true, type:'int', document:'대체 콘텐츠의 크기가 더 작아지는 값을 선택합니다.' },
+    { name:'FILL',        isStatic:true, type:'Fit', document:'요소 콘텐츠 박스 크기에 맞춰 대체 콘텐츠의 크기를 조절합니다.\n\n콘텐츠가 콘텐츠 박스를 가득 채웁니다. 서로의 가로세로비가 일치하지 않으면 콘텐츠가 늘어납니다.' },
+    { name:'CONTAIN',     isStatic:true, type:'Fit', document:'대체 콘텐츠의 가로세로비를 유지하면서, 요소의 콘텐츠 박스 내부에 들어가도록 크기를 맞춤 조절합니다.\n\n콘텐츠가 콘텐츠 박스 크기에 맞도록 하면서도 가로세로비를 유지하게 되므로, 서로의 가로세로비가 일치하지 않으면 객체가 "레터박스"처럼 됩니다.' },
+    { name:'COVER',       isStatic:true, type:'Fit', document:'대체 콘텐츠의 가로세로비를 유지하면서, 요소 콘텐츠 박스를 가득 채웁니다.\n\n서로의 가로세로비가 일치하지 않으면 객체 일부가 잘려나갑니다.' },
+    { name:'NONE',        isStatic:true, type:'Fit', document:'대체 콘텐츠의 크기를 조절하지 않습니다.' },
+    { name:'SCALE_DOWN',  isStatic:true, type:'Fit', document:'대체 콘텐츠의 크기가 더 작아지는 값을 선택합니다.' },
   ],
   variableDeclaration: /Fit\s+(\w+)\s*=/g,
 };
@@ -151,8 +169,8 @@ export const PDFOrientationLibrary:LibraryProps = {
   object: Orientation,
   name:'Orientation',
   variables: [
-    { name:'Vertical',    isStatic:true, type:'int', document:'가로' },
-    { name:'Horizontal',  isStatic:true, type:'int', document:'세로' },
+    { name:'Vertical',    isStatic:true, type:'Orientation', document:'가로' },
+    { name:'Horizontal',  isStatic:true, type:'Orientation', document:'세로' },
   ],
   variableDeclaration: /Orientation\s+(\w+)\s*=/g,
 };
@@ -267,7 +285,16 @@ export class Paper {
         { name:'getWidth', returnType:'float', params:[] },
         { name:'Landscape', returnType:'Paper', params:[] },
       ],
-      variableDeclaration: /PaperUnit\s+(\w+)\s*=/g,
+      variableDeclaration: /Paper\s+(\w+)\s*=/g,
     }
   }
+}
+
+export const ResourceLibrary:LibraryProps = {
+  type:'Class',
+  object: null,
+  name:'R',
+  variables: [
+    { name:'id',   isStatic:true, type:'ID' },
+  ],
 }

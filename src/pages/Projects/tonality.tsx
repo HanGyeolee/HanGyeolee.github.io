@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { StaffNotation, Harmony, Scale } from "../../components/ui/StaffNotation.tsx";
+import { TitleMap, useAutoDocumentTitle } from "../../components/util/language.ts";
+
+const titles: TitleMap = {
+  ko : '조성 검색',
+  en : 'Search Tonality'
+}
 
 const Tonality = () => {
-  //TODO title 수정 필요
+    const { detectedLanguage, appliedTitle } = useAutoDocumentTitle(titles);
+
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const key = decodeURIComponent(searchParams.get('key'));
-    const scale = getScaleFromString(searchParams.get('scale'));
+    const key: string|null = decodeURIComponent(searchParams.get('key'));
+    const scale:Scale = getScaleFromString(searchParams.get('scale'));
   
     const [mainHarmony, setMainHarmony] = useState<Harmony[]>([]);
     const [subHarmony, setSubHarmony] = useState<Harmony[]>([]);

@@ -1,5 +1,5 @@
 import { CstElement, CstNode, IToken, parse } from 'java-parser';
-import { LibraryProps, Paper, PaperUnit, PDFColorLibrary, PDFFitLibrary, PDFFontLibrary, PDFOrientationLibrary, PDFTextAlignLibrary } from './enum.tsx';
+import { LibraryProps, Paper, PaperUnit, PDFColorLibrary, PDFFitLibrary, PDFFontLibrary, PDFOrientationLibrary, PDFTextAlignLibrary, ResourceLibrary } from './enum.tsx';
 import { PDFComponent } from './PDFComponent.tsx';
 import { PDFGridLayout, PDFLinearLayout } from './PDFLayout.tsx';
 import { PDFH1, PDFH2, PDFH3, PDFH4, PDFH5, PDFH6, PDFImage, PDFText } from './PDFResource.tsx';
@@ -38,7 +38,19 @@ export const pdfLibraryClasses:LibraryProps[] = [
     PDFOrientationLibrary,
     PaperUnit.toLibrary(),
     Paper.toLibrary(),
+    // android
+    contextLibrary(),
+    ResourceLibrary,
 ];
+
+export function contextLibrary(): LibraryProps {
+    return {
+        type: 'Class',
+        object: null,
+        name: 'Context',
+        variableDeclaration: /Context\s+(\w+)\s*=/g,
+    }
+}
 
 export function codeMapping(javaCode:string):{[key: string]: any} {
     // 변수 저장소

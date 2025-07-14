@@ -241,7 +241,7 @@ export class PDFComponent implements IPDFComponent{
                 { name: 'wrapGridCell', returnType: 'PDFGridCell', params:[] },
                 { name: 'wrapGridCell', returnType: 'PDFGridCell', params:['int', 'int'] },
                 { name: 'setSize', returnType: 'PDFComponent', params:['Number', 'Number'] },
-                { name: 'setBackgroundColor', returnType: 'PDFComponent', params: ['int'] },
+                { name: 'setBackgroundColor', returnType: 'PDFComponent', params: ['Color'] },
                 { name: 'setMargin', returnType: 'PDFComponent', params: ['float'] },
                 { name: 'setMargin', returnType: 'PDFComponent', params: ['float', 'float'] },
                 { name: 'setMargin', returnType: 'PDFComponent', params: ['float', 'float','float', 'float'] },

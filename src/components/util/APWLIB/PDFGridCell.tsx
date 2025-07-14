@@ -161,7 +161,7 @@ export class PDFGridCell extends PDFLayout {
             methods: [
                 { name: 'draw', returnType: 'void', params:[] },
                 { name: 'setSize', returnType: 'PDFGridCell', params:['Number', 'Number'] },
-                { name: 'setBackgroundColor', returnType: 'PDFGridCell', params: ['int'] },
+                { name: 'setBackgroundColor', returnType: 'PDFGridCell', params: ['Color'] },
                 { name: 'setChild', returnType: 'PDFGridCell', params:['PDFComponent'] },
                 { name: 'setColumnSpan', returnType: 'PDFGridCell', params:['int'] },
                 { name: 'setRowSpan', returnType: 'PDFGridCell', params:['int'] },

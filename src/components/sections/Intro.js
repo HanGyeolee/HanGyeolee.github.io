@@ -105,7 +105,7 @@ const IntroSection = () => {
                 <Code2 className="w-12 h-12 text-black" />
               </div>
               <h3 className="text-xl font-semibold text-black mb-3">Multi Language</h3>
-              <p className="text-darkgray-100">C/C++17, C#, Java, React, Python, Rust</p>
+              <p className="text-darkgray-100">C/C++17, C#, Java11-17, Kotlin, React, Python, Rust, Matlab</p>
             </div>
             
             <div className="highlight-right-item p-6 bg-white/30 rounded-lg backdrop-blur-sm">
