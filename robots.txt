@@ -1,3 +1,64 @@
 # https://www.robotstxt.org/robotstxt.html
+
+# 모든 검색엔진 봇 허용
 User-agent: *
-Disallow:
+Allow: /
+
+# 구글봇 특별 설정
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 2
+Allow: /api/public/
+
+# 네이버봇 설정
+User-agent: Yeti
+Allow: /
+Crawl-delay: 2
+
+# 다음봇 설정
+User-agent: Daumoa
+Allow: /
+Crawl-delay: 2
+
+# 빙봇 설정
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# 얀덱스봇 설정 (러시아)
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# 봇 차단
+User-agent: Baiduspider
+Disallow: /
+
+# SEO 도구 봇들 차단
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# 스크래핑 봇 차단
+User-agent: SentiBot
+Disallow: /
+
+User-agent: LinkpadBot
+Disallow: /
+
+User-agent: MegaIndex
+Disallow: /
+
+# 사이트맵 위치
+Sitemap: https://yourdomain.com/sitemap.xml
