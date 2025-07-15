@@ -531,8 +531,31 @@ function generateParameterSuggestions(
                 range
             });
         });
+
+        // 2. int 값들
+        if(paramType === 'int' && 
+            (
+                context.methodName === 'fromResource' ||
+                context.methodName === 'setFontFromResource'
+            )){
+            const RClass = pdfLibraryClasses.find(c => 
+                c.type === 'Enum' && c.name === 'ResourceId'
+            )
+            if (RClass && RClass.variables) {
+                RClass.variables.filter(v => v.isStatic).forEach(enumValue => {
+                    suggestions.push({
+                        label: `R.id.${enumValue.name}`,
+                        kind: languages.CompletionItemKind.Constant,
+                        insertText: `R.id.${enumValue.name}`,
+                        detail: `R.id.${enumValue.name}`,
+                        documentation: enumValue.document,
+                        range
+                    });
+                });
+            }
+        }
         
-        // 2. Enum 값들
+        // 3. Enum 값들
         const enumClass = pdfLibraryClasses.find(c => 
             c.type === 'Enum' && c.name === paramType
         );
@@ -549,7 +572,7 @@ function generateParameterSuggestions(
             });
         }
         
-        // 3. 정적 메소드 (해당 타입을 반환하는)
+        // 4. 정적 메소드 (해당 타입을 반환하는)
         pdfLibraryClasses.forEach(classInfo => {
             if (classInfo.methods) {
                 classInfo.methods.filter(m => {

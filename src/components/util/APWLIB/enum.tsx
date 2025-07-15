@@ -291,10 +291,10 @@ export class Paper {
 }
 
 export const ResourceLibrary:LibraryProps = {
-  type:'Class',
+  type:'Enum',
   object: null,
   name:'R',
   variables: [
-    { name:'id',   isStatic:true, type:'ID' },
+    { name:'id',   isStatic:true, type:'ResourceId' },
   ],
 }

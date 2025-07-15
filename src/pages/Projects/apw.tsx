@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import './apw.css';
-import { FileUploader, storeFilesInIndexedDB } from '../../components/util/APWLIB/FileUploader.tsx';
+import { FileUploader, getFilesFromIndexedDB, storeFilesInIndexedDB } from '../../components/util/APWLIB/FileUploader.tsx';
 import { IndentationTracker } from "../../components/util/APWLIB/IndentationTracker.tsx";
 import { LibraryProps, PaperUnit, RawFiles } from "../../components/util/APWLIB/enum.tsx";
 import { Github } from 'lucide-react';
@@ -28,9 +28,6 @@ const APW = () => {
         assets: [],
         resource: []
     });
-    const [libraries, setLibraries] = useState<LibraryProps[]>(
-        pdfLibraryClasses
-    )
 
     // 기본 Java 코드 예시
     const defaultJavaCode = 
@@ -53,8 +50,23 @@ builder.draw(root);`;
         // 자동완성 제공자 등록
         monaco.languages.registerCompletionItemProvider('java', {
             triggerCharacters:['.','=','(',',',' '],
-            provideCompletionItems: function(model, position, context, token) {
-                return provideJavaCompletions(model, position, pdfLibraryClasses);
+            provideCompletionItems: async function(model, position, context, token) {
+                const files = await getFilesFromIndexedDB()
+                const IdLibrary:LibraryProps = {
+                    type:'Enum',
+                    object: null,
+                    name:'ResourceId',
+                    variables: [
+                        ...files.resource.map(file => {
+                            return {
+                                name: file.name.replace('R.id.',''),
+                                isStatic:true,
+                                type:'int'
+                            }
+                        })
+                    ]
+                }
+                return provideJavaCompletions(model, position, [...pdfLibraryClasses,IdLibrary]);
             }
         });
         
@@ -378,21 +390,6 @@ builder.draw(root);`;
             console.log("에디터 준비 완료")
         }
     },[monaco]);
-
-    useEffect(() => {
-        setLibraries([...pdfLibraryClasses, 
-            {
-                type:'Class',
-                object: null,
-                name:'ID',
-                variables: [...uploadedFiles.resource.map(file => {return {
-                    name: file.name,
-                    type: 'int',
-                    isStatic: true,
-                }})],
-            }
-        ])
-    }, [uploadedFiles])
     
     useEffect(() => {
         // 실행 버튼 이벤트 설정
