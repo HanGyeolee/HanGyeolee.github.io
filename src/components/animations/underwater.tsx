@@ -1,11 +1,17 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
+import { useInViewport } from '../ui/ScrollIndicator.tsx';
 
 const Underwater = ({ children }) => {
-  const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef:React.MutableRefObject<THREE.Scene|null> = useRef<THREE.Scene>(null);
   const rendererRef:React.MutableRefObject<THREE.WebGLRenderer|null> = useRef<THREE.WebGLRenderer>(null);
+  const cameraRef:React.MutableRefObject<THREE.Camera|null> = useRef<THREE.Camera>(null);
+  const surfaceMaterialRef:React.MutableRefObject<THREE.ShaderMaterial|null> = useRef<THREE.ShaderMaterial>(null);
   const animationRef:React.MutableRefObject<number|null> = useRef<number>(null);
+  const { elementRef, isInViewport, isObserved } = useInViewport({
+    threshold: 0.0625,
+    rootMargin: '100px'
+  });
 
   const waveVertexShader = `
     uniform float time;
@@ -153,8 +159,32 @@ const Underwater = ({ children }) => {
     }
   `
 
+  // 2. 애니메이션 제어 함수들 추가
+  const startAnimation = useCallback(() => {
+    if (animationRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+    
+    const animate = () => {
+      const time = (Date.now() * 0.0005) % 86400;
+      if (surfaceMaterialRef.current) {
+        surfaceMaterialRef.current.uniforms.time.value = time;
+      }
+      
+      rendererRef.current!.render(sceneRef.current!, cameraRef.current!);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animate();
+  }, []);
+
+  const stopAnimation = useCallback(() => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    if (!mountRef.current) return;
+    if (!elementRef.current) return;
 
     // Scene 설정
     const scene = new THREE.Scene();
@@ -164,20 +194,21 @@ const Underwater = ({ children }) => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    mountRef.current.appendChild(renderer.domElement);
+    elementRef.current.appendChild(renderer.domElement);
     
     sceneRef.current = scene;
     rendererRef.current = renderer;
+    cameraRef.current = camera; // ref 저장 추가
 
     // 수면 (상단)
     const surfaceGeometry = new THREE.PlaneGeometry(512, 512, 1024, 1024);
     const surfaceMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        density:      { value: 6.0 }, // 물결 밀도 3.0
-        waveSteep:    { value: 1.25 }, // 물결 첨도 1.5
-        waveStrength: { value: 0.75 }, // 물결 강도 1.0
-        whiteDistance:{ value: 0.25 }, // 흰색 시작 상대 거리
+        density:      { value: 8.0 }, // 물결 밀도 3.0
+        waveSteep:    { value: 1.625 }, // 물결 첨도 1.5
+        waveStrength: { value: 0.625 }, // 물결 강도 1.0
+        whiteDistance:{ value: 0.1875 }, // 흰색 시작 상대 거리
         maxWhite:     { value: 5.0 }, // 완전히 흰색이 되는 거리
         fadeDistance: { value: 8.0 }, // 페이드 시작 절대 거리
         maxFade:      { value: 128.0 },// 완전히 투명해지는 거리
@@ -189,6 +220,7 @@ const Underwater = ({ children }) => {
       transparent: true,
       side: THREE.DoubleSide
     });
+    surfaceMaterialRef.current = surfaceMaterial;
     
     const surface0 = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
     surface0.rotation.x = -Math.PI / 2;
@@ -199,17 +231,6 @@ const Underwater = ({ children }) => {
     // 카메라 위치
     camera.position.set(0, -8, 0);
     camera.lookAt(0, -8, 0);
-
-    // 애니메이션 루프
-    const animate = () => {
-      const time = (Date.now() * 0.0005) % 86400; // 시간을 shader에 전달
-      surfaceMaterial.uniforms.time.value = time;
-
-      renderer.render(scene, camera);
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
 
     // 리사이즈 핸들링
     const handleResize = () => {
@@ -222,21 +243,46 @@ const Underwater = ({ children }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      stopAnimation(); // 애니메이션 정리
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (elementRef.current && renderer.domElement) {
+        elementRef.current.removeChild(renderer.domElement);
       }
+      // Three.js 리소스 정리
+      surfaceGeometry.dispose();
+      surfaceMaterial.dispose();
       renderer.dispose();
+      
+      // ref 초기화
+      sceneRef.current = null;
+      rendererRef.current = null;
+      cameraRef.current = null;
+      surfaceMaterialRef.current = null;
     };
   }, []);
+
+  // 3. 뷰포트 상태에 따른 애니메이션 제어 useEffect 추가
+  useEffect(() => {
+    if (!isObserved) return; // 아직 한 번도 관찰되지 않았으면 return
+    
+    if (isInViewport) {
+      startAnimation();
+    } else {
+      stopAnimation();
+    }
+    
+    return () => {
+      stopAnimation();
+    };
+  }, [isInViewport, isObserved, startAnimation, stopAnimation]);
 
   return (
     <div className="absolute inset-0 w-full">
       {/* Three.js 3D 효과 */}
       <div 
-        ref={mountRef} 
+        ref={elementRef} 
         className="absolute top-[-2px] right-0 bottom-0 left-0"
       />
       
