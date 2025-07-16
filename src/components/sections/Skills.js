@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { animate, motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { ResponsiveContainer } from '../ui';
+import useDeviceDetection from '../util/MobileHook.ts';
 
 const SkillsSection = () => {
   const sectionRef = useRef(null);
@@ -69,35 +70,7 @@ const SkillsSection = () => {
 };
 
 const SkillsCarousel = () => {
-  // 디바이스 타입 감지를 위한 상태 추가
-  const [isDesktop, setIsDesktop] = useState(false);
-  const checkDevice = () => {
-    // 1. 화면 크기 체크 (기본)
-    const isLargeScreen = window.innerWidth >= 1024; // 태블릿보다 더 큰 화면
-    
-    // 2. 유저 에이전트 체크 (옵션)
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-    
-    // 3. 마우스/포인터 이벤트 지원 체크
-    const hasMouseEvents = 'onmousemove' in window;
-    
-    // 조합된 조건으로 판단
-    // 큰 화면 + 모바일 UA가 아님 + 마우스 이벤트 지원 = 데스크톱 환경 가능성↑
-    setIsDesktop(isLargeScreen && !isMobileUA && hasMouseEvents);
-  };
-
-  useEffect(()=>{
-    // 초기 체크
-    checkDevice();
-    
-    // 리사이즈 이벤트에 대한 리스너 등록
-    window.addEventListener('resize', checkDevice);
-    
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-    };
-  }, [])
+  const { isDesktop } = useDeviceDetection();
 
   // 모션 값 설정
   const [rotation, setRotation] = useState(0);

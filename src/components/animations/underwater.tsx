@@ -1,8 +1,11 @@
 import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { useInViewport } from '../ui/ScrollIndicator.tsx';
+import useDeviceDetection from '../util/MobileHook.ts';
 
 const Underwater = ({ children }) => {
+  const { isDesktop } = useDeviceDetection();
+
   const sceneRef:React.MutableRefObject<THREE.Scene|null> = useRef<THREE.Scene>(null);
   const rendererRef:React.MutableRefObject<THREE.WebGLRenderer|null> = useRef<THREE.WebGLRenderer>(null);
   const cameraRef:React.MutableRefObject<THREE.Camera|null> = useRef<THREE.Camera>(null);
@@ -200,8 +203,14 @@ const Underwater = ({ children }) => {
     rendererRef.current = renderer;
     cameraRef.current = camera; // ref 저장 추가
 
+    var segments:number;
+    if(isDesktop) {
+      segments = 1024
+    } else {
+      segments = 256
+    }
     // 수면 (상단)
-    const surfaceGeometry = new THREE.PlaneGeometry(512, 512, 1024, 1024);
+    const surfaceGeometry = new THREE.PlaneGeometry(512, 512, segments, segments);
     const surfaceMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
