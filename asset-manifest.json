@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.8ad6d64a.css",
-    "main.js": "/static/js/main.57531831.js",
+    "main.css": "/static/css/main.a53d687f.css",
+    "main.js": "/static/js/main.03a91322.js",
     "static/js/7614.0dde3997.chunk.js": "/static/js/7614.0dde3997.chunk.js",
     "static/js/9421.7c48cff3.chunk.js": "/static/js/9421.7c48cff3.chunk.js",
     "static/js/9553.0c5d0e50.chunk.js": "/static/js/9553.0c5d0e50.chunk.js",
@@ -101,8 +101,8 @@
     "static/media/music-app.png": "/static/media/music-app.77a05d041b15f6c48d9e.png",
     "static/media/restapi-image.png": "/static/media/restapi-image.acf7f3e72b2b7a6b414d.png",
     "index.html": "/index.html",
-    "main.8ad6d64a.css.map": "/static/css/main.8ad6d64a.css.map",
-    "main.57531831.js.map": "/static/js/main.57531831.js.map",
+    "main.a53d687f.css.map": "/static/css/main.a53d687f.css.map",
+    "main.03a91322.js.map": "/static/js/main.03a91322.js.map",
     "7614.0dde3997.chunk.js.map": "/static/js/7614.0dde3997.chunk.js.map",
     "9553.0c5d0e50.chunk.js.map": "/static/js/9553.0c5d0e50.chunk.js.map",
     "4473.10e2333d.chunk.js.map": "/static/js/4473.10e2333d.chunk.js.map",
@@ -192,7 +192,7 @@
     "2488.ae69e9ad.chunk.js.map": "/static/js/2488.ae69e9ad.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.8ad6d64a.css",
-    "static/js/main.57531831.js"
+    "static/css/main.a53d687f.css",
+    "static/js/main.03a91322.js"
   ]
 }
