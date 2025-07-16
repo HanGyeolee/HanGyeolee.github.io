@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ResponsiveContainer } from '../ui';
+import Underwater from '../animations/underwater.tsx';
 
 const AboutSection = () => {
   const sectionRef = useRef(null);
@@ -51,10 +52,9 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="h-lvh bg-[#1B365D] flex flex-col items-center justify-center relative overflow-hidden">
+    <div ref={sectionRef} className="h-lvh bg-[#0E2F5E] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#66A5AD] to-[#1B365D]"></div>
-
+      <div className="absolute inset-0 bg-gradient-to-b from-[#17498B] to-[#0E2F5E]"></div>
       {/* 메인 컨텐츠 */}
       <ResponsiveContainer>
         <div className="section-content text-center z-10 max-w-5xl mx-auto px-4">

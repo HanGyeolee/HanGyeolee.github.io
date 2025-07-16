@@ -19,6 +19,31 @@ export interface RawFiles{
 
 export type FileWrapper = 'file' | 'assets' | 'resource';
 
+export interface LibConstruct{
+  // 생성자 파라미터
+  params: string[];
+  document?: string;
+}
+export interface LibVariable{
+  // 멤버 변수 식별자
+  name: string;
+  // 멤버 변수 타입 식별자
+  type: string;
+  // true: 정적 변수
+  isStatic?:boolean;
+  document?: string;
+}
+export interface LibMethod{
+    // 메소드 식별자
+    name: string;
+    // 메소드 반환값
+    returnType: string;
+    // 메소드 매개변수 타입 식별자
+    params: string[];
+    // ture: 정적 메소드
+    isStatic?:boolean;
+    document?: string;
+}
 export interface LibraryProps{
   // 타입
   type: 'Class'|'Enum',
@@ -29,33 +54,11 @@ export interface LibraryProps{
   // 클래스 상속자
   extend?: string;
   // 클래스 생성자
-  constructors?: {
-    // 생성자 파라미터
-    params: string[];
-    document?: string;
-  }[],
+  constructors?: LibConstruct[],
   // 클래스 내 멤버 변수
-  variables?: {
-    // 멤버 변수 식별자
-    name: string;
-    // 멤버 변수 타입 식별자
-    type: string;
-    // true: 정적 변수
-    isStatic?:boolean;
-    document?: string;
-  }[];
+  variables?: LibVariable[];
   // 클래스 내 메소드
-  methods?: {
-    // 메소드 식별자
-    name: string;
-    // 메소드 반환값
-    returnType: string;
-    // 메소드 매개변수 타입 식별자
-    params: string[];
-    // ture: 정적 메소드
-    isStatic?:boolean;
-    document?: string;
-  }[];
+  methods?: LibMethod[];
   // 선언 시 사용되는 정규식 예시) "/Color\s+(\w+)\s*=/g"
   variableDeclaration?: RegExp,
   // 인스턴스를 반환하는 정적 메소드 정규식 예시) "/PDFImage\.(fromResource|fromFile|fromAsset)/g"

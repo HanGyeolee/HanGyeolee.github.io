@@ -223,7 +223,7 @@ const ProjectsSection = () => {
   return (
     <div ref={sectionRef} className="h-lvh bg-[#061529] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0F2342] to-[#061529]"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#081F41] to-[#061529]"></div>
 
       {/* 추가된 래퍼 - 내부 스크롤용 */}
       <div className="section-content-wrapper h-full w-full overflow-hidden no-scrollbar">

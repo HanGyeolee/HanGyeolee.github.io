@@ -46,9 +46,9 @@ const SkillsSection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="h-lvh bg-[#0F2342] flex flex-col items-center justify-center relative overflow-hidden">
+    <div ref={sectionRef} className="h-lvh bg-[#081F41] flex flex-col items-center justify-center relative overflow-hidden">
       {/* 배경 그라데이션 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1B365D] to-[#0F2342]"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0E2F5E] to-[#081F41]"></div>
 
       {/* 메인 컨텐츠 */}
       <ResponsiveContainer>

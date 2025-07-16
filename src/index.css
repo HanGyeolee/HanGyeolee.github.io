@@ -236,6 +236,10 @@ body::-webkit-scrollbar {
   top: 50%;
 }
 
+.top-\[-2px\] {
+  top: -2px;
+}
+
 .z-10 {
   z-index: 10;
 }
@@ -253,16 +257,16 @@ body::-webkit-scrollbar {
 }
 
 /* 배경색 관련 */
-.bg-\[\#1B365D\] {
-  background-color: #1B365D;
+.bg-\[\#0E2F5E\] {
+  background-color: #0E2F5E;
 }
 
 .bg-\[\#3d4852\] {
   background-color: #3d4852;
 }
 
-.bg-\[\#0F2342\] {
-  background-color: #0F2342;
+.bg-\[\#081F41\] {
+  background-color: #081F41;
 }
 
 .bg-\[\#061529\] {
@@ -289,36 +293,36 @@ body::-webkit-scrollbar {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
 
-.from-\[\#66A5AD\] {
-  --tw-gradient-from: #66A5AD;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(102, 165, 173, 0));
+.from-\[\#BAD8FF\] {
+  --tw-gradient-from: #BAD8FF;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #17498B);
 }
 
-.from-\[\#B2D8E5\] {
-  --tw-gradient-from: #B2D8E5;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(178, 216, 229, 0));
+.from-\[\#17498B\] {
+  --tw-gradient-from: #17498B;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #0E2F5E);
 }
 
-.from-\[\#1B365D\] {
-  --tw-gradient-from: #1B365D;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(27, 54, 93, 0));
+.from-\[\#0E2F5E\] {
+  --tw-gradient-from: #0E2F5E;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #081F41);
 }
 
-.from-\[\#0F2342\] {
-  --tw-gradient-from: #0F2342;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(15, 35, 66, 0));
+.from-\[\#081F41\] {
+  --tw-gradient-from: #081f41;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, #061529);
 }
 
-.to-\[\#1B365D\] {
-  --tw-gradient-to: #1B365D;
+.to-\[\#17498B\] {
+  --tw-gradient-to: #17498B;
 }
 
-.to-\[\#66A5AD\] {
-  --tw-gradient-to: #66A5AD;
+.to-\[\#0E2F5E\] {
+  --tw-gradient-to: #0E2F5E;
 }
 
-.to-\[\#0F2342\] {
-  --tw-gradient-to: #0F2342;
+.to-\[\#081F41\] {
+  --tw-gradient-to: #081F41;
 }
 
 .to-\[\#061529\] {
@@ -430,6 +434,10 @@ body::-webkit-scrollbar {
 
 .text-darkgray-100 {
   color: rgb(68, 70, 73);
+}
+
+.text-darkgray-200 {
+  color: rgb(54, 56, 59);
 }
 
 /* 테두리 관련 */

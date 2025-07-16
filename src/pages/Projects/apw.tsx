@@ -139,7 +139,6 @@ builder.draw(root);`;
                     }, 0);
                 }
             });
-  
             // DOM에서 제안 위젯 상태 확인하는 함수
             function checkSuggestionWidgetVisibility() {
               const editorNode = editor.getDomNode();
@@ -165,7 +164,6 @@ builder.draw(root);`;
                     });
                 }
             }
-            
             // 데코레이션 업데이트 함수
             function updateDecorations() {
                 if(model){
@@ -188,7 +186,6 @@ builder.draw(root);`;
                     decorationIds.set(newDecorations);
                 }
             }
-
             editor.onKeyDown((e) => {
                 // 키 이벤트 처리 전에 자동완성 위젯 상태 확인
                 const isSuggestionWidgetVisible = checkSuggestionWidgetVisibility();

@@ -1,5 +1,5 @@
-import { languages, editor, Position } from 'monaco-editor';
-import { LibraryProps } from "./enum";
+import { languages, editor, Position, IRange } from 'monaco-editor';
+import { LibMethod, LibraryProps, LibVariable } from "./enum";
 import { contextLibrary } from './CodeMapper.tsx';
 
 interface Variable {
@@ -417,7 +417,7 @@ function generateSuggestions(
     pdfLibraryClasses: LibraryProps[],
     position: Position
 ): languages.CompletionItem[] {
-    const range = {
+    const range:IRange | languages.CompletionItemRanges = {
         startLineNumber: position.lineNumber,
         startColumn: position.column,
         endLineNumber: position.lineNumber,
@@ -483,7 +483,7 @@ function generateParameterSuggestions(
     context: CompletionContext,
     variables: Variable[],
     pdfLibraryClasses: LibraryProps[],
-    range: any
+    range: IRange | languages.CompletionItemRanges
 ): languages.CompletionItem[] {
     if (!context.ownerType || !context.methodName || context.paramIndex === undefined) {
         return [];
@@ -612,7 +612,7 @@ function generateParameterSuggestions(
 function generateNewSuggestions(
     context: CompletionContext,
     pdfLibraryClasses: LibraryProps[],
-    range: any
+    range: IRange | languages.CompletionItemRanges
 ): languages.CompletionItem[] {
     const query = context.query?.toLowerCase() || '';
     
@@ -648,7 +648,7 @@ function generateGeneralSuggestions(
     context: CompletionContext,
     variables: Variable[],
     pdfLibraryClasses: LibraryProps[],
-    range: any
+    range: IRange | languages.CompletionItemRanges
 ): languages.CompletionItem[] {
     const query = context.query?.toLowerCase() || '';
     const suggestions: languages.CompletionItem[] = [];
@@ -687,7 +687,7 @@ function generateGeneralSuggestions(
 /**
  * 메소드 추천 항목 생성
  */
-function createMethodSuggestion(method: any, range: any): languages.CompletionItem {
+function createMethodSuggestion(method: LibMethod, range: IRange | languages.CompletionItemRanges): languages.CompletionItem {
     return {
         label: method.name,
         kind: languages.CompletionItemKind.Method,
@@ -706,7 +706,7 @@ function createMethodSuggestion(method: any, range: any): languages.CompletionIt
 /**
  * 변수 추천 항목 생성
  */
-function createVariableSuggestion(variable: any, range: any): languages.CompletionItem {
+function createVariableSuggestion(variable: LibVariable, range: IRange | languages.CompletionItemRanges): languages.CompletionItem {
     return {
         label: variable.name,
         kind: variable.isStatic ? 
