@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { NavigationProps, SectionProps } from '../util/sections.ts';
+import FloatingBottle from '../animations/floatingBottle.tsx';
 
 // 기본 섹션 정의
 const defaultSections: SectionProps[] = [
@@ -12,7 +13,7 @@ const defaultSections: SectionProps[] = [
 ];
 
 const Navigation = (props:NavigationProps) => {
-  // 섹션 정의
+    // 섹션 정의
   const sections = props.sections || defaultSections;
 
   const [activeSection, setActiveSection] = useState(sections[0].id);
@@ -34,6 +35,7 @@ const Navigation = (props:NavigationProps) => {
         }
       });
       
+      // 내부에서 이미 애니메이션 중이면 즉시 return;
       setActiveSection(currentSection);
       if(title){
         document.title = title;
@@ -82,7 +84,7 @@ const Navigation = (props:NavigationProps) => {
     } else {
       newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
     }
-    
+
     if (newIndex !== currentIndex) {
       scrollToSection(sections[newIndex].id);
     }
@@ -145,6 +147,12 @@ const Navigation = (props:NavigationProps) => {
         ))}
       </ul>
     </nav>
+    <div className="fixed w-full h-full z-40 pointer-events-none">
+      <FloatingBottle
+        onContactDialogOpen={() => {}}
+        onContactDialogClose={() => {}}
+      />
+    </div>
   </>
   );
 };

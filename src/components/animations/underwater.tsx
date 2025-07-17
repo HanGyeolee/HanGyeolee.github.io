@@ -61,7 +61,7 @@ const Underwater = ({ children }) => {
     // Gerstner Wave 함수 - 더 현실적인 바다 물결
     vec3 gerstnerWave(vec2 direction, float amplitude, float frequency, float speed, vec2 position, float time) {
       // 위치 기반 variation 추가
-      float noiseScale = 0.125;
+      float noiseScale = 0.1875;
       float phaseOffset  = fbm(position * noiseScale) * 6.283184;
       float freqVariation = 1.0 + fbm(position * noiseScale * 0.8) * 0.2; // ±20% variation
       float amplitudeVariation = 1.0 + fbm(position * noiseScale * 1.5) * 0.3; // ±30% variation
@@ -95,12 +95,12 @@ const Underwater = ({ children }) => {
       wave += gerstnerWave(normalize(vec2(0.8, -0.1)), 0.5, 0.04, 1.1, worldPos, time);
       
       // LOD 기반 추가 파도들 (가까이 있을 때만)
-      if (lodFactor > 0.625) {
+      if (lodFactor > 0.25) {
         // 중간 파도들
         wave += gerstnerWave(normalize(vec2(0.7, -0.125)), 0.15, 0.1, 2.0, worldPos, time);
         wave += gerstnerWave(normalize(vec2(-0.8, 0.25)), 0.125, 0.12, 1.8, worldPos, time);
         
-        if (lodFactor > 0.75) {
+        if (lodFactor > 0.5) {
           // 작은 잔물결들
           wave += gerstnerWave(normalize(vec2(0.9, 0.4)), 0.075, 0.4, 3.0, worldPos, time);
           wave += gerstnerWave(normalize(vec2(-0.2, 0.7)), 0.06, 0.48, 2.5, worldPos, time);
@@ -167,7 +167,7 @@ const Underwater = ({ children }) => {
     if (animationRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
     
     const animate = () => {
-      const time = (Date.now() * 0.0005) % 86400;
+      const time = (Date.now() * 0.00075) % 86400;
       if (surfaceMaterialRef.current) {
         surfaceMaterialRef.current.uniforms.time.value = time;
       }
@@ -196,19 +196,14 @@ const Underwater = ({ children }) => {
     
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0));
     elementRef.current.appendChild(renderer.domElement);
     
     sceneRef.current = scene;
     rendererRef.current = renderer;
     cameraRef.current = camera; // ref 저장 추가
 
-    var segments:number;
-    if(isDesktop) {
-      segments = 1024
-    } else {
-      segments = 256
-    }
+    const segments:number = isDesktop ? 1024 : 256;
     // 수면 (상단)
     const surfaceGeometry = new THREE.PlaneGeometry(512, 512, segments, segments);
     const surfaceMaterial = new THREE.ShaderMaterial({
@@ -222,7 +217,7 @@ const Underwater = ({ children }) => {
         fadeDistance: { value: 8.0 }, // 페이드 시작 절대 거리
         maxFade:      { value: 128.0 },// 완전히 투명해지는 거리
         baseOpacity:  { value: 0.875 },    // 기본 투명도
-        surfaceColor: { value: new THREE.Color(0x09aafb) } 
+        surfaceColor: { value: new THREE.Color(0x09a5fb) } 
       },
       vertexShader: waveVertexShader,
       fragmentShader: distanceFragmentShader,
@@ -286,6 +281,20 @@ const Underwater = ({ children }) => {
       stopAnimation();
     };
   }, [isInViewport, isObserved, startAnimation, stopAnimation]);
+
+  // 탭이 비활성화되었을 때만 정지
+  useEffect(() => {
+      const handleVisibilityChange = () => {
+          if (document.hidden) {
+              stopAnimation();
+          } else {
+              startAnimation();
+          }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   return (
     <div className="absolute inset-0 w-full">
