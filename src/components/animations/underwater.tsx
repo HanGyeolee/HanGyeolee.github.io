@@ -208,7 +208,7 @@ const Underwater = ({ children }) => {
     const surfaceGeometry = new THREE.PlaneGeometry(512, 512, segments, segments);
     const surfaceMaterial = new THREE.ShaderMaterial({
       uniforms: {
-        time: { value: 0 },
+        time:         { value: 0 },
         density:      { value: 8.0 }, // 물결 밀도 3.0
         waveSteep:    { value: 1.625 }, // 물결 첨도 1.5
         waveStrength: { value: 0.625 }, // 물결 강도 1.0

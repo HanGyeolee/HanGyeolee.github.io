@@ -6,3 +6,4 @@ export enum IconType {
   BLOG_DOCUMENT = 0x10,
   EXTERNAL = 0x20,
 }
+

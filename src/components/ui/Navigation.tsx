@@ -17,6 +17,8 @@ const Navigation = (props:NavigationProps) => {
   const sections = props.sections || defaultSections;
 
   const [activeSection, setActiveSection] = useState(sections[0].id);
+  const bottleInitialize = useRef<boolean>(false);
+  const bottleRef = useRef<HTMLDivElement|null>(null)
 
   // 스크롤 위치에 따라 활성 섹션 업데이트
   useEffect(() => {
@@ -49,6 +51,20 @@ const Navigation = (props:NavigationProps) => {
       window.removeEventListener('scroll', updateActiveSection);
     };
   }, [props.sections, sections]);
+
+  useEffect(() => {
+    if(!bottleInitialize.current) {
+      if(activeSection !== sections[0].id){
+        bottleInitialize.current = true;
+        gsap.to(bottleRef.current, 
+          {
+          x: "0%",
+          duration: 8.0,
+          ease: "power2.out",
+        });
+      }
+    }
+  }, [activeSection, bottleRef])
 
   // 섹션으로 스크롤
   const scrollToSection = useCallback((id: string) => {
@@ -147,7 +163,9 @@ const Navigation = (props:NavigationProps) => {
         ))}
       </ul>
     </nav>
-    <div className="fixed w-full h-full z-40 pointer-events-none">
+    <div ref={bottleRef} className="fixed w-full h-full z-70 pointer-events-none" style={{
+        transform:"translateX(-30%)" ,willChange:"transform"
+    }}>
       <FloatingBottle
         onContactDialogOpen={() => {}}
         onContactDialogClose={() => {}}

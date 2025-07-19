@@ -1,13 +1,19 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import * as THREE from 'three';
+import { gsap } from 'gsap';
 import useDeviceDetection from '../util/MobileHook.ts';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import texturePaper  from '../../image/texture-paper.jpg';
+import { ContactLinkProps } from '../util/projects.ts';
+import { LinkedIn } from '../util/IconMapper.tsx';
+import { Github } from 'lucide-react';
 
 interface FloatingBottleProps {
   onContactDialogOpen?: () => void;
   onContactDialogClose?: () => void;
 }
 
-type AnimationState = 'idle' | 'opening' | 'paperOut' | 'paperExpand' | 'completed';
+type AnimationState = 'idle' | 'opening' | 'closing' | 'completed';
 
 /**
  * 1. 스크롤 애니메이팅을 통해서 section 이동할 때마다, 메시지 병이 해류에 휩쓸려서 한 바퀴 빙글 돌게 할 거야.
@@ -21,210 +27,248 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
   onContactDialogClose 
 }) => {
   const { isDesktop } = useDeviceDetection();
+  const contactList = useRef<ContactLinkProps[]>([
+    {
+      title: "Github",
+      href: "https://github.com/HanGyeolee",
+      type: <Github className='w-[48px] h-[48px]'></Github>
+    },
+    {
+      title: "LinkedIn",
+      href: "https://www.linkedin.com/in/han-gyeol-choi-8567772ba",
+      type: <LinkedIn className='w-[48px] h-[48px]'></LinkedIn>
+    }
+  ])
+
+  const createBottleFromGLB = useCallback(async (): Promise<{
+    bottleGroup: THREE.Group;
+    mixer: THREE.AnimationMixer;
+    openAction: THREE.AnimationAction;
+    closeAction: THREE.AnimationAction;
+  }> => {
+    return new Promise((resolve, reject) => {
+      const loader = new GLTFLoader();
+
+      // GLB 로드 후 매테리얼 확인 및 조정
+      const setupMaterials = (bottleGroup: THREE.Group):THREE.Group => {
+        bottleGroup.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                const material = child.material as THREE.Material;
+                
+                // 유리병 재질 조정 (jackdaniel001)
+                if (child.name === 'jackdaniel001') {
+                  if (material instanceof THREE.MeshStandardMaterial) {
+                    const newMaterial = new THREE.MeshPhysicalMaterial({
+                      color: 0xffffff,
+                      metalness: .9,
+                      roughness: .125,
+                      envMapIntensity: 0.9,
+                      clearcoat: 1,
+                      transparent: true,
+                      // transmission: .95,
+                      opacity: .5,
+                      reflectivity: 0.5,
+                      ior: 0.9,
+                      side: THREE.BackSide,
+                    });
+
+                    // 할당 시도
+                    child.material = newMaterial;
+                    child.castShadow = false;
+                  }
+                }
+                else if (child.name === 'inner001') {
+                  if (material instanceof THREE.MeshStandardMaterial) {
+                    const newMaterial = new THREE.MeshPhysicalMaterial({
+                      color: 0xffffff,
+                      metalness: .9,
+                      roughness: .05,
+                      envMapIntensity: 0.9,
+                      clearcoat: 1,
+                      transparent: true,
+                      // transmission: .95,
+                      opacity: .25,
+                      reflectivity: 0.75,
+                      ior: 0.9,
+                      side: THREE.DoubleSide,
+                    });
+                    // 할당 시도
+                    child.material = newMaterial;
+                    child.castShadow = false;
+                  }
+                }
+                // 유리병 뚜껑 (top.001)
+                else if (child.name === 'top001') {
+                  if (material instanceof THREE.MeshPhysicalMaterial) {
+                      material.side = THREE.DoubleSide;
+                  }
+                }
+                // 종이 재질 조정 (paper)
+                else if (child.name === 'paper') {
+                  if (material instanceof THREE.MeshStandardMaterial) {
+                      material.roughness = 1;
+                      material.side = THREE.DoubleSide;
+                  }
+                
+                  // 그림자 설정
+                  child.castShadow = true;
+                  child.receiveShadow = false;
+                }
+                child.receiveShadow = true;
+            }
+          });
+          return bottleGroup;
+      };
+      
+      loader.load(
+        '/models/bottle.glb', // public 폴더에 저장된 파일
+        (gltf) => {
+          // console.log('GLB loaded:', gltf);
+          
+          // 씬 전체를 가져옴
+          const bottleGroup = setupMaterials(gltf.scene);
+          
+          // 애니메이션 믹서 생성
+          const mixer = new THREE.AnimationMixer(bottleGroup);
+          
+          // 애니메이션 액션 찾기
+          const openClip = gltf.animations.find(clip => clip.name === 'bottleOpenAction');
+          const closeClip = gltf.animations.find(clip => clip.name === 'bottleCloseAction');
+          
+          if (!openClip || !closeClip) {
+            reject(new Error('Required animations not found'));
+            return;
+          }
+          
+          // 애니메이션 액션 생성
+          const openAction = mixer.clipAction(openClip);
+          const closeAction = mixer.clipAction(closeClip);
+          
+          // 애니메이션 설정
+          openAction.setLoop(THREE.LoopOnce, 1);
+          openAction.clampWhenFinished = true;
+          
+          closeAction.setLoop(THREE.LoopOnce, 1);
+          closeAction.clampWhenFinished = true;
+          
+          // 헬퍼 오브젝트 숨기기
+          const forModifier = bottleGroup.getObjectByName('for_modifier');
+          const pathObject = bottleGroup.getObjectByName('path');
+          // console.log('hide object:', forModifier);
+          // console.log('hide object:', pathObject);
+          
+          if (forModifier) forModifier.visible = false;
+          if (pathObject) pathObject.visible = false;
+          
+          resolve({ bottleGroup, mixer, openAction, closeAction });
+        },
+        (progress) => {
+          // console.log('Loading progress:', (progress.loaded / progress.total * 100) + '%');
+        },
+        (error) => {
+          console.error('Error loading GLB:', error);
+          reject(error);
+        }
+      );
+    });
+  }, []);
 
   const elementRef = useRef<HTMLDivElement|null>(null);
   // Three.js refs
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const cameraRef = useRef<THREE.Camera | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const animationRef = useRef<number | null>(null);
 
-  // 3D 오브젝트 refs
+  // GLB 관련 refs
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const openActionRef = useRef<THREE.AnimationAction | null>(null);
+  const closeActionRef = useRef<THREE.AnimationAction | null>(null);
   const bottleGroupRef = useRef<THREE.Group | null>(null);
-  const bottleRef = useRef<THREE.Mesh | null>(null);
-  const corkRef = useRef<THREE.Mesh | null>(null);
-  const paperRef = useRef<THREE.Mesh | null>(null);
-  const stringRef = useRef<THREE.Mesh | null>(null);
 
   // 애니메이션 상태
   const [animationState, setAnimationState] = useState<AnimationState>('idle');
-  const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const lastTimeRef = useRef<number>(0);
 
-  // 3D Geometry 생성 함수들 (추후 구현)
-  const createBottleGeometry = useCallback((segments: number, heightSegments: number): THREE.BufferGeometry => {
-    // TODO: 병 geometry 구현
-    console.log('Creating bottle geometry with segments:', segments, heightSegments);
-    return new THREE.CylinderGeometry(1, 1, 3, segments, heightSegments);
-  }, []);
+  const asidePaperRef = useRef<HTMLElement|null>(null);
 
-  const createCorkGeometry = useCallback((segments: number): THREE.BufferGeometry => {
-    // TODO: 코르크 마개 geometry 구현
-    console.log('Creating cork geometry with segments:', segments);
-    return new THREE.CylinderGeometry(0.5, 0.5, 0.3, segments);
-  }, []);
-
-  const createPaperGeometry = useCallback((widthSegments: number, heightSegments: number): THREE.BufferGeometry => {
-    // TODO: 종이 geometry 구현 (morphing 대응)
-    console.log('Creating paper geometry with segments:', widthSegments, heightSegments);
-    return new THREE.PlaneGeometry(2, 3, widthSegments, heightSegments);
-  }, []);
-
-  const createStringGeometry = useCallback((segments: number): THREE.BufferGeometry => {
-    // TODO: 종이 끈 geometry 구현
-    console.log('Creating string geometry with segments:', segments);
-    return new THREE.CylinderGeometry(0.02, 0.02, 2, segments);
-  }, []);
-
-  // 재질 생성 함수들 (추후 구현)
-  const createBottleMaterial = useCallback((): THREE.Material => {
-    // TODO: 병 재질 구현 (유리 효과)
-    return new THREE.MeshPhongMaterial({
-      color: 0x87CEEB,
-      transparent: true,
-      opacity: 0.7
-    });
-  }, []);
-
-  const createCorkMaterial = useCallback((): THREE.Material => {
-    // TODO: 코르크 재질 구현
-    return new THREE.MeshLambertMaterial({
-      color: 0x8B4513
-    });
-  }, []);
-
-  const createPaperMaterial = useCallback((): THREE.Material => {
-    // TODO: 종이 재질 구현
-    return new THREE.MeshLambertMaterial({
-      color: 0xFFF8DC,
-      side: THREE.DoubleSide
-    });
-  }, []);
-
-  const createStringMaterial = useCallback((): THREE.Material => {
-    // TODO: 끈 재질 구현
-    return new THREE.MeshLambertMaterial({
-      color: 0x654321
-    });
-  }, []);
-
-  // 애니메이션 함수들 (추후 구현)
   const animateBottleFloat = useCallback((time: number) => {
     if(bottleGroupRef.current){
-        // TODO: 병 떠다니는 애니메이션 구현
-        if (animationState === 'idle') {
-            bottleGroupRef.current.rotation.x = Math.sin(time * 0.25) * 0.25 + Math.sin(time * 0.4) * 0.125;
-            bottleGroupRef.current.rotation.z = Math.sin(time * 0.3) * 0.25 + Math.sin(time * 0.5) * 0.125;
-            bottleGroupRef.current.position.y = Math.sin(time * 0.8) * 0.5 + Math.sin(time * 0.35) * 0.25;
-        }
+      const speed = 1;
+      bottleGroupRef.current.rotation.x = Math.sin(speed * time * 0.3) * 0.125 + Math.sin(speed * time * 0.5) * 0.0625;
+      bottleGroupRef.current.rotation.z = -0.25 + Math.sin(speed * time * 0.25) * 0.0625 + Math.sin(speed * time * 0.4) * 0.03125;
+      bottleGroupRef.current.position.y = Math.sin(speed * time * 0.8) * 0.25 + Math.sin(speed * time * 0.35) * 0.125;
     }
   }, [animationState]);
 
-  const animateCorkOpening = useCallback((progress: number) => {
-    // TODO: 코르크 마개 열림 애니메이션 구현
-    if (corkRef.current) {
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-      corkRef.current.position.y = easeOut * 2;
-      corkRef.current.rotation.z = easeOut * Math.PI * 0.5;
-    }
-  }, []);
-
-  const animatePaperEmerge = useCallback((progress: number) => {
-    // TODO: 종이 튀어나오기 애니메이션 구현
-    if (paperRef.current) {
-      const easeOut = 1 - Math.pow(1 - progress, 2);
-      paperRef.current.position.y = easeOut * 1.5;
-      paperRef.current.visible = true;
-    }
-  }, []);
-
-  const animatePaperMorphing = useCallback((progress: number) => {
-    // TODO: 종이 morphing 애니메이션 구현 (원통 → 평면)
-    if (paperRef.current) {
-      const geometry = paperRef.current.geometry as THREE.BufferGeometry;
-      // morphing 로직 구현 예정
-      const scale = 1 + progress * 9;
-      paperRef.current.scale.set(scale, scale, 1);
-    }
-  }, []);
-
-  const animateString = useCallback((progress: number) => {
-    // TODO: 끈 애니메이션 구현
-    if (stringRef.current) {
-      stringRef.current.visible = progress < 0.8; // 종이가 펼쳐지면서 끈 사라짐
-    }
-  }, []);
-
-  // 열기 애니메이션 시퀀스
+    // 열기 애니메이션
   const startOpenAnimation = useCallback(async () => {
-    if (isAnimating || isOpen) return;
+    if (isAnimating || isOpen || !openActionRef.current || !closeActionRef.current) return;
     
     setIsAnimating(true);
-    
-    // Phase 1: Cork Opening
     setAnimationState('opening');
-    for (let i = 0; i <= 100; i++) {
-      const progress = i / 100;
-      setAnimationProgress(progress);
-      animateCorkOpening(progress);
-      await new Promise(resolve => setTimeout(resolve, 10));
-    }
     
-    // Phase 2: Paper Emerge
-    setAnimationState('paperOut');
-    for (let i = 0; i <= 100; i++) {
-      const progress = i / 100;
-      setAnimationProgress(progress);
-      animatePaperEmerge(progress);
-      await new Promise(resolve => setTimeout(resolve, 8));
-    }
+    // 이전 애니메이션 중지
+    closeActionRef.current.stop();
     
-    // Phase 3: Paper Morphing
-    setAnimationState('paperExpand');
-    for (let i = 0; i <= 100; i++) {
-      const progress = i / 100;
-      setAnimationProgress(progress);
-      animatePaperMorphing(progress);
-      animateString(progress);
-      await new Promise(resolve => setTimeout(resolve, 12));
-    }
+    // 열기 애니메이션 실행
+    openActionRef.current.reset();
+    openActionRef.current.play();
     
-    setAnimationState('completed');
-    setIsOpen(true);
-    setIsAnimating(false);
-    onContactDialogOpen?.();
-  }, [isAnimating, isOpen, animateCorkOpening, animatePaperEmerge, animatePaperMorphing, animateString, onContactDialogOpen]);
+    // 애니메이션 완료 대기
+    const duration = openActionRef.current.getClip().duration * 1000; // ms로 변환
+    
+    setTimeout(() => {
+      gsap.to(asidePaperRef.current, {
+        x: "0%",
+        duration: 0.5,
+        ease: "power2.out",
+        onComplete: () => {
+          setAnimationState('completed');
+          setIsOpen(true);
+          setIsAnimating(false);
+          onContactDialogOpen?.();
+        }
+      });
+    }, duration);
+    
+  }, [isAnimating, isOpen, onContactDialogOpen]);
 
-  // 닫기 애니메이션 시퀀스
+  // 닫기 애니메이션
   const startCloseAnimation = useCallback(async () => {
-    if (isAnimating || !isOpen) return;
-    
+    if (isAnimating) return;
     setIsAnimating(true);
+    gsap.to(asidePaperRef.current, {
+      x: "-200%",
+      duration: 0.5,
+      ease: "power2.in",
+      onComplete: () => {
+        if (!isOpen || !openActionRef.current || !closeActionRef.current) return;
+
+        setAnimationState('closing'); // 역순 재생
+        
+        // 이전 애니메이션 중지
+        openActionRef.current.stop();
+        
+        // 닫기 애니메이션 실행
+        closeActionRef.current.reset();
+        closeActionRef.current.play();
+        
+        // 애니메이션 완료 대기
+        const duration = closeActionRef.current.getClip().duration * 1000;
+        
+        setTimeout(() => {
+          setAnimationState('idle');
+          setIsOpen(false);
+          setIsAnimating(false);
+          onContactDialogClose?.();
+        }, duration);
+      }
+    });
     
-    // Phase 1: Paper Collapse (completed -> paperExpand)
-    setAnimationState('paperExpand');
-    for (let i = 100; i >= 0; i--) {
-      const progress = i / 100;
-      setAnimationProgress(progress);
-      animatePaperMorphing(progress);
-      animateString(progress);
-      await new Promise(resolve => setTimeout(resolve, 12));
-    }
-    
-    // Phase 2: Paper Hide (paperExpand -> paperOut)
-    setAnimationState('paperOut');
-    for (let i = 100; i >= 0; i--) {
-      const progress = i / 100;
-      setAnimationProgress(progress);
-      animatePaperEmerge(progress);
-      await new Promise(resolve => setTimeout(resolve, 8));
-    }
-    
-    // Phase 3: Cork Closing (paperOut -> opening)
-    setAnimationState('opening');
-    for (let i = 100; i >= 0; i--) {
-      const progress = i / 100;
-      setAnimationProgress(progress);
-      animateCorkOpening(progress);
-      await new Promise(resolve => setTimeout(resolve, 10));
-    }
-    
-    setAnimationState('idle');
-    setIsOpen(false);
-    setIsAnimating(false);
-    onContactDialogClose?.();
-  }, [isAnimating, isOpen, animateCorkOpening, animatePaperEmerge, animatePaperMorphing, animateString, onContactDialogClose]);
+  }, [isAnimating, isOpen, onContactDialogClose]);
 
   // 토글 클릭 핸들러
   const handleBottleClick = useCallback(() => {
@@ -243,9 +287,17 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
 
     const animate = () => {
       const time = Date.now() * 0.001;
-      
-      // 기본 떠다니는 애니메이션
-      animateBottleFloat(time);
+      const deltaTime = time - (lastTimeRef.current || time);
+      lastTimeRef.current = time;
+
+      if (mixerRef.current) {
+        // GLB 애니메이션 업데이트
+        mixerRef.current.update(deltaTime);
+      }
+      if (animationState === 'idle') {
+        // 기본 떠다니는 애니메이션
+        animateBottleFloat(time);
+      } 
 
       rendererRef.current!.render(sceneRef.current!, cameraRef.current!);
       animationRef.current = requestAnimationFrame(animate);
@@ -265,75 +317,35 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
   useEffect(() => {
     if (!elementRef.current) return;
 
-    // Scene 설정
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight * 0.25, 0.01, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    if(!sceneRef.current){
+      // Scene 설정
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight * 0.20, 0.01, 2000);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
-    renderer.setSize(window.innerWidth * 0.25, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isDesktop ? 2 : 1));
-    elementRef.current.appendChild(renderer.domElement);
+      renderer.setSize(window.innerWidth * 0.20, window.innerHeight);
+      renderer.setClearColor(0x000000, 0);
+      elementRef.current.appendChild(renderer.domElement);
 
-    // 조명 설정
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
+      // 조명 설정
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 5, 5);
-    scene.add(directionalLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight2.position.set(4, -5, 4);
+      scene.add(directionalLight2);
 
-    // 디바이스별 세그먼트 수 결정
-    const segments = isDesktop ? 64 : 32;
-    const heightSegments = isDesktop ? 128 : 64;
-    const paperSegments = isDesktop ? 128 : 64;
+      // 카메라 위치
+      camera.position.set(10, 0, 0);
+      camera.lookAt(0, 0, 0);
 
-    // 3D 오브젝트 생성
-    const bottleGroup = new THREE.Group();
-
-    // 병 생성
-    const bottleGeometry = createBottleGeometry(segments, heightSegments);
-    const bottleMaterial = createBottleMaterial();
-    const bottle = new THREE.Mesh(bottleGeometry, bottleMaterial);
-    bottleGroup.add(bottle);
-
-    // 코르크 마개 생성
-    const corkGeometry = createCorkGeometry(segments);
-    const corkMaterial = createCorkMaterial();
-    const cork = new THREE.Mesh(corkGeometry, corkMaterial);
-    cork.position.y = 1.65;
-    bottleGroup.add(cork);
-
-    // 종이 생성
-    const paperGeometry = createPaperGeometry(paperSegments, paperSegments);
-    const paperMaterial = createPaperMaterial();
-    const paper = new THREE.Mesh(paperGeometry, paperMaterial);
-    paper.position.y = 1;
-    bottleGroup.add(paper);
-
-    // 끈 생성
-    const stringGeometry = createStringGeometry(segments);
-    const stringMaterial = createStringMaterial();
-    const string = new THREE.Mesh(stringGeometry, stringMaterial);
-    string.position.y = 0.5;
-    bottleGroup.add(string);
-
-    scene.add(bottleGroup);
-
-    // 카메라 위치
-    camera.position.set(0, 0, 20);
-    camera.lookAt(0, 0, 0);
-
-    {
-        // refs 저장
-        sceneRef.current = scene;
-        rendererRef.current = renderer;
-        cameraRef.current = camera;
-        bottleGroupRef.current = bottleGroup;
-        bottleRef.current = bottle;
-        corkRef.current = cork;
-        paperRef.current = paper;
-        stringRef.current = string;
+      // refs 저장
+      sceneRef.current = scene;
+      rendererRef.current = renderer;
+      cameraRef.current = camera;
     }
 
     // 리사이즈 핸들링
@@ -342,14 +354,16 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
       if (container) {
         const width = container.clientWidth;
         const height = container.clientHeight;
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
+        if(cameraRef.current) {
+          cameraRef.current.aspect = width / height;
+          cameraRef.current.updateProjectionMatrix();
+        }
+        if(rendererRef.current){
+          rendererRef.current.setSize(width, height);
+        }
       }
     };
 
-    startAnimation()
-                console.log("startFloatingBottle")
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -359,71 +373,139 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
       
-      if (elementRef.current && renderer.domElement) {
-        elementRef.current.removeChild(renderer.domElement);
+      if (elementRef.current && rendererRef.current!.domElement) {
+        elementRef.current.removeChild(rendererRef.current!.domElement);
+      }
+
+      if (asidePaperRef.current) {
+        gsap.killTweensOf(asidePaperRef.current);
       }
 
       {
         // Three.js 리소스 정리
-        bottleGeometry.dispose();
-        corkGeometry.dispose();
-        paperGeometry.dispose();
-        stringGeometry.dispose();
-        (bottleMaterial as THREE.Material).dispose();
-        (corkMaterial as THREE.Material).dispose();
-        (paperMaterial as THREE.Material).dispose();
-        (stringMaterial as THREE.Material).dispose();
-        renderer.dispose();
+        rendererRef.current!.dispose();
 
         // refs 초기화
         sceneRef.current = null;
         rendererRef.current = null;
         cameraRef.current = null;
         bottleGroupRef.current = null;
-        bottleRef.current = null;
-        corkRef.current = null;
-        paperRef.current = null;
-        stringRef.current = null;
       }
     };
-  }, [isDesktop, createBottleGeometry, createCorkGeometry, createPaperGeometry, createStringGeometry, 
-      createBottleMaterial, createCorkMaterial, createPaperMaterial, createStringMaterial]);
+  }, []);
 
-      // 탭이 비활성화되었을 때만 정지
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                stopAnimation();
-            } else {
-                startAnimation();
-            }
-        };
+  useEffect(() => {
+    if(rendererRef.current){
+      rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, isDesktop ? 2 : 1));
+    }
+  }, [isDesktop]);
+
+  useEffect(() => {
+    if (!sceneRef.current) return;
+
+    const initializeBottle = async () => {
+      try {
+        // 기존 모델이 있다면 제거
+        if (bottleGroupRef.current) {
+          sceneRef.current!.remove(bottleGroupRef.current!)
+          bottleGroupRef.current = null;
+        }
         
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, []);
+        const { bottleGroup, mixer, openAction, closeAction } = await createBottleFromGLB();
+        
+        // 크기 및 위치 조정
+        bottleGroup.scale.set(0.5, 0.5, 0.5);
+        bottleGroup.position.set(0, 0, 0);
+        
+        // refs에 저장
+        bottleGroupRef.current = bottleGroup;
+        mixerRef.current = mixer;
+        openActionRef.current = openAction;
+        closeActionRef.current = closeAction;
+        
+        if(sceneRef.current) {
+          // 씬에 추가
+          sceneRef.current.add(bottleGroupRef.current!);
+        }
+        
+        // console.log('Bottle initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize bottle:', error);
+      }
+    };
+
+    initializeBottle();
+    startAnimation()
+    // console.log("startFloatingBottle")
+  }, [createBottleFromGLB])
+
+    // 탭이 비활성화되었을 때만 정지
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+        if (document.hidden) {
+            stopAnimation();
+        } else {
+            startAnimation();
+        }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   return (
     <div className="relative w-full h-full pointer-events-none">
+      <aside ref={asidePaperRef} className="absolute pointer-events-auto z-60 right-0 top-0 w-full h-full flex items-center justify-center backdrop-blur-md" style={{
+        cursor:"default",
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        transform:"translateX(-200%)", willChange:"transform"
+      }} onClick={() => {
+        if (isAnimating) return;
+        
+        if (isOpen) {
+          startCloseAnimation();
+        }
+      }}>
+        <div className='pointer-events-auto' style={{
+          padding: '2rem',
+          backgroundImage: `url(${texturePaper})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat"
+        }} onClick={(e) => {
+          e.stopPropagation()
+        }}>
+          <div className='about-projects grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 pb-4'>
+            {contactList.current.map((link, index) => {
+              return <a
+                key={index}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pointer-events-auto project-card group relative"
+                title={link.title}
+              >
+                {link.type}
+              </a>
+            })}
+          </div>
+        </div>
+      </aside>
+
       {/* Three.js 캔버스 */}
       <div 
         ref={elementRef} 
-        className="w-1/4 h-full pointer-events-none"
+        className="w-1/5 h-full pointer-events-none"
+        style={{isolation:"isolate"}}
       />
-      <div className="absolute left-0 top-0 w-1/4 h-full flex items-center justify-center">
+
+      <div className="absolute left-0 top-0 w-1/5 h-full flex items-center justify-center z-80">
         {/* 클릭 가능한 영역 */}
-        <div className="pointer-events-auto cursor-pointer w-[80px] h-[120px]"
+        <div className="pointer-events-auto cursor-pointer w-[80px] h-[200px] mb-[120px]"
         onClick={handleBottleClick}
         title={isOpen ? "닫기" : "메시지 병 열기"}>
         </div>
       </div>
-      
-      {/* 상태 표시 (개발용) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="pointer-events-none absolute top-2 left-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
-          State: {animationState} Progress: {Math.round(animationProgress * 100)}% Open: {isOpen}
-        </div>
-      )}
     </div>
   );
 };

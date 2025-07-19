@@ -9,3 +9,9 @@ export interface ProjectProps {
   techStack: string[];
   period: string;
 }
+
+export interface ContactLinkProps {
+  title: string;
+  href: string;
+  type: JSX.Element;
+}

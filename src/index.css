@@ -482,6 +482,23 @@ body::-webkit-scrollbar {
   aspect-ratio: 1 / 1;
 }
 
+.w-1\/4 {
+  width: 25%;
+}
+
+.w-3\/4 {
+  width: 75%;
+}
+
+.w-1\/5 {
+  width: 20%;
+}
+
+.w-4\/5 {
+  width: 80%;
+}
+
+
 .w-12 {
   width: 3rem;
 }
@@ -494,8 +511,24 @@ body::-webkit-scrollbar {
   width: 300px;
 }
 
+.w-\[48px\] {
+  width: 48px;
+}
+
+.w-\[96px\] {
+  width: 96px;
+}
+
 .h-\[200px\] {
   height: 200px;
+}
+
+.h-\[48px\] {
+  height: 48px;
+}
+
+.h-\[96px\] {
+  height: 96px;
 }
 
 .w-\[252px\] {
