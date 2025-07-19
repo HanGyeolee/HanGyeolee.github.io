@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { GradientConfig, NavigationProps, SectionProps } from '../util/sections.ts';
 import FloatingBottle from '../animations/floatingBottle.tsx';
+import useDeviceDetection from '../util/MobileHook.ts';
 
 // 기본 섹션 정의
 const defaultSections: SectionProps[] = [
@@ -13,6 +14,7 @@ const defaultSections: SectionProps[] = [
 ];
 
 const Navigation = (props:NavigationProps) => {
+  const { isDesktop } = useDeviceDetection();
     // 섹션 정의
   const sections = props.sections || defaultSections;
 
@@ -55,7 +57,7 @@ const Navigation = (props:NavigationProps) => {
 
   useEffect(() => {
     if(!bottleInitialize.current) {
-      if(activeSection !== sections[0].id){
+      if(bottleRef.current && activeSection !== sections[0].id){
         bottleInitialize.current = true;
         gsap.to(bottleRef.current, 
           {
@@ -164,18 +166,21 @@ const Navigation = (props:NavigationProps) => {
         ))}
       </ul>
     </nav>
-    <div ref={bottleRef} className="fixed w-full h-full z-70 pointer-events-none" style={{
-        transform:"translateX(-30%)" ,willChange:"transform"
-    }}>
-      <FloatingBottle
-        onContactDialogOpen={() => {}}
-        onContactDialogClose={() => {}}
-        backgroundGradient={{
-          colors:colors.current,
-          type:"linear"
-        }}
-      />
-    </div>
+    {
+      isDesktop?
+      <div ref={bottleRef} className="fixed w-full h-full z-70 pointer-events-none" style={{
+          transform:"translateX(-30%)" ,willChange:"transform"
+      }}>
+        <FloatingBottle
+          onContactDialogOpen={() => {}}
+          onContactDialogClose={() => {}}
+          backgroundGradient={{
+            colors:colors.current,
+            type:"linear"
+          }}
+        />
+      </div>:null
+    }
   </>
   );
 };
