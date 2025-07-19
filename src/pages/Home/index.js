@@ -17,11 +17,11 @@ const Home = () => {
   return (
     <div ref={containerRef} className="relative bg-[#0E2F5E]">
       <Navigation sections={[
-        { id: 'start', invisible: true },
-        { id: 'intro', label: '짧은 소개', title: '제 이름은 최한결' },
-        { id: 'about', label: '자기 소개', title: '개발자 라고 하죠' },
-        { id: 'skills', label: '기술 스택', title: '풀스택 엔지니어 최한결'  },
-        { id: 'projects', label: '프로젝트' }
+        { id: 'start', invisible: true, colors:["#BAD8FF"] },
+        { id: 'intro', label: '짧은 소개', title: '제 이름은 최한결', colors:["#BAD8FF", "#17498B"] },
+        { id: 'about', label: '자기 소개', title: '개발자 라고 하죠', colors:["#0E2F5E"] },
+        { id: 'skills', label: '기술 스택', title: '풀스택 엔지니어 최한결', colors:["#081F41"] },
+        { id: 'projects', label: '프로젝트', colors:["#061529", "#061529"] }
       ]} defaultTitle='저는 이런 사람입니다'/>
       <section id='start' className='h-[2px] bg-[#BAD8FF]'></section>
 

@@ -7,13 +7,88 @@ import texturePaper  from '../../image/texture-paper.jpg';
 import { ContactLinkProps } from '../util/projects.ts';
 import { LinkedIn } from '../util/IconMapper.tsx';
 import { Github } from 'lucide-react';
+import { GradientConfig } from '../util/sections.ts';
+
 
 interface FloatingBottleProps {
   onContactDialogOpen?: () => void;
   onContactDialogClose?: () => void;
+  backgroundGradient?: GradientConfig; // 새로 추가
 }
 
 type AnimationState = 'idle' | 'opening' | 'closing' | 'completed';
+
+// Canvas에 그라데이션을 그려서 환경맵 생성
+const createGradientEnvironmentMap = (
+  renderer: THREE.WebGLRenderer, 
+  gradientConfig: GradientConfig
+): THREE.Texture => {
+  const size = 512;
+  const colors = gradientConfig.colors;
+  
+  // 6개 면의 캔버스를 생성
+  const createCanvas = (): HTMLCanvasElement => {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    return canvas;
+  };
+
+  // 단색 면 생성 함수
+  const createSolidFace = (color: string): HTMLCanvasElement => {
+    const canvas = createCanvas();
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, size, size);
+    return canvas;
+  };
+
+  // 그라데이션 면 생성 함수 (상단에서 하단으로)
+  const createGradientFace = (): HTMLCanvasElement => {
+    const canvas = createCanvas();
+    const ctx = canvas.getContext('2d')!;
+    
+    // 위에서 아래로 Linear Gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, size);
+    
+    // 색상 스톱 추가
+    const stops = gradientConfig.stops || colors.map((_, i) => i / (colors.length - 1));
+    colors.forEach((color, index) => {
+      gradient.addColorStop(stops[index], color);
+    });
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    return canvas;
+  };
+
+  const side = createGradientFace()
+  // 큐브맵 면들 생성
+  // Three.js CubeTexture 순서: [positive-x, negative-x, positive-y, negative-y, positive-z, negative-z]
+  // 즉: [right, left, top, bottom, front, back]
+  const canvases: HTMLCanvasElement[] = [
+    side, // positive-x (right) - 그라데이션
+    side, // negative-x (left) - 그라데이션  
+    createSolidFace(colors[0]), // positive-y (top) - 첫 번째 색상
+    createSolidFace(colors[colors.length - 1]), // negative-y (bottom) - 마지막 색상
+    side, // positive-z (front) - 그라데이션
+    side  // negative-z (back) - 그라데이션
+  ];
+
+  // CubeTexture를 직접 생성 - 생성자에 이미지 배열 전달
+  const cubeTexture = new THREE.CubeTexture(canvases);
+  cubeTexture.needsUpdate = true;
+
+  // PMREMGenerator로 환경맵 생성
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  const envMap = pmremGenerator.fromCubemap(cubeTexture).texture;
+  
+  // 리소스 정리
+  pmremGenerator.dispose();
+  cubeTexture.dispose();
+  
+  return envMap;
+};
 
 /**
  * 1. 스크롤 애니메이팅을 통해서 section 이동할 때마다, 메시지 병이 해류에 휩쓸려서 한 바퀴 빙글 돌게 할 거야.
@@ -24,7 +99,8 @@ type AnimationState = 'idle' | 'opening' | 'closing' | 'completed';
  */
 const FloatingBottle: React.FC<FloatingBottleProps> = ({ 
   onContactDialogOpen, 
-  onContactDialogClose 
+  onContactDialogClose,
+  backgroundGradient
 }) => {
   const { isDesktop } = useDeviceDetection();
   const contactList = useRef<ContactLinkProps[]>([
@@ -35,7 +111,7 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
     },
     {
       title: "LinkedIn",
-      href: "https://www.linkedin.com/in/han-gyeol-choi-8567772ba",
+      href: "https://www.linkedin.com/in/hangyeolee",
       type: <LinkedIn className='w-[48px] h-[48px]'></LinkedIn>
     }
   ])
@@ -66,7 +142,7 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
                       clearcoat: 1,
                       transparent: true,
                       // transmission: .95,
-                      opacity: .5,
+                      opacity: .25,
                       reflectivity: 0.5,
                       ior: 0.9,
                       side: THREE.BackSide,
@@ -87,7 +163,7 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
                       clearcoat: 1,
                       transparent: true,
                       // transmission: .95,
-                      opacity: .25,
+                      opacity: .125,
                       reflectivity: 0.75,
                       ior: 0.9,
                       side: THREE.DoubleSide,
@@ -106,13 +182,15 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
                 // 종이 재질 조정 (paper)
                 else if (child.name === 'paper') {
                   if (material instanceof THREE.MeshStandardMaterial) {
+                      material.color = new THREE.Color(0x17498B)
+                      material.depthTest = true;
+                      material.depthWrite = true;
                       material.roughness = 1;
                       material.side = THREE.DoubleSide;
                   }
                 
                   // 그림자 설정
                   child.castShadow = true;
-                  child.receiveShadow = false;
                 }
                 child.receiveShadow = true;
             }
@@ -328,13 +406,15 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
       elementRef.current.appendChild(renderer.domElement);
 
       // 조명 설정
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      const ambientLight = new THREE.AmbientLight(0x17498B, 0.75);
       scene.add(ambientLight);
+      const ambientLight1 = new THREE.AmbientLight(0xBAD8FF, 0.25);
+      scene.add(ambientLight1);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      const directionalLight = new THREE.DirectionalLight(0x17498B, 0.8);
       directionalLight.position.set(5, 5, 5);
       scene.add(directionalLight);
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+      const directionalLight2 = new THREE.DirectionalLight(0x17498B, 1.0);
       directionalLight2.position.set(4, -5, 4);
       scene.add(directionalLight2);
 
@@ -399,6 +479,29 @@ const FloatingBottle: React.FC<FloatingBottleProps> = ({
       rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, isDesktop ? 2 : 1));
     }
   }, [isDesktop]);
+
+  useEffect(() => {
+    if (!sceneRef.current || !rendererRef.current || !backgroundGradient) return;
+
+    const envMap = createGradientEnvironmentMap(rendererRef.current, backgroundGradient);
+    
+    // 씬 전체에 환경맵 적용
+    sceneRef.current.environment = envMap;
+    
+    // 기존 병 모델이 있다면 업데이트
+    if (bottleGroupRef.current) {
+      bottleGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshPhysicalMaterial) {
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+    }
+
+    return () => {
+      envMap.dispose();
+    };
+  }, [backgroundGradient]);
 
   useEffect(() => {
     if (!sceneRef.current) return;

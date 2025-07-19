@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { NavigationProps, SectionProps } from '../util/sections.ts';
+import { GradientConfig, NavigationProps, SectionProps } from '../util/sections.ts';
 import FloatingBottle from '../animations/floatingBottle.tsx';
 
 // 기본 섹션 정의
@@ -16,6 +16,7 @@ const Navigation = (props:NavigationProps) => {
     // 섹션 정의
   const sections = props.sections || defaultSections;
 
+  const colors = useRef<string[]>(props.sections?.flatMap(item=>item.colors ?? []).filter(Boolean) ?? [])
   const [activeSection, setActiveSection] = useState(sections[0].id);
   const bottleInitialize = useRef<boolean>(false);
   const bottleRef = useRef<HTMLDivElement|null>(null)
@@ -169,6 +170,10 @@ const Navigation = (props:NavigationProps) => {
       <FloatingBottle
         onContactDialogOpen={() => {}}
         onContactDialogClose={() => {}}
+        backgroundGradient={{
+          colors:colors.current,
+          type:"linear"
+        }}
       />
     </div>
   </>

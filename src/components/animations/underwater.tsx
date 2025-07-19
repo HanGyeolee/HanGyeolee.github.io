@@ -95,12 +95,12 @@ const Underwater = ({ children }) => {
       wave += gerstnerWave(normalize(vec2(0.8, -0.1)), 0.5, 0.04, 1.1, worldPos, time);
       
       // LOD 기반 추가 파도들 (가까이 있을 때만)
-      if (lodFactor > 0.25) {
+      if (lodFactor > 0.5) {
         // 중간 파도들
         wave += gerstnerWave(normalize(vec2(0.7, -0.125)), 0.15, 0.1, 2.0, worldPos, time);
         wave += gerstnerWave(normalize(vec2(-0.8, 0.25)), 0.125, 0.12, 1.8, worldPos, time);
         
-        if (lodFactor > 0.5) {
+        if (lodFactor > 0.75) {
           // 작은 잔물결들
           wave += gerstnerWave(normalize(vec2(0.9, 0.4)), 0.075, 0.4, 3.0, worldPos, time);
           wave += gerstnerWave(normalize(vec2(-0.2, 0.7)), 0.06, 0.48, 2.5, worldPos, time);
@@ -205,7 +205,7 @@ const Underwater = ({ children }) => {
 
     const segments:number = isDesktop ? 1024 : 256;
     // 수면 (상단)
-    const surfaceGeometry = new THREE.PlaneGeometry(512, 512, segments, segments);
+    const surfaceGeometry = new THREE.PlaneGeometry(512, 128, segments, segments * 0.5);
     const surfaceMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time:         { value: 0 },
@@ -213,7 +213,7 @@ const Underwater = ({ children }) => {
         waveSteep:    { value: 1.625 }, // 물결 첨도 1.5
         waveStrength: { value: 0.625 }, // 물결 강도 1.0
         whiteDistance:{ value: 0.1875 }, // 흰색 시작 상대 거리
-        maxWhite:     { value: 5.0 }, // 완전히 흰색이 되는 거리
+        maxWhite:     { value: 4.0 }, // 완전히 흰색이 되는 거리
         fadeDistance: { value: 8.0 }, // 페이드 시작 절대 거리
         maxFade:      { value: 128.0 },// 완전히 투명해지는 거리
         baseOpacity:  { value: 0.875 },    // 기본 투명도
@@ -229,7 +229,7 @@ const Underwater = ({ children }) => {
     const surface0 = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
     surface0.rotation.x = -Math.PI / 2;
     surface0.position.y = 16;
-    surface0.position.z = -128;
+    surface0.position.z = -64;
     scene.add(surface0);
 
     // 카메라 위치
