@@ -61,4 +61,4 @@ User-agent: MegaIndex
 Disallow: /
 
 # 사이트맵 위치
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://hangyeolee.github.io/sitemap.xml
