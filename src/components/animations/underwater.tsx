@@ -265,7 +265,7 @@ const Underwater = ({ children }) => {
       cameraRef.current = null;
       surfaceMaterialRef.current = null;
     };
-  }, []);
+  }, [isDesktop]);
 
   // 3. 뷰포트 상태에 따른 애니메이션 제어 useEffect 추가
   useEffect(() => {
