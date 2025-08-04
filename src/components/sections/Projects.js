@@ -21,10 +21,10 @@ const ProjectsSection = () => {
    */
   const projects = useRef([
     {
-      title: '의료기기 RESTful API 서버',
+      title: '동물용 생체 신호 중앙 관리 서버',
       thumbnail: restAPIImage,
       type: IconType.COMPANY,
-      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 의료기기 전자상거래 플랫폼 개발. 결제, 물류, 반품 프로세스 자동화 및 실시간 KPI 대시보드 구현',
+      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 동물용 생체 신호 중앙 관리 서버 개발.',
       techStack: ['Java', 'Kotlin', 'Spring Boot', 'CI/CD', 'MySQL', 'SMTP', 'HAProxy', 'Docker', 'Thymeleaf'],
       period: '2023.11 ~ 2025.07'
     },
@@ -46,11 +46,11 @@ const ProjectsSection = () => {
       period: '2024.11 ~'
     },
     {
-      title: '의료 및 헬스케어 어플리케이션',
+      title: '생체 신호 시각화 어플리케이션',
       thumbnail: medicalPlatformImage,
       document: 'https://play.google.com/store/apps/details?id=com.neurowiztek.brainmeasure',
       type: IconType.COMPANY,
-      description: '생체신호 기반 의료 헬스케어 모바일 플랫폼 개발 및 구글 스토어 출시',
+      description: '생체신호 기반 시각화 모바일 플랫폼 개발 및 구글 스토어 출시',
       techStack: ['Android', 'Java', 'Kotlin', 'MVVM', 'CI/CD', 'JNI', 'SIMD', 'DataBinding'],
       period: '2022.06 ~ 2023.11'
     },
