@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import './apw.css';
-import { FileUploader, getFilesFromIndexedDB, storeFilesInIndexedDB } from '../../components/util/APWLIB/FileUploader.tsx';
-import { IndentationTracker } from "../../components/util/APWLIB/IndentationTracker.tsx";
-import { LibraryProps, PaperUnit, RawFiles } from "../../components/util/APWLIB/enum.tsx";
+import { FileUploader, getFilesFromIndexedDB, storeFilesInIndexedDB } from '../../components/util/APWLib/FileUploader.tsx';
+import { IndentationTracker } from "../../components/util/APWLib/IndentationTracker.tsx";
+import { LibraryProps, PaperUnit, RawFiles } from "../../components/util/APWLib/enum.tsx";
 import { Github } from 'lucide-react';
 
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
 import { languages, editor } from 'monaco-editor';
 
-import { codeMapping, pdfLibraryClasses } from "../../components/util/APWLIB/CodeMapper.tsx";
-import { PDFBuilder } from "../../components/util/APWLIB/PDFBuilder.tsx";
-import { RectF } from "../../components/util/APWLIB/PDFPageLayout.tsx";
-import { preloadFiles } from "../../components/util/APWLIB/PDFResource.tsx";
+import { codeMapping, pdfLibraryClasses } from "../../components/util/APWLib/CodeMapper.tsx";
+import { PDFBuilder } from "../../components/util/APWLib/PDFBuilder.tsx";
+import { RectF } from "../../components/util/APWLib/PDFPageLayout.tsx";
+import { preloadFiles } from "../../components/util/APWLib/PDFResource.tsx";
 import { TitleMap, useAutoDocumentTitle } from "../../components/util/language.ts";
-import { provideJavaCompletions } from "../../components/util/APWLIB/Completion.tsx";
+import { provideJavaCompletions } from "../../components/util/APWLib/Completion.tsx";
 
 const titles: TitleMap = {
   ko : '안드로이드 PDF Writer 라이브러리 webui',

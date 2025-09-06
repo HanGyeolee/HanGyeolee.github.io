@@ -1,4 +1,4 @@
-import { LibraryProps } from "./enum";
+import { LibraryProps } from "./enum.tsx";
 import { PDFLayout } from "./PDFLayout.tsx";
 import { PageLayout, PageLayoutFactory, RectF } from "./PDFPageLayout.tsx";
 

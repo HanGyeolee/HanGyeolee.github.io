@@ -21,10 +21,10 @@ const ProjectsSection = () => {
    */
   const projects = useRef([
     {
-      title: '동물용 생체 신호 중앙 관리 서버',
+      title: '동물용 기기 중앙 관리 서버',
       thumbnail: restAPIImage,
       type: IconType.COMPANY,
-      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 동물용 생체 신호 중앙 관리 서버 개발.',
+      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 동물용 기기 중앙 관리 서버 개발.',
       techStack: ['Java', 'Kotlin', 'Spring Boot', 'CI/CD', 'MySQL', 'SMTP', 'HAProxy', 'Docker', 'Thymeleaf'],
       period: '2023.11 ~ 2025.07'
     },
