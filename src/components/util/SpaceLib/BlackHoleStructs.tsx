@@ -88,21 +88,21 @@ export const defaultObjects: ObjectData[] = [
   // 노란색 항성 (4×10^11m 거리)
   new ObjectData(
     new THREE.Vector4(4e11, 0.0, 0.0, 4e10),
-    new THREE.Vector4(1, 1, 0, 1),
+    new THREE.Vector4(1.0, 1.0, 0, 1.0),
     1.98892e30  // 태양 질량
   ),
   
   // 빨간색 항성 (Z축 4×10^11m 거리)  
   new ObjectData(
     new THREE.Vector4(0.0, 0.0, 4e11, 4e10),
-    new THREE.Vector4(1, 0, 0, 1),
+    new THREE.Vector4(1.0, 0, 0, 1.0),
     1.98892e30  // 태양 질량
   ),
   
   // 블랙홀 자체 (검은색, 사건의 지평선 크기)
   new ObjectData(
     new THREE.Vector4(0.0, 0.0, 0.0, SagA.r_s),
-    new THREE.Vector4(0, 0, 0, 1),
+    new THREE.Vector4(0, 0, 0, 1.0),
     SagA.mass
   )
 ];

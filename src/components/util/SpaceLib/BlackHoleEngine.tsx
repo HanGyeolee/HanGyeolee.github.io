@@ -116,7 +116,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   height = 600,
   computeWidth = 200,
   computeHeight = 150,
-  maxSteps = 60000,
+  maxSteps = 30000,
   gravityEnabled = false,
   objects = defaultObjects,
 }) => {
@@ -227,7 +227,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       antialias: true,
       alpha: true 
     });
-    renderer.setSize(width, height);
+    renderer.setSize(computeWidth, computeHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.autoClear = false;
     
@@ -242,7 +242,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     scene.background = new THREE.Color(0x000000);
 
     // 카메라 생성
-    const camera = new THREE.PerspectiveCamera(60, width / height, 1e3, 1e14);
+    const camera = new THREE.PerspectiveCamera(60, computeWidth / computeHeight, 1e3, 1e14);
 
     // DOM에 추가
     mountRef.current.appendChild(renderer.domElement);
@@ -253,7 +253,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     cameraRef.current = camera;
 
     setIsInitialized(true);
-  }, [width, height]);
+  }, [computeWidth, computeHeight]);
 
   /**
    * 렌더링 오브젝트들 생성
@@ -287,7 +287,8 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         const material = new THREE.MeshBasicMaterial({ 
           color: new THREE.Color(obj.color.x, obj.color.y, obj.color.z),
           transparent: true,
-          opacity: obj.color.w
+          opacity: obj.color.w,
+          wireframe: true,
         });
         const sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(
@@ -500,7 +501,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   return (
     <div style={{ position: 'relative', width, height }}>
       {/* Three.js 렌더링 영역 */}
-      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+      <div ref={mountRef} style={{ width: `100%`, height: `100%` }} />
       
       {/* 컨트롤 UI */}
       <div style={{

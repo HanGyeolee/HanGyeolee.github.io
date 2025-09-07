@@ -47,8 +47,8 @@ export const geodesicFragmentShader = `
   const float SagA_rs = 1.269e10;
   const float SagA_rs_half = 6.345e9;        // SagA_rs / 2.0
   const float SagA_rs_sq = 1.610361e20;      // SagA_rs * SagA_rs
-  const float D_LAMBDA = 1e7;
-  const float D_LAMBDA_SQ = 1e14;            // D_LAMBDA * D_LAMBDA
+  const float D_LAMBDA = 5e7;
+  const float D_LAMBDA_SQ = 2.5e15;            // D_LAMBDA * D_LAMBDA
   const float ESCAPE_R = 1e30;
   const float ESCAPE_R_SQ = 1e60;            // ESCAPE_R * ESCAPE_R
   const float TWO = 2.0;
@@ -233,7 +233,6 @@ export const geodesicFragmentShader = `
     float pixelY = float(pix.y) + 0.5;
     float u = (TWO * pixelX / float(WIDTH) - 1.0) * uAspect * uTanHalfFov;
     float v = (1.0 - TWO * pixelY / float(HEIGHT)) * uTanHalfFov;
-    float v = (1.0 - 2.0 * pixelX / float(HEIGHT)) * uTanHalfFov;
 
     vec3 dir = normalize(u * uCamRight - v * uCamUp + uCamForward);
     Ray ray = initRay(uCamPos, dir);
@@ -245,10 +244,10 @@ export const geodesicFragmentShader = `
     bool hitDisk      = false;
     bool hitObject    = false;
 
-    int steps = uMoving ? 30000 : uSteps; // Fragment shader에서는 단계 수 줄임
+    int steps = uMoving ? 12000 : uSteps; // Fragment shader에서는 단계 수 줄임
 
     // Main geodesic integration loop
-    for (int i = 0; i < 60000; ++i) {
+    for (int i = 0; i < 30000; ++i) {
       if (i >= steps) break;
       
       if (ray.r > ESCAPE_R) break;
