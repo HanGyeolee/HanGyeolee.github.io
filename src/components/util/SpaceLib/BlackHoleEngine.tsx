@@ -114,10 +114,9 @@ interface BlackHoleEngineConfig {
 const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   width = 800,
   height = 600,
-  computeWidth = 200,
-  computeHeight = 150,
+  computeWidth = 400,
+  computeHeight = 300,
   maxSteps = 30000,
-  gravityEnabled = false,
   objects = defaultObjects,
 }) => {
   // React refs
@@ -128,9 +127,13 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   const orbitCameraRef = useRef<OrbitCamera>(new OrbitCamera());
   const animationIdRef = useRef<number | null>(null);
 
+  const lowResRenderTargetRef = useRef<THREE.WebGLRenderTarget | null>(null);
+  const upscaleQuadRef = useRef<THREE.Mesh | null>(null);
+  const lowResSceneRef = useRef<THREE.Scene | null>(null);
+  const lowResCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+
   // State
   const [isInitialized, setIsInitialized] = useState(false);
-  const [gravityState, setGravityState] = useState(gravityEnabled);
 
   // Refs for rendering objects
   const gridRef = useRef<THREE.LineSegments | null>(null);
@@ -227,8 +230,9 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       antialias: true,
       alpha: true 
     });
-    renderer.setSize(computeWidth, computeHeight);
+    renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000, 0);
     renderer.autoClear = false;
     
     // WebGL2 컨텍스트 확인
@@ -242,7 +246,12 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     scene.background = new THREE.Color(0x000000);
 
     // 카메라 생성
-    const camera = new THREE.PerspectiveCamera(60, computeWidth / computeHeight, 1e3, 1e14);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 1e3, 1e14);
+
+    // 2. 낮은 해상도 씬과 카메라
+    const lowResScene = new THREE.Scene();
+    lowResScene.background = null;
+    const lowResCamera = new THREE.PerspectiveCamera(60, width / height, 1e3, 1e14);
 
     // DOM에 추가
     mountRef.current.appendChild(renderer.domElement);
@@ -251,113 +260,85 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     rendererRef.current = renderer;
     sceneRef.current = scene;
     cameraRef.current = camera;
+    lowResSceneRef.current = lowResScene;
+    lowResCameraRef.current = lowResCamera;
 
     setIsInitialized(true);
-  }, [computeWidth, computeHeight]);
+  }, [width, height]);
+
 
   /**
-   * 렌더링 오브젝트들 생성
+   * 낮은 해상도 render target과 upscale quad 생성
    */
-  const createRenderObjects = useCallback(() => {
-    if (!sceneRef.current || !cameraRef.current) return;
+  const createRenderTargets = useCallback(() => {
+    if (!rendererRef.current) return;
 
-    const scene = sceneRef.current;
-
-    // 시공간 격자 생성
-    const gridGeometry = generateGrid(objectsRef.current);
-    const gridMaterial = new THREE.LineBasicMaterial({ 
-      color: 0x333333, 
-      transparent: true, 
-      opacity: 0.6 
+    // 1. 200x150 render target 생성
+    const lowResTarget = new THREE.WebGLRenderTarget(computeWidth, computeHeight, {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat,
+      type: THREE.UnsignedByteType,
     });
-    const grid = new THREE.LineSegments(gridGeometry, gridMaterial);
-    scene.add(grid);
-    gridRef.current = grid;
+    lowResRenderTargetRef.current = lowResTarget;
 
-    // 레이 트레이싱 쿼드 생성
-    const rayTracingQuad = createRayTracingQuad();
-    
-    scene.add(rayTracingQuad);
-    rayTracingQuadRef.current = rayTracingQuad;
+    if (lowResSceneRef.current) {
+      // 2. geodesic 쿼드를 낮은 해상도 씬에 추가
+      const geodesicQuad = createRayTracingQuad();
+      lowResSceneRef.current.add(geodesicQuad);
+      rayTracingQuadRef.current = geodesicQuad;
+    }
 
-    // 천체 객체들 시각화 (참조용)
-    objectsRef.current.forEach(obj => {
-      if (obj.posRadius.w > 0) {
-        const geometry = new THREE.SphereGeometry(obj.posRadius.w / 1e10, 16, 16);
-        const material = new THREE.MeshBasicMaterial({ 
-          color: new THREE.Color(obj.color.x, obj.color.y, obj.color.z),
-          transparent: true,
-          opacity: obj.color.w,
-          wireframe: true,
-        });
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(
-          obj.posRadius.x / 1e10,
-          obj.posRadius.y / 1e10,
-          obj.posRadius.z / 1e10
-        );
-        scene.add(sphere);
-      }
+    // 4. upscale용 full screen quad 생성
+    const upscaleGeometry = new THREE.PlaneGeometry(1, 1);
+    const upscaleMaterial = new THREE.MeshBasicMaterial({
+      map: lowResTarget.texture,
+      transparent: true,
+      alphaTest: 0.001,
+      depthTest: false,
+      depthWrite: false,
     });
+    const upscaleQuad = new THREE.Mesh(upscaleGeometry, upscaleMaterial);
+    upscaleQuad.renderOrder = 1000;
+    upscaleQuadRef.current = upscaleQuad;
 
-  }, [generateGrid, createRayTracingQuad]);
+    // 5. 메인 씬에 grid 추가
+    if (sceneRef.current) {
+      sceneRef.current.add(upscaleQuad);
 
-  /**
-   * 중력 시뮬레이션 업데이트
-   */
-  const updateGravitySimulation = useCallback((deltaTime: number) => {
-    if (!gravityState) return;
-
-    // N-body 중력 계산
-    objectsRef.current.forEach((obj1, i) => {
-      objectsRef.current.forEach((obj2, j) => {
-        if (i === j) return;
-        
-        const dx  = obj2.posRadius.x - obj1.posRadius.x;
-        const dy = obj2.posRadius.y - obj1.posRadius.y;
-        const dz = obj2.posRadius.z - obj1.posRadius.z;
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        
-        if (distance > 0) {
-          const direction = new THREE.Vector3(
-            dx / distance, dy / distance, dz / distance
-          );
-          
-          // 중력 가속도: F = GMm/r² -> a = GM/r²
-          const acceleration = (Physics.G * obj1.mass * obj2.mass) / (distance * distance);
-          const forceDir = direction.multiplyScalar(acceleration * deltaTime);
-          
-          // 속도 업데이트
-          obj1.velocity.add(forceDir);
-          
-          // 위치 업데이트
-          const deltaPos = obj1.velocity.clone().multiplyScalar(deltaTime);
-          obj1.posRadius.x += deltaPos.x;
-          obj1.posRadius.y += deltaPos.y;
-          obj1.posRadius.z += deltaPos.z;
-        }
-      });
-    });
-
-    // 격자 재생성 (중력 변화 반영)
-    if (gridRef.current && sceneRef.current) {
-      sceneRef.current.remove(gridRef.current);
-      const newGridGeometry = generateGrid(objectsRef.current);
+      const gridGeometry = generateGrid(objectsRef.current);
       const gridMaterial = new THREE.LineBasicMaterial({ 
         color: 0x333333, 
         transparent: true, 
-        opacity: 0.6 
+        opacity: 0.6,
       });
-      gridRef.current = new THREE.LineSegments(newGridGeometry, gridMaterial);
-      sceneRef.current.add(gridRef.current);
+      const grid = new THREE.LineSegments(gridGeometry, gridMaterial);
+      grid.renderOrder = -1000;
+      sceneRef.current.add(grid);
+      gridRef.current = grid;
     }
-  }, [gravityState, generateGrid]);
+  }, [createRayTracingQuad, generateGrid]);
+
+  /**
+   * 카메라 앞에 화면을 가득 채우는 quad 크기 계산
+   */
+  const calculateQuadSizeAndPosition = useCallback((camera: THREE.PerspectiveCamera, distance: number) => {
+    const fov = camera.fov * Math.PI / 180; // radians로 변환
+    const aspect = camera.aspect;
+    
+    // 주어진 거리에서 화면을 가득 채우는 크기 계산
+    const height = 2 * Math.tan(fov / 2) * distance;
+    const width = height * aspect;
+    
+    return { width, height, distance };
+  }, []);
 
   /**
    * 렌더링 루프
    */
   const animate = useCallback((timestamp: number) => {
     if (!rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+    if (!lowResRenderTargetRef.current || !lowResSceneRef.current || !lowResCameraRef.current) return;
 
     const deltaTime = 0.016; // 대략 60fps
 
@@ -368,9 +349,34 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     const cameraPos = orbitCamera.position();
     cameraRef.current.position.copy(cameraPos);
     cameraRef.current.lookAt(orbitCamera.target);
+    
+    lowResCameraRef.current.position.copy(cameraPos);
+    lowResCameraRef.current.lookAt(orbitCamera.target);
+    lowResCameraRef.current.updateProjectionMatrix();
 
-    // 중력 시뮬레이션 업데이트
-    updateGravitySimulation(deltaTime);
+    if(upscaleQuadRef.current){
+      const quadDistance = 2000; // 카메라로부터 가까운 거리
+      const { width: quadWidth, height: quadHeight } = calculateQuadSizeAndPosition(cameraRef.current, quadDistance);
+      
+      // quad를 카메라 앞에 배치
+      const cameraDir = orbitCamera.target.clone().sub(cameraPos).normalize();
+      const quadPosition = cameraPos.clone().add(cameraDir.multiplyScalar(quadDistance));
+      
+      upscaleQuadRef.current.position.copy(quadPosition);
+      upscaleQuadRef.current.scale.set(quadWidth, quadHeight, 1);
+      upscaleQuadRef.current.lookAt(cameraPos);
+    }
+
+    // 동적 해상도 조정
+    const targetWidth = orbitCamera.moving ? 200 : computeWidth;
+    const targetHeight = orbitCamera.moving ? 150 : computeHeight;
+
+    // Render target 크기 변경이 필요한 경우
+    const currentWidth = lowResRenderTargetRef.current.width;
+    const currentHeight = lowResRenderTargetRef.current.height;
+    if (currentWidth !== targetWidth || currentHeight !== targetHeight) {
+      lowResRenderTargetRef.current.setSize(targetWidth, targetHeight);
+    }
 
     // 레이 트레이싱 쉐이더 유니폼 업데이트
     if (rayTracingQuadRef.current) {
@@ -402,12 +408,20 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       }
     }
 
-    // 렌더링
     rendererRef.current.clear();
+
+    // 1단계: lowRes로 geodesic 렌더링
+    rendererRef.current.setRenderTarget(lowResRenderTargetRef.current);
+    rendererRef.current.setClearColor(0x000000, 0); // 투명 clear 강제
+    rendererRef.current.clear(true, true, false); // color, depth clear, stencil no
+    rendererRef.current.render(lowResSceneRef.current, lowResCameraRef.current);
+
+    // 2단계: 격자 렌더링
+    rendererRef.current.setRenderTarget(null);
     rendererRef.current.render(sceneRef.current, cameraRef.current);
 
     animationIdRef.current = requestAnimationFrame(animate);
-  }, [updateGravitySimulation]);
+  }, []);
 
   /**
    * 마우스 이벤트 핸들러
@@ -433,13 +447,6 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   }, []);
 
   /**
-   * 중력 토글 함수
-   */
-  const toggleGravity = useCallback(() => {
-    setGravityState(prev => !prev);
-  }, []);
-
-  /**
    * 초기화 Effect
    */
   useEffect(() => {
@@ -460,9 +467,9 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    */
   useEffect(() => {
     if (isInitialized) {
-      createRenderObjects();
+      createRenderTargets();
     }
-  }, [isInitialized, createRenderObjects]);
+  }, [isInitialized, createRenderTargets]);
 
   /**
    * 애니메이션 시작 Effect
@@ -507,7 +514,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       <div style={{
         position: 'absolute',
         top: 10,
-        left: 10,
+        right: 10,
         padding: 15,
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         borderRadius: 8,
@@ -519,22 +526,6 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         <div style={{ marginBottom: 10 }}>
           <strong>Black Hole Simulation</strong>
         </div>
-        
-        <button
-          onClick={toggleGravity}
-          style={{
-            backgroundColor: gravityState ? '#4CAF50' : '#f44336',
-            color: 'white',
-            border: 'none',
-            padding: '8px 12px',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontSize: '11px',
-            marginBottom: 8
-          }}
-        >
-          Gravity: {gravityState ? 'ON' : 'OFF'}
-        </button>
         
         <div style={{ fontSize: '10px', color: '#ccc' }}>
           <div>Camera Distance: {(orbitCameraRef.current.radius / 1e10).toFixed(1)} × 10¹⁰m</div>

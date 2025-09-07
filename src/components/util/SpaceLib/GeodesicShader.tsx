@@ -356,7 +356,5 @@ export function createGeodesicMaterial(blackhole:BlackHole): THREE.ShaderMateria
     fragmentShader: geodesicFragmentShader,
     transparent: true,
     alphaTest: 0.001,
-    blending: THREE.NormalBlending,
-    depthTest: false,
   });
 }
