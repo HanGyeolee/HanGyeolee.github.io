@@ -21,6 +21,15 @@ const ProjectsSection = () => {
    */
   const projects = useRef([
     {
+      title: '블랙홀',
+      thumbnail: null,
+      document: 'blackhole',
+      type: IconType.PERSONAL,
+      description: '블랙홀',
+      techStack: ['React.js', 'Typescript', 'Three.js'],
+      period: '2025.09 ~'
+    },
+    {
       title: '동물용 기기 중앙 관리 서버',
       thumbnail: restAPIImage,
       type: IconType.COMPANY,

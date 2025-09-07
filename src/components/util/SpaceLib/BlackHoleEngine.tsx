@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { Physics } from './Physics';
-import { BlackHole, ObjectData, SagA, defaultObjects } from './BlackHoleStructs';
-import { createGeodesicMaterial } from './GeodesicShader';
+import { Physics } from './Physics.tsx';
+import { ObjectData, SagA, defaultObjects } from './BlackHoleStructs.tsx';
+import { createGeodesicMaterial } from './GeodesicShader.tsx';
 
 /**
  * 카메라 클래스 - 블랙홀 중심 궤도 카메라
@@ -142,7 +142,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    * 블랙홀의 중력장에 의해 휘어진 격자를 생성합니다.
    */
   const generateGrid = useCallback((objects: ObjectData[]): THREE.BufferGeometry => {
-    const gridSize = 25;
+    const gridSize = 29;
     const spacing = 1e10; // 격자 간격
     
     const vertices: number[] = [];
@@ -173,7 +173,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
             y += deltaY - 3e10;
           } else {
             // 사건의 지평선 내부는 깊은 함정으로 표현
-            y += 2.0 * Math.sqrt(r_s * r_s) - 3e10;
+            y += -2.0 * Math.sqrt(r_s * (r_s)) - 3e10;
           }
         });
 
@@ -206,14 +206,15 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    */
   const createRayTracingQuad = useCallback((): THREE.Mesh => {
     const geometry = new THREE.PlaneGeometry(2, 2);
-    const material = createGeodesicMaterial();
-
+    const material = createGeodesicMaterial(SagA);
+    
     // 해상도 업데이트
-    material.uniforms.uResolution.value.set(width, height);
-    material.uniforms.uAspect.value = width / height;
+    material.uniforms.uResolution.value.set(computeWidth, computeHeight);
+    material.uniforms.uAspect.value = computeWidth / computeHeight;
+    material.uniforms.uSteps.value = maxSteps;
 
     return new THREE.Mesh(geometry, material);
-  }, [width, height]);
+  }, [computeWidth, computeHeight, maxSteps]);
 
   /**
    * Three.js 초기화
@@ -241,7 +242,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     scene.background = new THREE.Color(0x000000);
 
     // 카메라 생성
-    const camera = new THREE.PerspectiveCamera(60, width / height, 1e9, 1e14);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 1e3, 1e14);
 
     // DOM에 추가
     mountRef.current.appendChild(renderer.domElement);
@@ -258,7 +259,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    * 렌더링 오브젝트들 생성
    */
   const createRenderObjects = useCallback(() => {
-    if (!sceneRef.current) return;
+    if (!sceneRef.current || !cameraRef.current) return;
 
     const scene = sceneRef.current;
 
@@ -275,6 +276,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
 
     // 레이 트레이싱 쿼드 생성
     const rayTracingQuad = createRayTracingQuad();
+    
     scene.add(rayTracingQuad);
     rayTracingQuadRef.current = rayTracingQuad;
 
@@ -285,7 +287,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         const material = new THREE.MeshBasicMaterial({ 
           color: new THREE.Color(obj.color.x, obj.color.y, obj.color.z),
           transparent: true,
-          opacity: 0.7
+          opacity: obj.color.w
         });
         const sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(
@@ -375,7 +377,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       // 시간 업데이트
       material.uniforms.uTime.value = timestamp * 0.001;
       // 카메라 정보 업데이트
-      material.uniforms.uCameraPos.value.copy(cameraPos);
+      material.uniforms.uCamPos.value.copy(cameraPos);
       
       const cameraDir = orbitCamera.target.clone().sub(cameraPos).normalize();
       const up = new THREE.Vector3(0, 1, 0);
@@ -388,22 +390,15 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       material.uniforms.uMoving.value = orbitCamera.moving;
           
       // 객체 정보 업데이트
-      material.uniforms.uNumObjects.value = Math.min(objectsRef.current.length, 16);
-          
-      const objPosRadius:THREE.Vector4[] = [];
-      const objColor:THREE.Vector4[] = [];
-      const objMass:number[] = [];
+      const count = Math.min(objectsRef.current.length, 16);
+      material.uniforms.uNumObjects.value = count;
       
-      for (let i = 0; i < Math.min(objectsRef.current.length, 16); i++) {
+      for (let i = 0; i < count; i++) {
         const obj = objectsRef.current[i];
-        objPosRadius.push(obj.posRadius);
-        objColor.push(obj.color);
-        objMass.push(obj.mass);
+        material.uniforms.uObjPosRadius.value[i].copy(obj.posRadius);
+        material.uniforms.uObjColor.value[i].copy(obj.color);
+        material.uniforms.uMass.value[i] = obj.mass;
       }
-      
-      material.uniforms.uObjPosRadius.value = objPosRadius;
-      material.uniforms.uObjColor.value = objColor;
-      material.uniforms.uMass.value = objMass;
     }
 
     // 렌더링

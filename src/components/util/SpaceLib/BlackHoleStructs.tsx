@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Physics } from './Physics';
+import { Physics } from './Physics.tsx';
 
 export class BlackHole {
     /** 블랙홀의 위치 (m) */
