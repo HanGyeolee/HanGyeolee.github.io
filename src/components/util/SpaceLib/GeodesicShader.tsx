@@ -499,7 +499,7 @@ export const geodesicFragmentShader = `
     }
 
     vec4 finalColor = vec4(0.0);
-    int samples = 3; // 2x2 샘플링
+    int samples = 2; // 2x2 샘플링
 
     for (int sx = 0; sx < samples; sx++) {
       for (int sy = 0; sy < samples; sy++) {
@@ -537,7 +537,7 @@ export const geodesicFragmentShader = `
           }
 
           if (uTileMode) {
-            rk4Step(ray, D_LAMBDA);
+            rk3Step(ray, D_LAMBDA);
           } else {
             rk2Step(ray, D_LAMBDA);
           }

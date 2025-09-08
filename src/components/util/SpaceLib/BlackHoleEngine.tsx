@@ -685,7 +685,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    */
   useEffect(() => {
     if (width > 0 && height > 0) {
-      tileRendererRef.current = new TileRenderer(width, height, 256);
+      tileRendererRef.current = new TileRenderer(width, height, 512);
       
       // 누적 버퍼 생성
       if (rendererRef.current) {
