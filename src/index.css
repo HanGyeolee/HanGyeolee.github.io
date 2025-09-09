@@ -12,6 +12,8 @@
 
 /* body와 html에 대한 스크롤바 제거 */
 html, body {
+  width: 100%;
+  height: 100%;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
@@ -19,6 +21,11 @@ html, body {
 html::-webkit-scrollbar, 
 body::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+#root {
+  width: 100%;
+  height: 100%;
 }
 
 /* Tailwind에서 사용된 클래스들의 CSS 구현 */
@@ -47,6 +54,11 @@ body::-webkit-scrollbar {
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
+}
+
+.my-auto {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .my-8 {
@@ -271,6 +283,10 @@ body::-webkit-scrollbar {
 
 .bg-\[\#061529\] {
   background-color: #061529;
+}
+
+.bg-black {
+  background-color: #000000;
 }
 
 .bg-white\/40 {
