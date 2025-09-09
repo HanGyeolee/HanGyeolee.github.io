@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Tonality } from './tonality.tsx';
 import { BlackHole } from './blackhole.tsx';
 import { APW } from './apw.tsx';
+import { ProjectList } from './projectList.tsx';
 
 function Projects() {
     return (
