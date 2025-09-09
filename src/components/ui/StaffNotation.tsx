@@ -168,7 +168,7 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
   };
   
   // 조표 그리기용 함수
-  const renderKeySignature = () => {
+  const renderKeySignature = (keySignature:string) => {
     let sharpKeys:string[];
     let flatKeys:string[];
     if(scale === Scale.major){
@@ -230,17 +230,23 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
       
       if (isSharp) {
         const pos = sharpPositions[i];
-        y = staffYPosition + (pos.line * staffLineSpacing / 2) + pos.offset + 2;
+        y = staffYPosition + (pos.line * staffLineSpacing / 2) + pos.offset + 3;
         
         accidentals.push(
-          <text key={`sharp-${i}`} x={x} y={y} fontSize="24" fontFamily="serif">♯</text>
+          <text key={`sharp-${i}`} x={x} y={y} 
+          fontSize="24" 
+          fontFamily="serif"
+          fontWeight={600}>♯</text>
         );
       } else if (isFlat) {
         const pos = flatPositions[i];
-        y = staffYPosition + (pos.line * staffLineSpacing / 2) + pos.offset;
+        y = staffYPosition + (pos.line * staffLineSpacing / 2) + pos.offset - 1;
         
         accidentals.push(
-          <text key={`flat-${i}`} x={x} y={y} fontSize="24" fontFamily="serif">♭</text>
+          <text key={`flat-${i}`} x={x} y={y} 
+          fontSize="24" 
+          fontFamily="serif"
+          fontWeight={600}>♭</text>
         );
       }
     }
@@ -252,6 +258,7 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
     const diatonicNotes = midiToDiatonic(midiNotes, keySignature, scale, option);
     const notePos:number[][] = [];
 
+    let minPos = chordX;
     for(let i = 0; i < diatonicNotes.length; i++) {
       const notes = diatonicNotes[i];
       // 다이어토닉 노트 위치 계산 (C, D, E, F, G, A, B)
@@ -279,9 +286,13 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
             }
           }
           if(thisNoteInLine){
-            notePos[i][0] -= 16
+            notePos[i][0] -= 16;
+            if(notePos[i][0] < minPos)
+              minPos = notePos[i][0];
           }else{
             notePos[i-1][0] -= 16
+            if(notePos[i-1][0] < minPos)
+              minPos = notePos[i-1][0];
           }
         }
       }
@@ -291,6 +302,7 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
       diatonicNotes.map((notes, noteIdx) => {
         const noteX =  notePos[noteIdx][0];
         const noteY =  notePos[noteIdx][1];
+        const subX = minPos == chordX ? noteX: noteX - 12;
 
         return <g key={`note-${index}-${noteIdx}`}>
           {/* 필요한 경우 가로줄 추가 */}
@@ -307,7 +319,7 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
           />
           
           {/* 임시표 표시 - 조표에 없는 임시표만 표시 */}
-          {renderAccidental(notes, noteX, noteY, keySignature, scale)}
+          {renderAccidental(notes, subX, noteY, keySignature, scale)}
         </g>
       })
     );
@@ -326,12 +338,19 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
       const accidentalX = x - 32;
       const accidentalSymbol = getAccidentalSymbol(note.accidental);
       
+      let deltaY = 9;
+
+      if(note.accidental.includes('b')){
+        deltaY = 5;
+      }
+
       return (
         <text
           x={accidentalX}
-          y={y + 7}
+          y={y + deltaY}
           fontSize="24"
           fontFamily="serif"
+          fontWeight={600}
         >
           {accidentalSymbol}
         </text>
@@ -371,7 +390,7 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
       <text x={clefX} y={staffYPosition + 4 * staffLineSpacing} fontSize="60">𝄞</text>
       
       {/* 조표 그리기 */}
-      {renderKeySignature()}
+      {renderKeySignature(keySignature)}
       
       {/* 화음 및 음표 그리기 */}
       {harmony.map((chord, index) => {
@@ -400,7 +419,22 @@ const StaffNotation: React.FC<NotationProps> = ({ harmony, keySignature, scale }
   );
 };
 
-const renderSuperscriptText = (text) => {
+const renderSuperscriptText = (text:string) => {
+  if(text.includes('_')){
+    const texts = text.split('_');
+    return (
+      <>
+        {texts[0]}
+        <tspan
+          baselineShift="super"
+          fontSize="0.7em"
+        >
+          {texts[1]}
+        </tspan>
+      </>
+    );
+  }
+  
   // '°' 또는 '+' 문자를 찾아 분리
   const regex = /^([IiVv]+|[A-Za-z]+?)([+°øomM\d][^\s]*$)/;
   const matches = text.match(regex);
@@ -487,13 +521,13 @@ const getKeySignatureInfo = (keySignature: string, scale:Scale): KeySignatureInf
     'A#m': { key: 'A#m', type:KeySignType.sharp, alterations: { 'F': '#', 'C': '#', 'G': '#', 'D': '#', 'A': '#', 'E': '#', 'B': '#' } },
     
     // 플랫 조성들
-    'Dm': { key: 'Dm', type:KeySignType.flat, alterations: { 'B': 'b' } },
-    'Gm': { key: 'Gm', type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b' } },
-    'Cm': { key: 'Cm', type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b' } },
-    'Fm': { key: 'Fm', type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b' } },
-    'Bbm': { key: 'Bbm', type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b', 'G': 'b' } },
-    'Ebm': { key: 'Ebm', type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b', 'G': 'b', 'C': 'b' } },
-    'Abm': { key: 'Abm', type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b', 'G': 'b', 'C': 'b', 'F': 'b' } },
+    'Dm' : { key: 'Dm',     type:KeySignType.flat, alterations: { 'B': 'b' } },
+    'Gm' : { key: 'Gm',     type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b' } },
+    'Cm' : { key: 'Cm',     type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b' } },
+    'Fm' : { key: 'Fm',     type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b' } },
+    'Bbm': { key: 'Bbm',  type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b', 'G': 'b' } },
+    'Ebm': { key: 'Ebm',  type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b', 'G': 'b', 'C': 'b' } },
+    'Abm': { key: 'Abm',  type:KeySignType.flat, alterations: { 'B': 'b', 'E': 'b', 'A': 'b', 'D': 'b', 'G': 'b', 'C': 'b', 'F': 'b' } },
   };
 
   let name = keySignature + (scale === Scale.major ? '' : 'm');

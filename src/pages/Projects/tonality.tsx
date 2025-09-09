@@ -166,15 +166,15 @@ const Tonality = () => {
         switch (scale){
           case Scale.major:
             intervals = majorIntervals;
-            romanNumerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+            romanNumerals = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii_°'];
             break;
           case Scale.minor:
             intervals = naturalMinorIntervals;
-            romanNumerals = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+            romanNumerals = ['i', 'ii_°', 'III', 'iv', 'v', 'VI', 'VII'];
             break;
           case Scale.harmonic_minor:
             intervals = harmonicMinorIntervals;
-            romanNumerals = ['i', 'ii°', 'III+', 'iv', 'V', 'VI', 'vii°'];
+            romanNumerals = ['i', 'ii_°', 'III_+', 'iv', 'V', 'VI', 'vii_°'];
             break;
         }
         
@@ -221,15 +221,15 @@ const Tonality = () => {
       switch (scale){
         case Scale.major:
           intervals = majorIntervals;
-          romanNumerals = ['IM7', 'ii7', 'iii7', 'IVM7', 'V7', 'vi7', 'viiø7'];
+          romanNumerals = ['I_M7', 'ii_7', 'iii_7', 'IV_M7', 'V_7', 'vi_7', 'vii_ø7'];
           break;
         case Scale.minor:
           intervals = naturalMinorIntervals;
-          romanNumerals = ['i7', 'iiø7', 'IIIM7', 'iv7', 'v7', 'VIM7', 'VII7'];
+          romanNumerals = ['i_7', 'ii_ø7', 'III_M7', 'iv_7', 'v_7', 'VI_M7', 'VII_7'];
           break;
         case Scale.harmonic_minor:
           intervals = harmonicMinorIntervals;
-          romanNumerals = ['imM7', 'iiø7', 'III+M7', 'iv7', 'V7', 'VIM7', 'vii°7'];
+          romanNumerals = ['i_mM7', 'ii_ø7', 'III_+M7', 'iv_7', 'V_7', 'VI_M7', 'vii_°7'];
           break;
       }
       
@@ -267,26 +267,26 @@ const Tonality = () => {
       const harmony:Harmony[] = [];
 
       const chordNotes:Record<string,number[]> = {
-        'It+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 6 + 12],
-        'Fr+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 2 + 12, rootIndex + 6 + 12],
-        'Ger+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 3 + 12, rootIndex + 6 + 12],
+        'It_+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 6 + 12],
+        'Fr_+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 2 + 12, rootIndex + 6 + 12],
+        'Ger_+6':[rootIndex - 4 + 12, rootIndex + 0 + 12, rootIndex + 3 + 12, rootIndex + 6 + 12],
       };
 
       let optionNotes:Record<string,string[]>;
       switch (scale){
         case Scale.major:
           optionNotes = {
-            'It+6':['b6','1','#4'],
-            'Fr+6':['b6','1','2','#4'],
-            'Ger+6':['b6','1','b3','#4'],
+            'It_+6':['b6','1','#4'],
+            'Fr_+6':['b6','1','2','#4'],
+            'Ger_+6':['b6','1','b3','#4'],
           };
           break;
         case Scale.minor:
         case Scale.harmonic_minor:
           optionNotes = {
-            'It+6':['6','1','#4'],
-            'Fr+6':['6','1','2','#4'],
-            'Ger+6':['6','1','3','#4'],
+            'It_+6':['6','1','#4'],
+            'Fr_+6':['6','1','2','#4'],
+            'Ger_+6':['6','1','3','#4'],
           };
           break;
       }
