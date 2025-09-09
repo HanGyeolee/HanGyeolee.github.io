@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { Physics } from './Physics.tsx';
 import { ObjectData, SagA, defaultObjects } from './BlackHoleStructs.tsx';
-import { createGeodesicMaterial, TileRenderer } from './GeodesicShader.tsx';
+import { createGeodesicMaterial, SCALE_FACTOR, TileRenderer } from './GeodesicShader.tsx';
 
 /**
  * 카메라 클래스 - 블랙홀 중심 궤도 카메라
@@ -12,11 +12,11 @@ class OrbitCamera {
   public target: THREE.Vector3 = new THREE.Vector3(0.0, 0.0, 0.0);
   
   /** 블랙홀로부터의 거리 (m) */
-  public radius: number = 1.268388e11;
+  public radius: number = 1.268388e11 / SCALE_FACTOR;
   
   /** 최소/최대 거리 제한 (m) */
-  public minRadius: number = 4e10;
-  public maxRadius: number = 1e12;
+  public minRadius: number = 4e10 / SCALE_FACTOR;
+  public maxRadius: number = 1e12 / SCALE_FACTOR;
   
   /** 구면 좌표 (radians) */
   public azimuth: number = -Physics.M_PI / 2.0;
@@ -24,7 +24,7 @@ class OrbitCamera {
   
   /** 제어 속도 */
   public orbitSpeed: number = 0.01;
-  public zoomSpeed: number = 25e9;
+  public zoomSpeed: number = 25e9 / SCALE_FACTOR;
   
   /** 상태 */
   public dragging: boolean = false;
@@ -112,7 +112,7 @@ interface BlackHoleEngineConfig {
 const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   width = 800,
   height = 600,
-  maxSteps = 12000,
+  maxSteps = 24000,
   objects = defaultObjects,
 }) => {
   const [computeSize, setComputSize] = useState<{width:number, height:number}>({
@@ -153,7 +153,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    */
   const generateGrid = useCallback((objects: ObjectData[]): THREE.BufferGeometry => {
     const gridSize = 29;
-    const spacing = 1e10; // 격자 간격
+    const spacing = 1; // 격자 간격
     
     const vertices: number[] = [];
     const indices: number[] = [];
@@ -168,11 +168,11 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
 
         // 슈바르츠실트 기하학을 이용한 격자 왜곡
         objects.forEach(obj => {
-          const objPos = new THREE.Vector3(obj.posRadius.x, obj.posRadius.y, obj.posRadius.z);
+          const objPos = new THREE.Vector3(obj.posRadius.x, obj.posRadius.y, obj.posRadius.z).divideScalar(SCALE_FACTOR);
           const mass = obj.mass;
           
           // 슈바르츠실트 반지름 계산
-          const r_s = 2.0 * Physics.G * mass / Physics.c_2;
+          const r_s = 2.0 * Physics.G * mass / Physics.c_2 / SCALE_FACTOR;
           const dx = worldX - objPos.x;
           const dz = worldZ - objPos.z;
           const dist = Math.sqrt(dx * dx + dz * dz);
@@ -180,10 +180,10 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
           // 사건의 지평선 밖에서만 계산
           if (dist > r_s) {
             const deltaY = 2.0 * Math.sqrt(r_s * (dist - r_s));
-            y += deltaY - 3e10;
+            y += deltaY - 3e10 / SCALE_FACTOR;
           } else {
             // 사건의 지평선 내부는 깊은 함정으로 표현
-            y += -2.0 * Math.sqrt(r_s * (r_s)) - 3e10;
+            y += -2.0 * Math.sqrt(r_s * r_s) - 3e10 / SCALE_FACTOR;
           }
         });
 
@@ -235,7 +235,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     // 렌더러 생성
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
-      alpha: true 
+      alpha: true
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -253,12 +253,16 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     scene.background = new THREE.Color(0x000000);
 
     // 카메라 생성
-    const camera = new THREE.PerspectiveCamera(60, width / height, 1e3, 1e14);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 
+      1e3 / SCALE_FACTOR, 
+      1e14 / SCALE_FACTOR);
 
     // 2. 낮은 해상도 씬과 카메라
     const lowResScene = new THREE.Scene();
     lowResScene.background = null;
-    const lowResCamera = new THREE.PerspectiveCamera(60, width / height, 1e3, 1e14);
+    const lowResCamera = new THREE.PerspectiveCamera(60, width / height, 
+      1e3 / SCALE_FACTOR, 
+      1e14 / SCALE_FACTOR);
 
     // DOM에 추가
     mountRef.current.appendChild(renderer.domElement);
@@ -402,9 +406,8 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       
       for (let i = 0; i < count; i++) {
         const obj = objectsRef.current[i];
-        material.uniforms.uObjPosRadius.value[i].copy(obj.posRadius);
+        material.uniforms.uObjPosRadius.value[i].copy(obj.posRadius).divideScalar(SCALE_FACTOR);
         material.uniforms.uObjColor.value[i].copy(obj.color);
-        material.uniforms.uMass.value[i] = obj.mass;
       }
     }
 
@@ -514,9 +517,8 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         
         for (let i = 0; i < count; i++) {
           const obj = objectsRef.current[i];
-          material.uniforms.uObjPosRadius.value[i].copy(obj.posRadius);
+          material.uniforms.uObjPosRadius.value[i].copy(obj.posRadius).divideScalar(SCALE_FACTOR);
           material.uniforms.uObjColor.value[i].copy(obj.color);
-          material.uniforms.uMass.value[i] = obj.mass;
         }
       }
       rendererRef.current.setClearColor(0x000000, 0);
@@ -777,7 +779,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         )}
         
         <div style={{ fontSize: '10px', color: '#ccc' }}>
-          <div>Camera Distance: {(orbitCameraRef.current.radius / 1e10).toFixed(1)} × 10¹⁰m</div>
+          <div>Camera Distance: {(orbitCameraRef.current.radius * SCALE_FACTOR / 1e10).toFixed(1)} × 10¹⁰m</div>
           <div>Schwarzschild Radius: {(SagA.r_s / 1e9).toFixed(1)} × 10⁹m</div>
           <div>Controls: Mouse drag to orbit, wheel to zoom</div>
         </div>

@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { BlackHole } from './BlackHoleStructs.tsx';
 
+export const SCALE_FACTOR = 1e10;
+
 /**
  * Schwarzschild Geodesic Fragment Shader
  * C++의 geodesic.comp를 WebGL fragment shader로 포팅
@@ -33,13 +35,11 @@ export const geodesicFragmentShader = `
   uniform float uDiskR1;
   uniform float uDiskR2;
   uniform float uDiskNum;
-  uniform float uThickness;
   
   // Objects uniforms
   uniform int uNumObjects;
   uniform vec4 uObjPosRadius[16];
   uniform vec4 uObjColor[16];
-  uniform float uMass[16];
 
   // 타일 렌더링용 추가 uniforms
   uniform bool uTileMode;
@@ -48,13 +48,12 @@ export const geodesicFragmentShader = `
   varying vec2 vUv;
   
   // Constants
-  const float SagA_rs = 1.269e10;
-  const float SagA_rs_half = 6.345e9;        // SagA_rs / 2.0
-  const float SagA_rs_sq = 1.610361e20;      // SagA_rs * SagA_rs
-  const float D_LAMBDA = 1e8;
-  const float D_LAMBDA_SQ = 1e16;            // D_LAMBDA * D_LAMBDA
-  const float ESCAPE_R = 1e30;
-  const float ESCAPE_R_SQ = 1e60;            // ESCAPE_R * ESCAPE_R
+  const float SagA_rs = 1.269;  // 1.269e10;
+  const float SagA_rs_half = 6.345e-1; // 6.345e9;        // SagA_rs / 2.0
+  const float SagA_rs_sq = 1.610361; // 1.610361e20;      // SagA_rs * SagA_rs
+  const float D_LAMBDA = 2.5e-3;  // 1e8;
+  const float ESCAPE_R = 1e12;  // 1e30;
+  const float ESCAPE_R_SQ = 1e24;  // 1e60;            // ESCAPE_R * ESCAPE_R
   const float TWO = 2.0;
 
   // XYZ를 sRGB로 변환하는 매트릭스
@@ -235,98 +234,6 @@ export const geodesicFragmentShader = `
     updateRayCache(ray);
   }
 
-  // RK3 integration step
-  void rk3Step(inout Ray ray, float dL) {
-    vec3 k1a, k1b, k2a, k2b, k3a, k3b;
-    Ray tempRay;
-
-    // k1
-    geodesicRHS(ray, k1a, k1b);
-
-    // k2 (중점에서)
-    tempRay = ray;
-    tempRay.r      += 0.5 * dL * k1a.x;
-    tempRay.theta  += 0.5 * dL * k1a.y;
-    tempRay.phi    += 0.5 * dL * k1a.z;
-    tempRay.dr     += 0.5 * dL * k1b.x;
-    tempRay.dtheta += 0.5 * dL * k1b.y;
-    tempRay.dphi   += 0.5 * dL * k1b.z;
-    updateRayCache(tempRay);
-    geodesicRHS(tempRay, k2a, k2b);
-
-    // k3
-    tempRay = ray;
-    tempRay.r      += dL * (-k1a.x + 2.0 * k2a.x);
-    tempRay.theta  += dL * (-k1a.y + 2.0 * k2a.y);
-    tempRay.phi    += dL * (-k1a.z + 2.0 * k2a.z);
-    tempRay.dr     += dL * (-k1b.x + 2.0 * k2b.x);
-    tempRay.dtheta += dL * (-k1b.y + 2.0 * k2b.y);
-    tempRay.dphi   += dL * (-k1b.z + 2.0 * k2b.z);
-    updateRayCache(tempRay);
-    geodesicRHS(tempRay, k3a, k3b);
-
-    // 업데이트 (k1 + 4*k2 + k3) / 6
-    ray.r      += dL * (k1a.x + 4.0 * k2a.x + k3a.x) / 6.0;
-    ray.theta  += dL * (k1a.y + 4.0 * k2a.y + k3a.y) / 6.0;
-    ray.phi    += dL * (k1a.z + 4.0 * k2a.z + k3a.z) / 6.0;
-    ray.dr     += dL * (k1b.x + 4.0 * k2b.x + k3b.x) / 6.0;
-    ray.dtheta += dL * (k1b.y + 4.0 * k2b.y + k3b.y) / 6.0;
-    ray.dphi   += dL * (k1b.z + 4.0 * k2b.z + k3b.z) / 6.0;
-
-    updateRayCache(ray);
-  }
-
-  // RK4 integration step
-  void rk4Step(inout Ray ray, float dL) {
-    vec3 k1a, k1b, k2a, k2b, k3a, k3b, k4a, k4b;
-    Ray tempRay;
-
-    // k1
-    geodesicRHS(ray, k1a, k1b);
- 
-    // k2
-    tempRay = ray;
-    tempRay.r      += 0.5 * dL * k1a.x;
-    tempRay.theta  += 0.5 * dL * k1a.y;
-    tempRay.phi    += 0.5 * dL * k1a.z;
-    tempRay.dr     += 0.5 * dL * k1b.x;
-    tempRay.dtheta += 0.5 * dL * k1b.y;
-    tempRay.dphi   += 0.5 * dL * k1b.z;
-    updateRayCache(tempRay);
-    geodesicRHS(tempRay, k2a, k2b);
-    
-    // k3
-    tempRay = ray;
-    tempRay.r      += 0.5 * dL * k2a.x;
-    tempRay.theta  += 0.5 * dL * k2a.y;
-    tempRay.phi    += 0.5 * dL * k2a.z;
-    tempRay.dr     += 0.5 * dL * k2b.x;
-    tempRay.dtheta += 0.5 * dL * k2b.y;
-    tempRay.dphi   += 0.5 * dL * k2b.z;
-    updateRayCache(tempRay);
-    geodesicRHS(tempRay, k3a, k3b);
-    
-    // k4
-    tempRay = ray;
-    tempRay.r      += dL * k3a.x;
-    tempRay.theta  += dL * k3a.y;
-    tempRay.phi    += dL * k3a.z;
-    tempRay.dr     += dL * k3b.x;
-    tempRay.dtheta += dL * k3b.y;
-    tempRay.dphi   += dL * k3b.z;
-    updateRayCache(tempRay);
-    geodesicRHS(tempRay, k4a, k4b);
-    
-    // 업데이트
-    ray.r      += dL * (k1a.x + 2.0 * k2a.x + 2.0 * k3a.x + k4a.x) / 6.0;
-    ray.theta  += dL * (k1a.y + 2.0 * k2a.y + 2.0 * k3a.y + k4a.y) / 6.0;
-    ray.phi    += dL * (k1a.z + 2.0 * k2a.z + 2.0 * k3a.z + k4a.z) / 6.0;
-    ray.dr     += dL * (k1b.x + 2.0 * k2b.x + 2.0 * k3b.x + k4b.x) / 6.0;
-    ray.dtheta += dL * (k1b.y + 2.0 * k2b.y + 2.0 * k3b.y + k4b.y) / 6.0;
-    ray.dphi   += dL * (k1b.z + 2.0 * k2b.z + 2.0 * k3b.z + k4b.z) / 6.0;
-    
-    updateRayCache(ray);
-  }
   
   // Check if ray crosses equatorial plane
   bool crossesEquatorialPlane(vec3 oldPos, vec3 newPos) {
@@ -436,6 +343,7 @@ export const geodesicFragmentShader = `
   }
 
   vec4 calculateDiskColor(vec3 P, float r, out vec3 viewDir) {
+    float physicalRadius = r * ${SCALE_FACTOR.toExponential()};
     float diskProgress = (r - uDiskR1) / (uDiskR2 - uDiskR1);
     diskProgress = clamp(diskProgress, 0.0, 1.0);
 
@@ -499,7 +407,10 @@ export const geodesicFragmentShader = `
     }
 
     vec4 finalColor = vec4(0.0);
-    int samples = 2; // 2x2 샘플링
+    int samples = 1; // 2x2 샘플링
+    if (uTileMode) {
+      samples = 2;
+    }
 
     for (int sx = 0; sx < samples; sx++) {
       for (int sy = 0; sy < samples; sy++) {
@@ -523,23 +434,17 @@ export const geodesicFragmentShader = `
         bool hitDisk2      = false;
         bool hitObject    = false;
 
-        int steps = uMoving ? 6000 : uSteps; // Fragment shader에서는 단계 수 줄임
+        int steps = uSteps; // Fragment shader에서는 단계 수 줄임
 
         // Main geodesic integration loop
-        for (int i = 0; i < 12000; ++i) {
-          if (i >= steps) break;
-          
+        for (int i = 0; i < steps; ++i) {
           if (ray.r > ESCAPE_R) break;
+
+          rk2Step(ray, D_LAMBDA);
 
           if (intercept(ray, SagA_rs_sq)) { 
             hitBlackHole = true; 
             break; 
-          }
-
-          if (uTileMode) {
-            rk3Step(ray, D_LAMBDA);
-          } else {
-            rk2Step(ray, D_LAMBDA);
           }
 
           vec3 newPos = vec3(ray.x, ray.y, ray.z);
@@ -550,6 +455,7 @@ export const geodesicFragmentShader = `
             } else if(!hitDisk2){
               hitDisk2 = true;
               diskPos2 = vec3(ray.x, ray.y, ray.z);
+              break;
             } 
           }
           if (interceptObject(ray)) { 
@@ -565,35 +471,18 @@ export const geodesicFragmentShader = `
           float r = length(P);
           vec3 viewDir;
 
-          vec4 dColor = calculateDiskColor(P, r, viewDir);
+          color = calculateDiskColor(P, r, viewDir);
           if(hitDisk2){
             vec3 P2 = diskPos2;
             float r2 = length(P2);
             vec3 viewDir2;
-            vec4 dColor2 = calculateDiskColor(P2, r2, viewDir2);
+            vec4 dColor = calculateDiskColor(P2, r2, viewDir2);
 
-            dColor = alphaComposite(dColor, dColor2);
+            color = alphaComposite(color, dColor);
           }
-
-          if (hitBlackHole) {
-            vec4 oColor = vec4(0.0, 0.0, 0.0, 1.0);
-            color = alphaComposite(dColor, oColor);
-          } else if (hitObject) {
-            vec3 N = normalize(P - hitCenter);
-            vec3 V = viewDir;
-
-            float ambient = 0.1;
-            float diff = max(dot(N, V), 0.0);
-            float intensity = ambient + (1.0 - ambient) * diff;
-            vec3 shaded = objectColor.rgb * intensity;
-            vec4 oColor = vec4(shaded, objectColor.a);
-            color = alphaComposite(dColor, oColor);
-          } else {
-            color = dColor;
-          }
-        } else if (hitBlackHole) {
-          color = vec4(0.0, 0.0, 0.0, 1.0);
-        } else if (hitObject) {
+        }
+          
+        if (hitObject) {
           // Compute shading
           vec3 P = vec3(ray.x, ray.y, ray.z);
           vec3 N = normalize(P - hitCenter);
@@ -603,7 +492,13 @@ export const geodesicFragmentShader = `
           float diff = max(dot(N, V), 0.0);
           float intensity = ambient + (1.0 - ambient) * diff;
           vec3 shaded = objectColor.rgb * intensity;
-          color = vec4(shaded, objectColor.a);
+          vec4 oColor = vec4(shaded, objectColor.a);
+          color = alphaComposite(color, oColor);
+        }
+
+        if (hitBlackHole) {
+          vec4 oColor = vec4(0.0, 0.0, 0.0, 1.0);
+          color = alphaComposite(color, oColor);
         }
         
         finalColor += color; // 각 샘플의 색상 누적
@@ -620,14 +515,12 @@ export const geodesicFragmentShader = `
 export function createGeodesicMaterial(blackhole:BlackHole): THREE.ShaderMaterial {
   const uObjPosRadius:THREE.Vector4[] = [];
   const uObjColor:THREE.Vector4[] = [];
-  const uMass:number[] = [];
   for(let i = 0; i < 16; i++){
     uObjPosRadius.push(new THREE.Vector4());
     uObjColor.push(new THREE.Vector4());
-    uMass.push(0.0);
   }
-  const diskR1 = blackhole.r_s * 2.2;
-  const diskR2 = blackhole.r_s * 5.2;
+  const diskR1 = blackhole.r_s * 2.2 / SCALE_FACTOR;
+  const diskR2 = blackhole.r_s * 5.2 / SCALE_FACTOR;
 
   const diskR1_sq = diskR1 * diskR1;
   const diskR2_sq = diskR2 * diskR2;
@@ -653,13 +546,11 @@ export function createGeodesicMaterial(blackhole:BlackHole): THREE.ShaderMateria
       uDiskR1: { value: diskR1 }, // SagA_rs * 2.2
       uDiskR2: { value: diskR2 }, // SagA_rs * 5.2
       uDiskNum: { value: 2.0 },
-      uThickness: { value: 1e9 },
       
       // Objects uniforms
       uNumObjects: { value: 0 },
       uObjPosRadius: { value: uObjPosRadius },
       uObjColor: { value: uObjColor },
-      uMass: { value: uMass },
 
       // Cache
       uDiskR1_sq : {value: diskR1_sq },
