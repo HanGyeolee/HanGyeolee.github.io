@@ -11,6 +11,7 @@ import emotionAIAppImage  from '../../image/emotion-ai-app.png'
 import emgMiddlewareImage  from '../../image/emg-middleware.png'
 import eogMusicComposeImage  from '../../image/eog-music-compose.png'
 import restAPIImage  from '../../image/restapi-image.png'
+import blackHoleImage  from '../../image/blackhole.png'
 
 
 const ProjectsSection = () => {
@@ -21,11 +22,11 @@ const ProjectsSection = () => {
    */
   const projects = useRef([
     {
-      title: '블랙홀',
-      thumbnail: null,
-      document: 'blackhole',
+      title: '블랙홀 시뮬레이션',
+      thumbnail: blackHoleImage,
+      document: 'https://hangyeolee.github.io/#/projects/blackhole',
       type: IconType.PERSONAL,
-      description: '블랙홀',
+      description: '레이 트레이싱을 활용한 블랙홀 중력 렌즈 시뮬레이션',
       techStack: ['React.js', 'Typescript', 'Three.js'],
       period: '2025.09 ~'
     },
@@ -33,7 +34,7 @@ const ProjectsSection = () => {
       title: '동물용 기기 중앙 관리 서버',
       thumbnail: restAPIImage,
       type: IconType.COMPANY,
-      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 동물용 기기 중앙 관리 서버 개발.',
+      description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 동물용 기기 중앙 관리 서버 개발',
       techStack: ['Java', 'Kotlin', 'Spring Boot', 'CI/CD', 'MySQL', 'SMTP', 'HAProxy', 'Docker', 'Thymeleaf'],
       period: '2023.11 ~ 2025.07'
     },
