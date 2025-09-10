@@ -16,7 +16,11 @@ export const geodesicVertexShader = `
 `;
 
 export const geodesicFragmentShader = `
-  precision highp float;
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+  #else
+    precision mediump float;
+  #endif
   
   uniform vec2 uResolution;
   uniform int uSteps;
@@ -44,6 +48,8 @@ export const geodesicFragmentShader = `
   // 타일 렌더링용 추가 uniforms
   uniform bool uTileMode;
   uniform ivec4 uTileRect; // x, y, width, height
+  uniform int uIteration;
+  uniform float uMaxIterations_inv; // 1/총 반복 횟수
   
   varying vec2 vUv;
   
@@ -130,7 +136,7 @@ export const geodesicFragmentShader = `
   
   // Black hole intercept check
   bool intercept(Ray ray, float rs_sq) {
-    return ray.r_sq <= rs_sq;
+    return ray.r_sq <= rs_sq * 1.875;
   }
   
   // Object intercept check
@@ -234,20 +240,31 @@ export const geodesicFragmentShader = `
     updateRayCache(ray);
   }
 
-  
   // Check if ray crosses equatorial plane
   bool crossesEquatorialPlane(vec3 oldPos, vec3 newPos) {
-    bool crossed = (oldPos.y * newPos.y < 0.0);
-    if (!crossed) return false;  // 조기 종료
+    float oldY = oldPos.y;
+    float newY = newPos.y;
+    
+    // Y 좌표 부호 변화 체크 (더 엄격한 조건)
+    bool signChange = (oldY > 1e-8 && newY < -1e-8) || (oldY < -1e-8 && newY > 1e-8);
+    if (!signChange) return false;
+    
+    // 선형 보간으로 정확한 교차점 계산
+    float t = abs(oldY) / (abs(oldY) + abs(newY)); // 교차 지점의 파라미터
+    t = clamp(t, 0.0, 1.0); // 안전성을 위한 클램핑
+    
+    vec3 crossPoint = mix(oldPos, newPos, t);
 
-    // 제곱 거리 비교로 sqrt 제거
-    float r_sq = newPos.x * newPos.x + newPos.z * newPos.z;
-    return (r_sq >= uDiskR1_sq && r_sq <= uDiskR2_sq);
+    // 교차점에서의 반지름 계산
+    float r_cross_sq = crossPoint.x * crossPoint.x + crossPoint.z * crossPoint.z;
+    
+    // 다중 tolerance 체크로 정밀도 향상
+    return (r_cross_sq >= uDiskR1_sq) && (r_cross_sq <= uDiskR2_sq);
   }
 
   // 플랑크 흑체복사 함수
   vec3 temperatureToRGB(float temp) {
-    temp = clamp(temp, 1000.0, 40000.0);
+    temp = clamp(temp, 1000.0, 20000.0);
     temp /= 100.0;
     
     vec3 color;
@@ -336,7 +353,7 @@ export const geodesicFragmentShader = `
         return vec4(0.0, 0.0, 0.0, 0.0);
     }
     
-    // 최종 RGB 계산: Cₒ = (Cₛαₛ + Cᵈαᵈ(1 - αₛ)) / αₒ
+    // 최종 RGB 계산: Cₒ = (Cₛaₛ + Cᵈaᵈ(1 - aₛ)) / aₒ
     vec3 outRGB = (src.rgb * srcAlpha + dst.rgb * dstAlpha * (1.0 - srcAlpha)) / outAlpha;
     
     return vec4(outRGB, outAlpha);
@@ -348,7 +365,7 @@ export const geodesicFragmentShader = `
     diskProgress = clamp(diskProgress, 0.0, 1.0);
 
     // 온도 계산 - 내부에서 외부로 갈수록 감소
-    float innerTemp = 6000.0;  // 내부 온도 (파란색/흰색)
+    float innerTemp = 14000.0;  // 내부 온도 (파란색/흰색)
     float outerTemp = 100.0;   // 외부 온도 (빨간색)
 
     // 부드러운 온도 그라데이션
@@ -383,6 +400,18 @@ export const geodesicFragmentShader = `
 
     return vec4(diskColor, alpha);
   }
+
+  float getAdaptiveStepSize(float r) {
+    // 블랙홀 근처에서는 더 작은 스텝
+    if (r < uDiskR1) {
+        return D_LAMBDA * 0.75;
+    }
+    // 디스크 근처에서는 중간 크기 스텝
+    else if (r <= uDiskR2) {
+        return D_LAMBDA * 0.875;
+    }
+    return D_LAMBDA * 1.25;
+  }
   
   void main() {
     // Resolution handling
@@ -407,105 +436,123 @@ export const geodesicFragmentShader = `
     }
 
     vec4 finalColor = vec4(0.0);
-    int samples = 1; // 2x2 샘플링
+    int steps = 24000; // Fragment shader에서는 단계 수 줄임
     if (uTileMode) {
-      samples = 2;
+      steps = uSteps;
     }
 
-    for (int sx = 0; sx < samples; sx++) {
-      for (int sy = 0; sy < samples; sy++) {
-        // 서브픽셀 오프셋
-        float subX = float(pix.x) + (float(sx) + 0.5) / float(samples);
-        float subY = float(pix.y) + (float(sy) + 0.5) / float(samples);
-        
-        float u = (TWO * subX / float(WIDTH) - 1.0) * uAspect * uTanHalfFov;
-        float v = (1.0 - TWO * subY / float(HEIGHT)) * uTanHalfFov;
-        
-        vec3 dir = normalize(u * uCamRight - v * uCamUp + uCamForward);
-        Ray ray = initRay(uCamPos, dir);
-        
-        vec4 color = vec4(0.0);
-        vec3 prevPos = vec3(ray.x, ray.y, ray.z);
-        vec3 diskPos = vec3(ray.x, ray.y, ray.z);
-        vec3 diskPos2 = vec3(ray.x, ray.y, ray.z);
+    // 반복 번호 기반 고정 jitter 패턴
+    vec2 jitter = vec2(0.0);
+    if (uTileMode) {
+      // 반복 번호와 픽셀 좌표를 조합한 결정론적 jitter
+      float jitterSeed = float(uIteration) * 73.0 + float(pix.x * 127 + pix.y * 311);
+      jitter = vec2(
+        fract(sin(jitterSeed) * 43758.5453) - 0.5,
+        fract(sin(jitterSeed * 1.61803) * 43758.5453) - 0.5
+      ) * 0.5; // jitter 강도 조절
+    }
 
-        bool hitBlackHole = false;
-        bool hitDisk      = false;
-        bool hitDisk2      = false;
-        bool hitObject    = false;
+    // 서브픽셀 오프셋
+    float subX = float(pix.x) + jitter.x + 0.5;
+    float subY = float(pix.y) + jitter.y + 0.5;
+    
+    float u = (TWO * subX / float(WIDTH) - 1.0) * uAspect * uTanHalfFov;
+    float v = (1.0 - TWO * subY / float(HEIGHT)) * uTanHalfFov;
+    
+    vec3 dir = normalize(u * uCamRight - v * uCamUp + uCamForward);
+    Ray ray = initRay(uCamPos, dir);
+    
+    vec4 color = vec4(0.0);
+    vec3 prevPos = vec3(ray.x, ray.y, ray.z);
+    vec3 diskPos = vec3(ray.x, ray.y, ray.z);
+    vec3 diskPos2 = vec3(ray.x, ray.y, ray.z);
 
-        int steps = uSteps; // Fragment shader에서는 단계 수 줄임
+    bool hitBlackHole = false;
+    bool hitDisk      = false;
+    bool hitDisk2      = false;
+    bool hitObject    = false;
 
-        // Main geodesic integration loop
-        for (int i = 0; i < steps; ++i) {
-          if (ray.r > ESCAPE_R) break;
+    // Main geodesic integration loop
+    for (int i = 0; i < steps; ++i) {
+      if (ray.r > ESCAPE_R) break;
 
-          rk2Step(ray, D_LAMBDA);
+      float stepSize = getAdaptiveStepSize(ray.r);
+      rk2Step(ray, stepSize);
 
-          if (intercept(ray, SagA_rs_sq)) { 
-            hitBlackHole = true; 
-            break; 
-          }
+      if (intercept(ray, SagA_rs_sq)) { 
+        hitBlackHole = true; 
+        break; 
+      }
 
-          vec3 newPos = vec3(ray.x, ray.y, ray.z);
-          if (crossesEquatorialPlane(prevPos, newPos)) { 
-            if(!hitDisk){
-              hitDisk = true;
-              diskPos = vec3(ray.x, ray.y, ray.z);
-            } else if(!hitDisk2){
-              hitDisk2 = true;
-              diskPos2 = vec3(ray.x, ray.y, ray.z);
-              break;
-            } 
-          }
-          if (interceptObject(ray)) { 
-            hitObject = true; 
-            break; 
-          }
-          prevPos = newPos;
+      vec3 newPos = vec3(ray.x, ray.y, ray.z);
+      if (crossesEquatorialPlane(prevPos, newPos)) { 
+        if(!hitDisk){
+          hitDisk = true;
+          diskPos = vec3(ray.x, ray.y, ray.z);
+        } else if(!hitDisk2){
+          hitDisk2 = true;
+          diskPos2 = vec3(ray.x, ray.y, ray.z);
+          break;
+        } 
+      }
+      if (interceptObject(ray)) { 
+        hitObject = true; 
+        break; 
+      }
+      prevPos = newPos;
+    }
+
+    // Color calculation
+    if (hitDisk) {
+      vec3 P = diskPos;
+      float r = length(P);
+      vec3 viewDir;
+
+      color = calculateDiskColor(P, r, viewDir);
+      
+      // 총 반복 횟수로 알파값 나누기
+      if (uTileMode) {
+        float a = color.a;
+        float multiplier = (1.0 - pow(1.0 - a, uMaxIterations_inv)) / a;
+        color.a *= multiplier;
+      }
+
+      if(hitDisk2){
+        vec3 P2 = diskPos2;
+        float r2 = length(P2);
+        vec3 viewDir2;
+        vec4 dColor = calculateDiskColor(P2, r2, viewDir2);
+        if (uTileMode) {
+          float a = dColor.a;
+          float multiplier = (1.0 - pow(1.0 - a, uMaxIterations_inv)) / a;
+          dColor.a *= multiplier;
         }
-
-        // Color calculation
-        if (hitDisk) {
-          vec3 P = diskPos;
-          float r = length(P);
-          vec3 viewDir;
-
-          color = calculateDiskColor(P, r, viewDir);
-          if(hitDisk2){
-            vec3 P2 = diskPos2;
-            float r2 = length(P2);
-            vec3 viewDir2;
-            vec4 dColor = calculateDiskColor(P2, r2, viewDir2);
-
-            color = alphaComposite(color, dColor);
-          }
-        }
-          
-        if (hitObject) {
-          // Compute shading
-          vec3 P = vec3(ray.x, ray.y, ray.z);
-          vec3 N = normalize(P - hitCenter);
-          vec3 V = normalize(uCamPos - P);
-
-          float ambient = 0.1;
-          float diff = max(dot(N, V), 0.0);
-          float intensity = ambient + (1.0 - ambient) * diff;
-          vec3 shaded = objectColor.rgb * intensity;
-          vec4 oColor = vec4(shaded, objectColor.a);
-          color = alphaComposite(color, oColor);
-        }
-
-        if (hitBlackHole) {
-          vec4 oColor = vec4(0.0, 0.0, 0.0, 1.0);
-          color = alphaComposite(color, oColor);
-        }
-        
-        finalColor += color; // 각 샘플의 색상 누적
+        color = alphaComposite(color, dColor);
       }
     }
+    
+    if(uIteration == 0) {
+      if (hitObject) {
+        // Compute shading
+        vec3 P = vec3(ray.x, ray.y, ray.z);
+        vec3 N = normalize(P - hitCenter);
+        vec3 V = normalize(uCamPos - P);
 
-    gl_FragColor = finalColor / float(samples * samples);
+        float ambient = 0.1;
+        float diff = max(dot(N, V), 0.0);
+        float intensity = ambient + (1.0 - ambient) * diff;
+        vec3 shaded = objectColor.rgb * intensity;
+        vec4 oColor = vec4(shaded, objectColor.a);
+        color = alphaComposite(color, oColor);
+      }
+
+      if (hitBlackHole) {
+        vec4 oColor = vec4(0.0, 0.0, 0.0, 1.0);
+        color = alphaComposite(color, oColor);
+      }
+    }
+      
+    gl_FragColor = color;
   }
 `;
 
@@ -540,7 +587,7 @@ export function createGeodesicMaterial(blackhole:BlackHole): THREE.ShaderMateria
       uTanHalfFov: { value: Math.tan(Math.PI / 6) }, // 60도의 절반
       uAspect: { value: 800 / 600 },
       uMoving: { value: false },
-      uSteps: {value: 60000.0},
+      uSteps: {value: 6000.0},
       
       // Disk uniforms
       uDiskR1: { value: diskR1 }, // SagA_rs * 2.2
@@ -560,6 +607,10 @@ export function createGeodesicMaterial(blackhole:BlackHole): THREE.ShaderMateria
       // 타일 렌더링용 추가
       uTileMode: { value: false },
       uTileRect: { value: new THREE.Vector4(0, 0, 0, 0) },
+
+      // 새로 추가된 반복 기반 uniform
+      uIteration: { value: 0 },
+      uMaxIterations_inv: { value: 1/4.0 } 
     },
     vertexShader: geodesicVertexShader,
     fragmentShader: geodesicFragmentShader,
@@ -572,46 +623,111 @@ export class TileRenderer {
   private tileSize: number;
   private tilesX: number;
   private tilesY: number;
-  public currentTileIndex: number = 0;
-  private totalTiles: number;
+  private totalTilesPerIteration: number;
+  
+  // 반복 관련
+  private maxIterations: number;
+  private currentIteration: number = 0;
+  private currentTileInIteration: number = 0;
+  
+  // 전체 진행
+  public progressIndex: number = 0; // 전체 타일 인덱스
+  private totalTiles: number; // 전체 반복 * 타일 개수
   private isCompleted: boolean = false;
 
-  constructor(width: number, height: number, tileSize: number = 64) {
+  constructor(width: number, height: number, tileSize: number = 64, iterations: number = 4) {
     this.tileSize = tileSize;
     this.tilesX = Math.ceil(width / tileSize);
     this.tilesY = Math.ceil(height / tileSize);
-    this.totalTiles = this.tilesX * this.tilesY;
+    this.totalTilesPerIteration = this.tilesX * this.tilesY;
+    
+    this.maxIterations = iterations;
+    this.totalTiles = this.totalTilesPerIteration * this.maxIterations;
   }
 
   reset() {
-    this.currentTileIndex = 0;
+    this.currentIteration = 0;
+    this.currentTileInIteration = 0;
+    this.progressIndex = 0;
     this.isCompleted = false;
   }
 
-  getCurrentTile(): { x: number; y: number; width: number; height: number } | null {
+  getCurrentTile(): { 
+    x: number; 
+    y: number; 
+    width: number; 
+    height: number;
+    iteration: number;
+    maxIteration: number;
+    isFirstTileFirstIteration: boolean;
+  } | null {
     if (this.isCompleted) return null;
 
-    const tileX = this.currentTileIndex % this.tilesX;
-    const tileY = Math.floor(this.currentTileIndex / this.tilesX);
+    const tileX = this.currentTileInIteration % this.tilesX;
+    const tileY = Math.floor(this.currentTileInIteration / this.tilesX);
 
     return {
       x: tileX * this.tileSize,
       y: tileY * this.tileSize,
       width: this.tileSize,
-      height: this.tileSize
+      height: this.tileSize,
+      iteration: this.currentIteration,
+      maxIteration: this.maxIterations,
+      isFirstTileFirstIteration: this.currentIteration === 0 && this.currentTileInIteration === 0
     };
   }
 
   advance(): boolean {
-    this.currentTileIndex++;
-    if (this.currentTileIndex >= this.totalTiles) {
-      this.isCompleted = true;
-      return false;
+    this.progressIndex++;
+    this.currentTileInIteration++;
+
+    // 현재 반복의 모든 타일을 완료했는지 체크
+    if (this.currentTileInIteration >= this.totalTilesPerIteration) {
+      this.currentIteration++;
+      this.currentTileInIteration = 0;
+
+      // 모든 반복을 완료했는지 체크
+      if (this.currentIteration >= this.maxIterations) {
+        this.isCompleted = true;
+        return false;
+      }
     }
+
     return true;
   }
 
   get progress(): number {
-    return this.currentTileIndex / this.totalTiles;
+    return this.progressIndex / this.totalTiles;
+  }
+
+  get iterationProgress(): number {
+    return this.currentTileInIteration / this.totalTilesPerIteration;
+  }
+
+  get currentIterationNumber(): number {
+    return this.currentIteration;
+  }
+
+  get totalIterations(): number {
+    return this.maxIterations;
+  }
+
+  // 현재 상태 정보
+  getStatus(): {
+    iteration: number;
+    maxIterations: number;
+    tileInIteration: number;
+    totalTilesPerIteration: number;
+    overallProgress: number;
+    iterationProgress: number;
+  } {
+    return {
+      iteration: this.currentIteration,
+      maxIterations: this.maxIterations,
+      tileInIteration: this.currentTileInIteration,
+      totalTilesPerIteration: this.totalTilesPerIteration,
+      overallProgress: this.progress,
+      iterationProgress: this.iterationProgress
+    };
   }
 }

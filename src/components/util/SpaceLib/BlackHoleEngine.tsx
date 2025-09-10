@@ -112,7 +112,7 @@ interface BlackHoleEngineConfig {
 const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   width = 800,
   height = 600,
-  maxSteps = 24000,
+  maxSteps = 36000,
   objects = defaultObjects,
 }) => {
   const [computeSize, setComputSize] = useState<{width:number, height:number}>({
@@ -141,6 +141,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
 
   // 상태
   const [isInitialized, setIsInitialized] = useState(false);
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   // 렌더링 오브젝트
   const gridRef = useRef<THREE.LineSegments | null>(null);
@@ -221,7 +222,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     // 해상도 업데이트
     material.uniforms.uResolution.value.set(width, height);
     material.uniforms.uAspect.value = width / height;
-    material.uniforms.uSteps.value = maxSteps;
+    material.uniforms.uSteps.value = Math.min(18000, maxSteps);
 
     return new THREE.Mesh(geometry, material);
   }, [width, height, maxSteps]);
@@ -399,6 +400,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       material.uniforms.uCamRight.value.copy(right);
       material.uniforms.uCamUp.value.copy(correctedUp);
       material.uniforms.uMoving.value = orbitCamera.moving;
+      material.uniforms.uIteration.value = 0;
           
       // 객체 정보 업데이트
       const count = Math.min(objectsRef.current.length, 16);
@@ -454,8 +456,8 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
 
     setIsHighResRendering(true);
 
-    // 첫 번째 타일인지 확인
-    const isFirstTile = tileRenderer.currentTileIndex === 0;
+    // 첫 번째 타일이면서 첫 번째 반복인지 확인
+    const isFirstTileFirstIteration = currentTile.isFirstTileFirstIteration;
 
     // 궤도 카메라 업데이트
     const orbitCamera = orbitCameraRef.current;
@@ -486,7 +488,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
     const gl = rendererRef.current.getContext() as WebGL2RenderingContext;
 
     // 첫 번째 타일에서는 lowRes를 accumBuffer에 복사하여 베이스 생성
-    if (isFirstTile) {
+    if (isFirstTileFirstIteration) {
       // 1-1. lowRes 렌더링
       rendererRef.current.setRenderTarget(lowResRenderTargetRef.current);
       if (rayTracingQuadRef.current) {
@@ -561,28 +563,39 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         currentTile.width, 
         currentTile.height
       );
+
+      // 반복 번호 설정 (jitter 패턴용)
+      material.uniforms.uIteration.value = currentTile.iteration;
+      material.uniforms.uMaxIterations_inv.value = 1/currentTile.maxIteration;
     }
 
     // 1단계: lowRes로 geodesic 렌더링
     rendererRef.current.setRenderTarget(accumBufferRef.current);
-
     // 현재 Three.js 상태 저장
     const wasScissorEnabled = gl.isEnabled(gl.SCISSOR_TEST);
     const currentScissorBox = gl.getParameter(gl.SCISSOR_BOX);
 
-    // Scissor 테스트 활성화하고 타일 영역 설정
-    gl.enable(gl.SCISSOR_TEST);
-    gl.scissor(currentTile.x, currentTile.y, currentTile.width, currentTile.height);
+    // gl.enable(gl.BLEND);
+    // gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+    // gl.blendEquation(gl.FUNC_ADD);
 
-    // 해당 타일 영역만 검은색으로 클리어
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Scissor 비활성화 (렌더링은 전체 영역에서)
-    gl.disable(gl.SCISSOR_TEST);
+    if (currentTile.iteration === 0) {
+      // 새로운 반복일 때만 해당 타일 영역 클리어
+      // Scissor 테스트 활성화하고 타일 영역 설정
+      gl.enable(gl.SCISSOR_TEST);
+      gl.scissor(currentTile.x, currentTile.y, currentTile.width, currentTile.height);
+      // 해당 타일 영역만 검은색으로 클리어
+      gl.clearColor(0.0, 0.0, 0.0, 0.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      // Scissor 비활성화 (렌더링은 전체 영역에서)
+      gl.disable(gl.SCISSOR_TEST);
+    }
     
     // 현재 타일 렌더링
     rendererRef.current.render(lowResSceneRef.current, lowResCameraRef.current);
+
+    // 원래 블렌딩 모드 복원
+    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     // Three.js 상태 복원
     if (wasScissorEnabled) {
@@ -606,7 +619,10 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
 
     if (hasMoreTiles) {
       // 다음 프레임에서 다음 타일 렌더링
-      animationIdRef.current = requestAnimationFrame(highAnimate);
+      timeoutIdRef.current = setTimeout(() => {
+        timeoutIdRef.current = null; // 실행되면 초기화
+        animationIdRef.current = requestAnimationFrame(highAnimate);
+      }, 300); // GPU 쉬는 시간
     } else {
       // 렌더링 완료
       setIsHighResRendering(false);
@@ -622,6 +638,11 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   }, []);
 
   const handleMouseDown = useCallback((event: MouseEvent) => {
+    // 진행중인 타이머 취소
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
     const camera = orbitCameraRef.current;
     camera.processMouseButton(0, 'press');
     camera.lastX = event.clientX;
@@ -663,6 +684,9 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
   useEffect(() => {
     initializeThreeJS();
     return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current);
       }
@@ -687,7 +711,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
    */
   useEffect(() => {
     if (width > 0 && height > 0) {
-      tileRendererRef.current = new TileRenderer(width, height, 512);
+      tileRendererRef.current = new TileRenderer(width, height, 1024, 16);
       
       // 누적 버퍼 생성
       if (rendererRef.current) {
@@ -761,6 +785,16 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
         {isHighResRendering && (
           <div style={{ marginBottom: 10 }}>
             <div>Rendering: {(renderingProgress * 100).toFixed(1)}%</div>
+            {/* 반복 정보 표시 */}
+            {tileRendererRef.current && (() => {
+              const status = tileRendererRef.current.getStatus();
+              return (
+                <div style={{ fontSize: '10px', color: '#aaa', marginTop: 5 }}>
+                  Iteration {status.iteration + 1}/{status.maxIterations} 
+                  ({(status.iterationProgress * 100).toFixed(0)}%)
+                </div>
+              );
+            })()}
             <div style={{ 
               width: 200, 
               height: 4, 
