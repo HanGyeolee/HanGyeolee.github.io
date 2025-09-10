@@ -622,7 +622,7 @@ const BlackHoleEngine: React.FC<BlackHoleEngineConfig> = ({
       timeoutIdRef.current = setTimeout(() => {
         timeoutIdRef.current = null; // 실행되면 초기화
         animationIdRef.current = requestAnimationFrame(highAnimate);
-      }, 300); // GPU 쉬는 시간
+      }, 400); // GPU 쉬는 시간
     } else {
       // 렌더링 완료
       setIsHighResRendering(false);

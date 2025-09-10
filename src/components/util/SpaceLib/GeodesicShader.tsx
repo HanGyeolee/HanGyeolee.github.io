@@ -408,9 +408,9 @@ export const geodesicFragmentShader = `
     }
     // 디스크 근처에서는 중간 크기 스텝
     else if (r <= uDiskR2) {
-        return D_LAMBDA * 0.875;
+        return D_LAMBDA;
     }
-    return D_LAMBDA * 1.25;
+    return D_LAMBDA * 1.5;
   }
   
   void main() {
