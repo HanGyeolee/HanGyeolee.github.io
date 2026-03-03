@@ -10,7 +10,7 @@ import eogMusicComposeImage  from '../../image/eog-music-compose.png'
 import restAPIImage  from '../../image/restapi-image.png'
 import blackHoleImage  from '../../image/blackhole.png'
 
-export const ProjectList:ProjectProps[] = [
+const ProjectList:ProjectProps[] = [
 {
     title: '블랙홀 시뮬레이션',
     thumbnail: blackHoleImage,
@@ -87,3 +87,13 @@ export const ProjectList:ProjectProps[] = [
     period: '2019.01 - 2019.09'
 },
 ].sort((a, b) => b.period.localeCompare(a.period));
+
+const ProjectPage = () => {
+    return (
+        <div></div>
+    )
+}
+
+export {ProjectList};
+
+export default ProjectPage;

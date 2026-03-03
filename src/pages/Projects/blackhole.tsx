@@ -39,4 +39,4 @@ const BlackHole = () => {
     )
 }
 
-export {BlackHole}
+export default BlackHole;

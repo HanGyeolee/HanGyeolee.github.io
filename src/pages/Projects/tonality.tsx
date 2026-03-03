@@ -426,4 +426,4 @@ function getStringFromScale(scale:Scale):string{
   }
 }
 
-export {Tonality};
+export default Tonality;
