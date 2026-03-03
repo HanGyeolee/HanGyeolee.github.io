@@ -9,7 +9,7 @@ const APW = lazy(() => import('./apw.tsx'));
 const HouseBarMenu = lazy(() => import('./housebarmenu.tsx'));
 const HouseBarGuide = lazy(() => import('./housebarguide.tsx'));
 
-function Projects() {
+const Projects = () => {
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <Routes>
@@ -24,4 +24,4 @@ function Projects() {
     );
 }
 
-export default Projects;
+export {Projects};
