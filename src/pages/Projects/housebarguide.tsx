@@ -284,35 +284,35 @@ const guideData: GuideSection[] = [
     ],
   },
   {
-    icon: "🥃", label: "SCOTCH BASE", meta: "Balvenie · 40°",
+    icon: "🥃", label: "SCOTCH BASE", meta: "LAGAVULIN · 48°",
     recipes: [
       {
         name: "스카치 하이볼", abv: "17°",
         ingredients: [
-          { label: "발베니 30", type: "base" },
+          { label: "라가불린 30", type: "base" },
           { label: "사이다 40", type: "normal" },
         ],
         guideType: "build",
-        steps: [{ text: "발베니" }, { text: "사이다 천천히 붓기" }, { text: "🚫 절대 섞지 않음", warn: true }],
+        steps: [{ text: "라가불린" }, { text: "사이다 천천히 붓기" }, { text: "🚫 절대 섞지 않음", warn: true }],
       },
       {
-        name: "발베니 사워", abv: "27°",
+        name: "라가불린 사워", abv: "27°",
         ingredients: [
-          { label: "발베니 40", type: "base" },
+          { label: "라가불린 40", type: "base" },
           { label: "레몬 20", type: "normal" },
           { label: "설탕 1tsp", type: "sugar" },
         ],
         guideType: "stir",
-        steps: [{ text: "설탕" }, { text: "레몬" }, { text: "발베니" }, { text: "강하게 스터 15–20초" }],
+        steps: [{ text: "설탕" }, { text: "레몬" }, { text: "라가불린" }, { text: "강하게 스터 15–20초" }],
       },
       {
         name: "갓파더", abv: "32°",
         ingredients: [
-          { label: "발베니 40", type: "base" },
+          { label: "라가불린 40", type: "base" },
           { label: "깔루아 20", type: "normal" },
         ],
         guideType: "build",
-        steps: [{ text: "발베니" }, { text: "깔루아" }, { text: "가볍게 스터" }],
+        steps: [{ text: "라가불린" }, { text: "깔루아" }, { text: "가볍게 스터" }],
         noteSub: "※ 원래는 아마레또 — 깔루아로 대체",
       },
     ],

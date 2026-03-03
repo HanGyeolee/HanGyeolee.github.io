@@ -63,16 +63,16 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sectionTitle: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: "calc(1.05rem * 1.125)",
+    fontSize: "calc(1.05rem * 1.25)",
     fontWeight: 400,
     letterSpacing: "0.1em",
     color: "#c9a84c",
   },
   sectionBase: {
-    fontSize: "calc(0.68rem * 1.125)",
+    fontSize: "calc(0.68rem * 1.25)",
     letterSpacing: "0.25em",
     textTransform: "uppercase",
-    color: "#7a6e60",
+    color: "#8d8276",
     marginLeft: "auto",
     fontWeight: 300,
   },
@@ -99,14 +99,14 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "3px",
   },
   drinkName: {
-    fontSize: "calc(0.93rem * 1.125)",
+    fontSize: "calc(0.93rem * 1.25)",
     fontWeight: 400,
     color: "#f0e8d8",
     letterSpacing: "0.02em",
   },
   drinkDesc: {
-    fontSize: "calc(0.72rem * 1.125)",
-    color: "#7a6e60",
+    fontSize: "calc(0.72rem * 1.25)",
+    color: "#8d8276",
     fontWeight: 300,
     letterSpacing: "0.03em",
     lineHeight: 1.4,
@@ -114,13 +114,13 @@ const styles: Record<string, React.CSSProperties> = {
   drinkAbv: {
     fontFamily: "'Playfair Display', serif",
     fontStyle: "italic",
-    fontSize: "calc(0.82rem * 1.25)",
+    fontSize: "calc(0.82rem * 1.5)",
     color: "#c9a84c",
     whiteSpace: "nowrap",
     marginLeft: "12px",
   },
   noteTag: {
-    fontSize: "calc(0.65rem * 1.125)",
+    fontSize: "calc(0.65rem * 1.25)",
     background: "rgba(201,168,76,0.12)",
     color: "#c9a84c",
     padding: "2px 7px",
@@ -166,7 +166,7 @@ const menuData: Section[] = [
   {
     icon: "🍶",
     title: "Vodka",
-    base: "40°",
+    base: "MR.Boston 40°",
     drinks: [
       { name: "스크류드라이버", desc: "싱그러운 오렌지 과즙, 가볍고 청량한 시작", abv: "17°" },
       { name: "블랙 러시안", desc: "진한 커피 향과 달콤한 여운, 묵직한 깊이감", abv: "32°" },
@@ -179,7 +179,7 @@ const menuData: Section[] = [
   {
     icon: "🍹",
     title: "Rum",
-    base: "40°",
+    base: "BACARDI 40°",
     drinks: [
       { name: "쿠바 리브레", desc: "콜라의 달콤함 속에 라임이 남기는 상쾌한 여운", abv: "15°" },
       { name: "다이키리", desc: "라임의 생동감 있는 산미와 깨끗한 럼의 조화", abv: "27°" },
@@ -214,11 +214,11 @@ const menuData: Section[] = [
   {
     icon: "🥃",
     title: "Scotch",
-    base: "Balvenie 40°",
+    base: "LAGAVULIN 48°",
     drinks: [
-      { name: "스카치 하이볼", desc: "발베니의 꿀 향과 오크가 탄산과 함께 부드럽게 퍼짐", abv: "17°" },
-      { name: "발베니 사워", desc: "싱글몰트의 복합적인 향에 레몬이 더한 섬세한 긴장감", abv: "27°" },
-      { name: "갓파더", desc: "스카치의 스모키함과 깔루아의 달콤함이 만드는 강렬한 여운", abv: "32°" },
+      { name: "스카치 하이볼", desc: "라가불린의 깊은 피트 스모크와 바다 내음이 탄산과 함께 시원하게 퍼짐", abv: "17°" },
+      { name: "라가불린 사워", desc: "아일라 싱글몰트의 스모키함에 레몬이 더한 날카롭고 강렬한 긴장감", abv: "27°" },
+      { name: "갓파더", desc: "라가불린의 묵직한 피트와 깔루아의 커피 향이 만드는 깊고 강렬한 여운", abv: "32°" },
     ],
   },
   {
