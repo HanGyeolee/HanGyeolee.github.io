@@ -13,7 +13,7 @@ const Projects = () => {
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <Routes>
-                <Route path="/" element={<ProjectPage/>}/>
+                <Route exact path="/" element={<ProjectPage/>}/>
                 <Route path="/tonality" element={<Tonality/>}/>
                 <Route path="/blackhole" element={<BlackHole/>}/>
                 <Route path="/apw-webui" element={<APW/>}/>
