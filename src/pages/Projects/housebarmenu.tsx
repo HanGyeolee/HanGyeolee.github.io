@@ -306,7 +306,7 @@ const HouseBarMenu: React.FC = () => {
         {/* Header */}
         <header className="bar-header" style={styles.header}>
           <div style={styles.headerLine} />
-          <h1 style={styles.h1}>My Bar</h1>
+          <h1 style={styles.h1}>겨리바</h1>
           <p style={styles.subtitle as React.CSSProperties}>House Cocktail Menu</p>
           <div style={styles.headerLineBottom} />
         </header>
