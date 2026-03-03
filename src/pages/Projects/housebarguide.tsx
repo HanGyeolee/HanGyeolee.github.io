@@ -63,7 +63,7 @@ const C = {
 
 const guideData: GuideSection[] = [
   {
-    icon: "🫙", label: "VODKA BASE", meta: "Mr. Boston · 40°",
+    icon: "🍶", label: "VODKA BASE", meta: "Mr. Boston · 40°",
     recipes: [
       {
         name: "스크류드라이버", abv: "17°",
@@ -631,7 +631,7 @@ const HouseBarGuide: React.FC = () => {
               letterSpacing: "0.15em",
               color: C.build,
             }}>
-              BAR_GUIDE.HOST
+              주조 가이드
             </h1>
             <p style={{
               fontFamily: "'DM Mono', monospace",
@@ -641,7 +641,7 @@ const HouseBarGuide: React.FC = () => {
               textTransform: "uppercase",
               marginTop: "4px",
             }}>
-              Cocktail Recipe Reference — Host Only
+              Cocktail Recipe Reference
             </p>
           </div>
           <div className="guide-header-right" style={{
