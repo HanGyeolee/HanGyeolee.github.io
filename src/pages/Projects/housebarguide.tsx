@@ -40,7 +40,7 @@ const C = {
   panel: "#0e1318",
   border: "#1a2230",
   text: "#c8d8e8",
-  muted: "#4a6070",
+  muted: "#738796",
 
   // 메서드 색상 — 선명하고 즉시 구별 가능
   build: "#f0a030",       // 밝은 주황-황금
@@ -380,7 +380,7 @@ const methodColors = (type: GuideType) => {
 const IngTag: React.FC<{ ing: Ingredient }> = ({ ing }) => {
   const base: React.CSSProperties = {
     fontFamily: "'DM Mono', monospace",
-    fontSize: "0.67rem",
+    fontSize: "calc(0.67rem * 1.25)",
     padding: "3px 9px",
     borderRadius: "3px",
     letterSpacing: "0.04em",
@@ -431,11 +431,11 @@ const GuideSteps: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
         {recipe.steps.map((s, i) => (
           <React.Fragment key={i}>
             {i > 0 && !s.warn && (
-              <span style={{ color: C.muted, opacity: 0.6, margin: "0 1px", fontSize: "0.65rem" }}>→</span>
+              <span style={{ color: C.muted, opacity: 0.7, margin: "0 1px", fontSize: "calc(0.65rem * 1.25)" }}>→</span>
             )}
             <span style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: "0.67rem",
+              fontSize: "calc(0.67rem * 1.25)",
               letterSpacing: "0.03em",
               color: s.warn ? C.warn : C.text,
               fontWeight: s.warn ? 600 : 400,
@@ -469,12 +469,12 @@ const RecipeRow: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
     >
       {/* 이름 + ABV */}
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "8px", gap: "8px" }}>
-        <span style={{ fontSize: "0.88rem", fontWeight: 500, color: "#dde8f2", letterSpacing: "0.02em" }}>
+        <span style={{ fontSize: "calc(0.88rem * 1.25)", fontWeight: 500, color: "#dde8f2", letterSpacing: "0.02em" }}>
           {recipe.name}
           {recipe.nameTag && (
             <span style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: "0.58rem",
+              fontSize: "calc(0.58rem * 1.25)",
               color: C.warn,
               background: C.warnDim,
               border: `1px solid ${C.warn}40`,
@@ -488,7 +488,7 @@ const RecipeRow: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
             </span>
           )}
         </span>
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.72rem", color: C.build, flexShrink: 0, fontWeight: 500 }}>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.72rem * 1.25)", color: C.build, flexShrink: 0, fontWeight: 500 }}>
           {recipe.abv}
         </span>
       </div>
@@ -542,7 +542,7 @@ const SectionCard: React.FC<{ section: GuideSection; delay: number }> = ({ secti
     }}>
       <div style={{
         fontFamily: "'DM Mono', monospace",
-        fontSize: "0.72rem",
+        fontSize: "calc(0.72rem * 1.25)",
         letterSpacing: "0.2em",
         color: C.build,
         display: "flex",
@@ -550,12 +550,11 @@ const SectionCard: React.FC<{ section: GuideSection; delay: number }> = ({ secti
         gap: "8px",
         fontWeight: 500,
       }}>
-        <span>{section.icon}</span>
         {section.label}
       </div>
       <div style={{
         fontFamily: "'DM Mono', monospace",
-        fontSize: "0.62rem",
+        fontSize: "calc(0.62rem * 1.25)",
         color: C.muted,
         letterSpacing: "0.1em",
       }}>
@@ -635,7 +634,7 @@ const HouseBarGuide: React.FC = () => {
             </h1>
             <p style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: "0.65rem",
+              fontSize: "calc(0.65rem * 1.125)",
               color: C.muted,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
@@ -646,7 +645,7 @@ const HouseBarGuide: React.FC = () => {
           </div>
           <div className="guide-header-right" style={{
             fontFamily: "'DM Mono', monospace",
-            fontSize: "0.65rem",
+            fontSize: "calc(0.65rem * 1.125)",
             color: C.muted,
             letterSpacing: "0.12em",
             textAlign: "right",
@@ -676,7 +675,7 @@ const HouseBarGuide: React.FC = () => {
             <div key={item.label} style={{
               display: "flex", alignItems: "center", gap: "7px",
               fontFamily: "'DM Mono', monospace",
-              fontSize: "0.66rem",
+              fontSize: "calc(0.66rem * 1.125)",
               color: item.color,
               letterSpacing: "0.1em",
             }}>
