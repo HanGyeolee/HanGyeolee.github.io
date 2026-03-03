@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom"
 
 const styles: Record<string, React.CSSProperties> = {
   body: {
@@ -62,13 +63,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sectionTitle: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: "1.05rem",
+    fontSize: "calc(1.05rem * 1.125)",
     fontWeight: 400,
     letterSpacing: "0.1em",
     color: "#c9a84c",
   },
   sectionBase: {
-    fontSize: "0.68rem",
+    fontSize: "calc(0.68rem * 1.125)",
     letterSpacing: "0.25em",
     textTransform: "uppercase",
     color: "#7a6e60",
@@ -98,13 +99,13 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "3px",
   },
   drinkName: {
-    fontSize: "0.93rem",
+    fontSize: "calc(0.93rem * 1.125)",
     fontWeight: 400,
     color: "#f0e8d8",
     letterSpacing: "0.02em",
   },
   drinkDesc: {
-    fontSize: "0.72rem",
+    fontSize: "calc(0.72rem * 1.125)",
     color: "#7a6e60",
     fontWeight: 300,
     letterSpacing: "0.03em",
@@ -113,13 +114,13 @@ const styles: Record<string, React.CSSProperties> = {
   drinkAbv: {
     fontFamily: "'Playfair Display', serif",
     fontStyle: "italic",
-    fontSize: "0.82rem",
+    fontSize: "calc(0.82rem * 1.25)",
     color: "#c9a84c",
     whiteSpace: "nowrap",
     marginLeft: "12px",
   },
   noteTag: {
-    fontSize: "0.65rem",
+    fontSize: "calc(0.65rem * 1.125)",
     background: "rgba(201,168,76,0.12)",
     color: "#c9a84c",
     padding: "2px 7px",
@@ -273,6 +274,16 @@ const MenuSection: React.FC<{ section: Section }> = ({ section }) => (
 );
 
 const HouseBarMenu: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const barname: string = decodeURIComponent(searchParams.get('n'));
+  const [Name, setName] = useState<string>("My Bar");
+
+  useEffect(() => {
+    if (barname != "null" && barname.trim().length > 0) {
+      setName(barname);
+    }
+  }, [barname]);
+
   return (
     <>
       <link
@@ -306,7 +317,7 @@ const HouseBarMenu: React.FC = () => {
         {/* Header */}
         <header className="bar-header" style={styles.header}>
           <div style={styles.headerLine} />
-          <h1 style={styles.h1}>겨리바</h1>
+          <h1 style={styles.h1}>{Name}</h1>
           <p style={styles.subtitle as React.CSSProperties}>House Cocktail Menu</p>
           <div style={styles.headerLineBottom} />
         </header>
