@@ -428,4 +428,4 @@ builder.draw(root);`;
         </div>
     );
 }
-export {APW};
+export default APW;

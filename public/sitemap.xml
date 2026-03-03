@@ -14,7 +14,7 @@
   <url>
     <loc>https://hangyeolee.github.io/#/projects</loc>
     <lastmod>2025-07-14</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
@@ -22,24 +22,38 @@
   <url>
     <loc>https://hangyeolee.github.io/#/projects/blackhole</loc>
     <lastmod>2025-09-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- 개별 프로젝트 - Tonality -->
   <url>
     <loc>https://hangyeolee.github.io/#/projects/tonality</loc>
     <lastmod>2025-09-09</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- 개별 프로젝트 - APW WebUI -->
   <url>
-    <loc>https://hangyeolee.github.io/projects/apw-webui</loc>
+    <loc>https://hangyeolee.github.io/#/projects/apw-webui</loc>
     <lastmod>2025-07-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>yearly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- 개별 프로젝트 - HouseBar -->
+  <url>
+    <loc>https://hangyeolee.github.io/#/projects/housebar/menu</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://hangyeolee.github.io/#/projects/housebar/guide</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
   </url>
 
   <!-- 404 페이지는 sitemap에 포함하지 않음 -->

@@ -1,20 +1,27 @@
-import { Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Tonality } from './tonality.tsx';
-import { BlackHole } from './blackhole.tsx';
-import { APW } from './apw.tsx';
-import { ProjectList } from './projectList.tsx';
+
+const ProjectPage = lazy(() => import('./projectList.tsx'));
+const Tonality = lazy(() => import('./tonality.tsx'));
+const BlackHole = lazy(() => import('./blackhole.tsx'));
+const APW = lazy(() => import('./apw.tsx'));
+
+const HouseBarMenu = lazy(() => import('./housebarmenu.tsx'));
+const HouseBarGuide = lazy(() => import('./housebarguide.tsx'));
 
 function Projects() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <Routes>
-                <Route path="tonality" element={<Tonality/>}/>
-                <Route path="blackhole" element={<BlackHole/>}/>
-                <Route path="apw-webui" element={<APW/>}/>
+                <Route path="/" element={<ProjectPage/>}/>
+                <Route path="/tonality" element={<Tonality/>}/>
+                <Route path="/blackhole" element={<BlackHole/>}/>
+                <Route path="/apw-webui" element={<APW/>}/>
+                <Route path="/housebar/menu" element={<HouseBarMenu/>}/>
+                <Route path="/housebar/guide" element={<HouseBarGuide/>}/>
             </Routes>
         </Suspense>
     );
 }
 
-export {Projects};
+export default Projects;
