@@ -17,7 +17,7 @@
 
 import { BaseSpirit, LiqueurBottle, LiqueurCategory, Mixer, MixerCategory, SpiritKey } from "./houseType";
 
-const hasUtil = {
+export const hasUtil = {
   /** 쉐이커 보유 여부 */
   Shaker: false,
   /** 블렌더 보유 여부 */
@@ -28,7 +28,7 @@ const hasUtil = {
 
 // 조주 방법 → 필요 도구 매핑
 // build / layer / stir 는 도구 불필요이므로 제외
-const UTIL_REQUIRED: Partial<Record<string, keyof typeof hasUtil>> = {
+export const UTIL_REQUIRED: Partial<Record<string, keyof typeof hasUtil>> = {
   shake:  "Shaker",
   blend:  "Blender",
   muddle: "Muddler",
@@ -59,14 +59,14 @@ export const baseSpirits: BaseSpirit[] = [
   // Whisky (Japanese/Blended)
   {
     id: "suntory_toki",
-    key: "whisky",
+    key: "blended",
     displayName: "Suntory 40°",
     guideFlavor: "부드러운 우드·바닐라 향·가벼운 곡물 단맛과 은은한 훈연 여운",
     inStock: true,
   },
   {
     id: "hibiki_harmony",
-    key: "whisky",
+    key: "blended",
     displayName: "Hibiki 43°",
     guideFlavor: "섬세한 플로럴·꿀 향·다채로운 일본 오크 여운과 화과자 같은 달콤함",
     inStock: true,
