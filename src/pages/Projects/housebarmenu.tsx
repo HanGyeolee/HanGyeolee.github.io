@@ -37,7 +37,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "20px auto 0",
   },
   h1: {
-    fontFamily: "'Playfair Display', serif",
+    fontFamily: "'Nanum Myeongjo', serif",
     fontSize: "clamp(2.4rem, 6vw, 4rem)",
     fontWeight: 400, letterSpacing: "0.12em",
     color: "#e8c97a", lineHeight: 1.1,
@@ -202,6 +202,10 @@ const HouseBarMenu: React.FC = () => {
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+KR:wght@300;400;600&display=swap"
         rel="stylesheet"
       />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo,wght@0,400;0,700&family=Noto+Serif+KR:wght@300;400;600&display=swap"
+        rel="stylesheet"
+      />
       <style>{`
         @keyframes fadeDown {
           from { opacity: 0; transform: translateY(-20px); }
@@ -211,7 +215,7 @@ const HouseBarMenu: React.FC = () => {
           from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .bar-header { animation: fadeDown 0.8s ease both; }
+        .bar-header { animation: fadeDown 2s ease both; }
         .bar-section:nth-child(1) { animation: fadeUp 0.7s ease 0.1s both; }
         .bar-section:nth-child(2) { animation: fadeUp 0.7s ease 0.2s both; }
         .bar-section:nth-child(3) { animation: fadeUp 0.7s ease 0.3s both; }
@@ -219,7 +223,13 @@ const HouseBarMenu: React.FC = () => {
         .bar-section:nth-child(5) { animation: fadeUp 0.7s ease 0.5s both; }
         .bar-section:nth-child(6) { animation: fadeUp 0.7s ease 0.6s both; }
         .bar-section:nth-child(7) { animation: fadeUp 0.7s ease 0.7s both; }
-        .bar-footer { animation: fadeUp 1s ease 0.8s both; }
+        .bar-section:nth-child(8) { animation: fadeUp 0.7s ease 0.8s both; }
+        .bar-section:nth-child(9) { animation: fadeUp 0.7s ease 0.9s both; }
+        .bar-section:nth-child(10) { animation: fadeUp 0.7s ease 1s both; }
+        .bar-section:nth-child(11) { animation: fadeUp 0.7s ease 1.1s both; }
+        .bar-section:nth-child(12) { animation: fadeUp 0.7s ease 1.2s both; }
+        .bar-section:nth-child(13) { animation: fadeUp 0.7s ease 1.3s both; }
+        .bar-footer { animation: fadeUp 1.5s ease 1.5s both; }
         @media (max-width: 480px) {
           .bar-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
           .bar-body { padding: 40px 16px 60px !important; }
