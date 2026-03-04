@@ -37,7 +37,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "20px auto 0",
   },
   h1: {
-    fontFamily: "'Nanum Myeongjo', serif",
+    fontFamily: "'Noto Serif KR', sans-serif",
     fontSize: "clamp(2.4rem, 6vw, 4rem)",
     fontWeight: 400, letterSpacing: "0.12em",
     color: "#e8c97a", lineHeight: 1.1,
@@ -199,11 +199,7 @@ const HouseBarMenu: React.FC = () => {
   return (
     <>
       <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+KR:wght@300;400;600&display=swap"
-        rel="stylesheet"
-      />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo,wght@0,400;0,700&family=Noto+Serif+KR:wght@300;400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+KR:wght@300;400&display=swap"
         rel="stylesheet"
       />
       <style>{`

@@ -252,7 +252,7 @@ const footerRules = [
 // 서브 컴포넌트
 const IngTag: React.FC<{ ing: Ingredient }> = ({ ing }) => {
   const base: React.CSSProperties = {
-    fontFamily: "'DM Mono', monospace", fontSize: "calc(0.67rem * 1.25)",
+    fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.67rem * 1.25)",
     padding: "3px 9px", borderRadius: "3px",
     letterSpacing: "0.04em", border: "1px solid", whiteSpace: "nowrap",
   };
@@ -271,7 +271,7 @@ const GuideSteps: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "8px" }}>
       <span style={{
-        fontFamily: "'DM Mono', monospace", fontSize: "0.58rem",
+        fontFamily: "'Noto Serif KR', sans-serif", fontSize: "0.58rem",
         letterSpacing: "0.12em", fontWeight: 500,
         color: mc.text, background: mc.bg, border: `1px solid ${mc.dot}40`,
         padding: "2px 7px", borderRadius: "3px",
@@ -286,7 +286,7 @@ const GuideSteps: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
               <span style={{ color: C.muted, opacity: 0.7, margin: "0 1px", fontSize: "calc(0.65rem * 1.25)" }}>→</span>
             )}
             <span style={{
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: "'Noto Serif KR', sans-serif",
               fontSize: "calc(0.67rem * 1.25)", letterSpacing: "0.03em",
               color: s.warn ? C.warn : C.text, fontWeight: s.warn ? 600 : 400,
               background: s.warn ? C.warnDim : "transparent",
@@ -321,7 +321,7 @@ const RecipeRow: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
           {recipe.name}
           {recipe.nameTag && (
             <span style={{
-              fontFamily: "'DM Mono', monospace", fontSize: "calc(0.58rem * 1.25)",
+              fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.58rem * 1.25)",
               color: C.warn, background: C.warnDim, border: `1px solid ${C.warn}40`,
               padding: "1px 6px", borderRadius: "3px",
               letterSpacing: "0.06em", marginLeft: "8px", verticalAlign: "middle",
@@ -330,7 +330,7 @@ const RecipeRow: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
             </span>
           )}
         </span>
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.72rem * 1.25)", color: C.build, flexShrink: 0, fontWeight: 500 }}>
+        <span style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.72rem * 1.25)", color: C.build, flexShrink: 0, fontWeight: 500 }}>
           {recipe.abv}
         </span>
       </div>
@@ -339,7 +339,7 @@ const RecipeRow: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
       </div>
       <GuideSteps recipe={recipe} />
       {recipe.noteSub && (
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", color: C.muted, marginTop: "6px", paddingLeft: "2px", letterSpacing: "0.04em" }}>
+        <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.6rem * 1.25)", color: C.muted, marginTop: "6px", paddingLeft: "2px", letterSpacing: "0.04em" }}>
           {recipe.noteSub}
         </div>
       )}
@@ -350,10 +350,10 @@ const RecipeRow: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
 const SectionCard: React.FC<{ section: FilteredSection; delay: number }> = ({ section, delay }) => (
   <div className="guide-section-card" style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: "4px", overflow: "hidden", animationDelay: `${delay}s` }}>
     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "11px 16px", borderBottom: `1px solid ${C.border}`, background: "rgba(240,160,48,0.04)", gap: "12px" }}>
-      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.72rem * 1.25)", letterSpacing: "0.2em", color: C.build, fontWeight: 500, flexShrink: 0 }}>
+      <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.72rem * 1.25)", letterSpacing: "0.2em", color: C.build, fontWeight: 500, flexShrink: 0 }}>
         {section.menuTitle.toLocaleUpperCase()}
       </div>
-      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.56rem * 1.25)", color: C.muted, letterSpacing: "0.05em", textAlign: "right", lineHeight: 1.55, maxWidth: "70%", whiteSpace: "pre-line" }}>
+      <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.56rem * 1.25)", color: C.muted, letterSpacing: "0.05em", textAlign: "right", lineHeight: 1.55, maxWidth: "70%", whiteSpace: "pre-line" }}>
         {section.meta}
       </div>
     </div>
@@ -373,7 +373,7 @@ const Legends: React.FC = () => (
         [C.muddle, "MUDDLE"],
         [C.warn,   "NO STIR"],
       ] as [string, string][]).map(([color, label]) => (
-        <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'DM Mono', monospace", fontSize: "calc(0.66rem * 1.125)", color, letterSpacing: "0.1em" }}>
+        <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.66rem * 1.125)", color, letterSpacing: "0.1em" }}>
           <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: color, flexShrink: 0 }} />
           {label}
         </div>
@@ -387,7 +387,7 @@ const Legends: React.FC = () => (
         [C.sugarTag,   "설탕"],
         [C.saltTag,    "소금"],
       ] as [string, string][]).map(([color, label]) => (
-        <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'DM Mono', monospace", fontSize: "calc(0.63rem * 1.125)", color, letterSpacing: "0.1em" }}>
+        <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.63rem * 1.125)", color, letterSpacing: "0.1em" }}>
           <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "2px", background: color, flexShrink: 0 }} />
           {label}
         </div>
@@ -422,7 +422,7 @@ const SuggestionCard: React.FC<{ s: PurchaseSuggestion; rank: number }> = ({ s, 
               <span style={{ fontSize: "calc(0.6rem * 1.25)", color: C.green }}>★</span>
             )}
             <span style={{
-              fontFamily: "'DM Mono', monospace", fontSize: "calc(0.52rem * 1.25)",
+              fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.52rem * 1.25)",
               letterSpacing: "0.14em", color: km.color,
               background: `${km.color}18`, border: `1px solid ${km.color}40`,
               padding: "1px 5px", borderRadius: "3px",
@@ -431,7 +431,7 @@ const SuggestionCard: React.FC<{ s: PurchaseSuggestion; rank: number }> = ({ s, 
             </span>
           </div>
           <span style={{
-            fontFamily: "'DM Mono', monospace", fontSize: "calc(0.71rem * 1.25)",
+            fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.71rem * 1.25)",
             color: C.text, letterSpacing: "0.03em",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
@@ -440,7 +440,7 @@ const SuggestionCard: React.FC<{ s: PurchaseSuggestion; rank: number }> = ({ s, 
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
           <span style={{
-            fontFamily: "'DM Mono', monospace", fontWeight: 700,
+            fontFamily: "'Noto Serif KR', sans-serif", fontWeight: 700,
             fontSize: "0.88rem", color: C.green,
             background: C.greenDim, border: `1px solid ${C.green}50`,
             borderRadius: "3px", padding: "1px 8px", lineHeight: 1.6,
@@ -458,7 +458,7 @@ const SuggestionCard: React.FC<{ s: PurchaseSuggestion; rank: number }> = ({ s, 
             <div key={name} style={{
               padding: "5px 12px",
               borderBottom: `1px solid ${C.border}22`,
-              fontFamily: "'DM Mono', monospace", fontSize: "calc(0.67rem * 1.25)",
+              fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.67rem * 1.25)",
               color: C.muted, letterSpacing: "0.03em",
               display: "flex", alignItems: "center", gap: "8px",
             }}>
@@ -496,10 +496,11 @@ const ShoppingSidebar: React.FC<{
       position: "sticky", top: 0, background: C.bg, zIndex: 10,
     }}>
       <div>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.7rem * 1.25)", color: C.build, letterSpacing: "0.18em", fontWeight: 500 }}>
+        <div style={{  fontFamily: "'Noto Serif KR', sans-serif",
+                    fontWeight: 500, fontSize: "calc(0.7rem * 1.25)", color: C.build, letterSpacing: "0.18em", }}>
           🛒 구매 추천
         </div>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.6rem * 1.25)", color: C.muted, letterSpacing: "0.06em", marginTop: "2px" }}>
+        <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.6rem * 1.25)", color: C.muted, letterSpacing: "0.06em", marginTop: "2px" }}>
           구매 → 즉시 해금 레시피 수 순
         </div>
       </div>
@@ -508,7 +509,7 @@ const ShoppingSidebar: React.FC<{
         style={{
           background: "none", border: `1px solid ${C.border}`,
           color: C.muted, cursor: "pointer", borderRadius: "3px",
-          padding: "3px 8px", fontFamily: "'DM Mono', monospace",
+          padding: "3px 8px", fontFamily: "'Noto Serif KR', sans-serif",
           fontSize: "calc(0.68rem * 1.25)",
         }}
       >
@@ -520,7 +521,7 @@ const ShoppingSidebar: React.FC<{
     <div style={{
       padding: "8px 14px 10px",
       borderBottom: `1px solid ${C.border}`,
-      fontFamily: "'DM Mono', monospace", fontSize: "calc(0.58rem * 1.25)",
+      fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.58rem * 1.25)",
       color: C.muted, lineHeight: 1.65, letterSpacing: "0.04em",
     }}>
       다른 재료는 모두 보유 중이고
@@ -531,7 +532,7 @@ const ShoppingSidebar: React.FC<{
     {/* 카드 목록 */}
     <div style={{ padding: "10px 10px 40px", display: "flex", flexDirection: "column", gap: "7px" }}>
       {suggestions.length === 0 ? (
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.64rem * 1.25)", color: C.muted, padding: "24px 0", textAlign: "center" }}>
+        <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.64rem * 1.25)", color: C.muted, padding: "24px 0", textAlign: "center" }}>
           모든 재고 구비 완료 ✓
         </div>
       ) : (
@@ -566,7 +567,7 @@ const SearchBar: React.FC<{
             width: "100%", boxSizing: "border-box" as const,
             background: C.panel, border: `1px solid ${C.border}`,
             borderRadius: "3px", padding: "6px 10px 6px 28px",
-            fontFamily: "'DM Mono', monospace", fontSize: "calc(0.72rem * 1.25)",
+            fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.72rem * 1.25)",
             color: C.text, letterSpacing: "0.04em", outline: "none",
             transition: "border-color 0.15s",
           }}
@@ -582,7 +583,7 @@ const SearchBar: React.FC<{
         style={{
           background: C.buildDim, border: `1px solid ${C.build}60`, color: C.build,
           cursor: "pointer", borderRadius: "3px", padding: "5px 12px",
-          fontFamily: "'DM Mono', monospace", fontSize: "calc(0.68rem * 1.25)", letterSpacing: "0.1em",
+          fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.68rem * 1.25)", letterSpacing: "0.1em",
           whiteSpace: "nowrap" as const,
         }}
       >
@@ -594,14 +595,14 @@ const SearchBar: React.FC<{
           style={{
             background: "none", border: `1px solid ${C.border}`, color: C.muted,
             cursor: "pointer", borderRadius: "3px", padding: "5px 10px",
-            fontFamily: "'DM Mono', monospace", fontSize: "calc(0.68rem * 1.25)",
+            fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.68rem * 1.25)",
           }}
         >
           ✕
         </button>
       )}
       {hasQuery && (
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.62rem * 1.25)", color: resultCount > 0 ? C.green : C.warn, whiteSpace: "nowrap" as const }}>
+        <span style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.62rem * 1.25)", color: resultCount > 0 ? C.green : C.warn, whiteSpace: "nowrap" as const }}>
           {resultCount}건
         </span>
       )}
@@ -629,7 +630,7 @@ const HouseBarGuide: React.FC = () => {
 
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Noto+Sans+KR:wght@400;500&family=Noto+Serif+KR:wght@600&display=swap" rel="stylesheet" />
       <style>{`
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
@@ -662,15 +663,15 @@ const HouseBarGuide: React.FC = () => {
           <header className="guide-header" style={{ marginBottom: "24px", borderBottom: `1px solid ${C.border}`, paddingBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <div>
-                <h1 style={{ fontFamily: "'DM Mono', monospace", fontSize: "1.15rem", fontWeight: 500, letterSpacing: "0.15em", color: C.build }}>
+                <h1 style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "1.15rem", fontWeight: 500, letterSpacing: "0.15em", color: C.build }}>
                   주조 가이드
                 </h1>
-                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.65rem * 1.125)", color: C.muted, letterSpacing: "0.2em", textTransform: "uppercase" as const, marginTop: "4px" }}>
+                <p style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.65rem * 1.125)", color: C.muted, letterSpacing: "0.2em", textTransform: "uppercase" as const, marginTop: "4px" }}>
                   Cocktail Recipe Reference
                 </p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "calc(0.65rem * 1.25)", color: C.muted, letterSpacing: "0.12em" }}>
+                <span style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "calc(0.65rem * 1.25)", color: C.muted, letterSpacing: "0.12em", fontWeight: 500, }}>
                   단위 <span style={{ color: C.build, fontFamily:"inherit" }}>cc</span>
                 </span>
                 {/* 구매 추천 토글 */}
@@ -681,7 +682,8 @@ const HouseBarGuide: React.FC = () => {
                     border: `1px solid ${sidebarOpen ? C.build + "80" : C.border}`,
                     color: sidebarOpen ? C.build : C.muted,
                     cursor: "pointer", borderRadius: "3px",
-                    padding: "5px 12px", fontFamily: "'DM Mono', monospace",
+                    padding: "5px 12px", fontFamily: "'Noto Serif KR', sans-serif",
+                    fontWeight: 500,
                     fontSize: "calc(0.68rem * 1.25)", letterSpacing: "0.1em",
                     display: "flex", alignItems: "center", gap: "6px",
                     transition: "all 0.2s",
@@ -689,7 +691,7 @@ const HouseBarGuide: React.FC = () => {
                 >
                   🛒 구매 추천
                   {suggestions.length > 0 && (
-                    <span style={{ background: C.greenDim, color: C.green, border: `1px solid ${C.green}50`, borderRadius: "10px", padding: "0 6px", fontSize: "calc(0.6rem * 1.25)", fontWeight: 700 }}>
+                    <span style={{ background: C.greenDim, color: C.green, border: `1px solid ${C.green}50`, borderRadius: "10px", padding: "0 6px", fontSize: "calc(0.6rem * 1.25)", fontWeight: 700, }}>
                       {suggestions.length}
                     </span>
                   )}
@@ -712,14 +714,14 @@ const HouseBarGuide: React.FC = () => {
 
           {/* 검색 결과 안내 */}
           {queryParam && filteredSections.length === 0 && (
-            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.78rem", color: C.muted, padding: "48px 0", textAlign: "center" as const }}>
+            <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "0.78rem", color: C.muted, padding: "48px 0", textAlign: "center" as const }}>
               <div style={{ fontSize: "1.6rem", marginBottom: "10px" }}>⌕</div>
               <span style={{ color: C.warn }}>"{queryParam}"</span>
               <span> 에 해당하는 레시피가 없습니다</span>
             </div>
           )}
           {queryParam && filteredSections.length > 0 && (
-            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.64rem", color: C.muted, marginBottom: "14px", letterSpacing: "0.06em" }}>
+            <div style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "0.64rem", color: C.muted, marginBottom: "14px", letterSpacing: "0.06em" }}>
               <span style={{ color: C.build }}>"{queryParam}"</span> 검색 결과 —&nbsp;
               <span style={{ color: C.green }}>{totalResults}</span>개 레시피
             </div>
@@ -735,7 +737,7 @@ const HouseBarGuide: React.FC = () => {
           {/* 푸터 */}
           <footer style={{ marginTop: "40px", borderTop: `1px solid ${C.border}`, paddingTop: "16px", display: "flex", flexWrap: "wrap" as const, gap: "20px", justifyContent: "space-between" }}>
             {footerRules.map((rule) => (
-              <div key={rule} style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.62rem", color: C.muted, letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div key={rule} style={{ fontFamily: "'Noto Serif KR', sans-serif", fontSize: "0.62rem", color: C.muted, letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ color: C.border, marginRight: "2px" }}>//</span>
                 {rule}
               </div>
