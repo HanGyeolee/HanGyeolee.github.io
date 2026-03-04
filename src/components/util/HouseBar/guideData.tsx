@@ -578,18 +578,18 @@ export const allSections: UnifiedSection[] = [
     ],
   },
 
-  // ════════ WHISKY ══
+  // ════════ BLENDED ══
   {
-    sectionKey: "whisky",
+    sectionKey: "blended",
     icon: "🥃",
     menuTitle: "Blended",
     recipes: [
       {
         name: "블랜디드 하이볼",
-        desc: "위스키의 우드 향이 탄산수에 실려 가볍게 퍼지는 맛",
+        desc: "블렌디드 위스키의 우드 향이 탄산수에 실려 가볍게 퍼지는 맛",
         abv: "17°",
         ingredients: [
-          { label: "위스키 30", type: "base" },
+          { label: "블렌디드 위스키 30", type: "base" },
           { label: "탄산수 90", type: "mixer" },
         ],
         guideType: "build",
@@ -598,7 +598,7 @@ export const allSections: UnifiedSection[] = [
           { text: "탄산수 천천히 붓기" },
           { text: "🚫 섞지 않음", warn: true },
         ],
-        spiritKey: "whisky",
+        spiritKey: "blended",
         requiresMixerCategories: ["tonic_water"],
       },
     ],
@@ -1510,7 +1510,7 @@ export const allSections: UnifiedSection[] = [
     ],
   },
 
-  // ══════════════════════════════════════════════════════ APPLE BRANDY ══
+  // ═══════ APPLE BRANDY ══
   {
     sectionKey: "apple_brandy",
     icon: "🍎",

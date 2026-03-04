@@ -5,7 +5,7 @@
 export type SpiritKey =
   | "vodka"
   | "rum"
-  | "whisky"       // 일본/블렌디드 위스키
+  | "blended"       // 일본/블렌디드 위스키
   | "scotch"       // 스카치 싱글몰트
   | "bourbon"      // 버번/라이 위스키
   | "gin"
