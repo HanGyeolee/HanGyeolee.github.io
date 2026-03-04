@@ -1,0 +1,1705 @@
+//  guideData.tsx
+// housebarmenu + housebarguide 가 공유하는 단일 레시피 데이터 소스.
+//
+// 조주기능사 기출 전체 레시피 포함
+// 각 레시피는 가용성을 필드로 선언합니다:
+//   spiritKey                → 필요한 베이스 스피릿 (섹션 소속)
+//   requiresSpiritKeys       → 추가 필수 스피릿 (멀티 베이스 레시피용)
+//   requiresLiqueurCategories → 필요한 리큐르 카테고리
+//   requiresMixerCategories  → 필요한 음료·첨가제 카테고리
+
+import { SpiritKey, LiqueurCategory, MixerCategory } from "./houseType.tsx";
+
+//  타입 
+export type GuideType =
+  | "build"   // 잔에 순서대로 넣기
+  | "shake"   // 쉐이커로 강하게 흔들기
+  | "layer"   // 밀도 차이로 층 만들기
+  | "stir"    // 믹싱 글라스에서 바 스푼으로 저어서
+  | "blend"   // 블렌더로 얼음과 함께 갈기 (프로즌)
+  | "muddle"; // 머들러로 재료를 으깬 후 빌드
+
+export interface Ingredient {
+  label: string;
+  /** 색상 구분용 타입 */
+  type: "base" | "liqueur" | "mixer" | "sugar" | "salt";
+}
+
+export interface Step {
+  text: string;
+  warn?: boolean;
+}
+
+export interface UnifiedRecipe {
+  // 공통 
+  name: string;
+  abv: string;
+  nameTag?: string;
+
+  // 메뉴 전용 
+  /** housebarmenu 에 표시되는 한 줄 풍미 설명 */
+  desc: string;
+
+  // 가이드 전용 
+  ingredients: Ingredient[];
+  guideType: GuideType;
+  steps: Step[];
+  noteSub?: string;
+
+  // 가용성 선언 
+  spiritKey?: SpiritKey;
+  requiresSpiritKeys?: SpiritKey[];        // 추가 필수 스피릿
+  requiresLiqueurCategories?: LiqueurCategory[];
+  requiresMixerCategories?: MixerCategory[];
+}
+
+export interface UnifiedSection {
+  sectionKey: SpiritKey | "liqueur";
+  icon: string;
+  menuTitle: string;
+  recipes: UnifiedRecipe[];
+}
+
+//  전체 레시피 데이터 
+// 재료 라벨은 브랜드명 없이 일반명 사용 (브랜드 독립적)
+
+export const allSections: UnifiedSection[] = [
+
+  // ════════════ VODKA ══
+  {
+    sectionKey: "vodka",
+    icon: "🍶",
+    menuTitle: "Vodka",
+    recipes: [
+      {
+        name: "애플 마티니",
+        desc: "사과 슈납스의 상큼달콤한 사과 향과 보드카의 깔끔함, 라임이 더한 현대 클래식",
+        abv: "24°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "애플 슈납스 20", type: "liqueur" },
+          { label: "라임 주스 15", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "라임 주스" },
+          { text: "애플 슈납스" },
+          { text: "보드카" },
+          { text: "강하게 셰이크 15–20초" },
+          { text: "스트레이너로 걸러 칵테일 글라스에 서브" },
+        ],
+        noteSub: "※ 사과 슬라이스 또는 레몬 필 트위스트 가니시",
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["apple_schnapps"],
+        requiresMixerCategories: ["lime_juice"],
+      },
+      {
+        name: "스크류드라이버",
+        desc: "싱그러운 오렌지 과즙, 가볍고 청량한 시작",
+        abv: "17°",
+        ingredients: [
+          { label: "보드카 45", type: "base" },
+          { label: "오렌지 주스 90", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [{ text: "보드카" }, { text: "오렌지 주스" }, { text: "가볍게 스터" }],
+        spiritKey: "vodka",
+        requiresMixerCategories: ["orange_juice"],
+      },
+      {
+        name: "블랙 러시안",
+        desc: "진한 커피 향과 달콤한 여운, 묵직한 깊이감",
+        abv: "32°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "커피 리큐르 20", type: "liqueur" },
+        ],
+        guideType: "build",
+        steps: [{ text: "보드카" }, { text: "커피 리큐르" }, { text: "가볍게 스터" }],
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["coffee"],
+      },
+      {
+        name: "화이트 러시안",
+        desc: "커피 향 위에 생크림이 녹아드는 달콤하고 부드러운 맛",
+        abv: "22°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "커피 리큐르 20", type: "liqueur" },
+          { label: "생크림 20", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "보드카" },
+          { text: "커피 리큐르" },
+          { text: "스푼 위에 생크림 플로트" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["coffee"],
+        requiresMixerCategories: ["cream"],
+      },
+      {
+        name: "블러디 메리",
+        desc: "토마토의 진한 감칠맛에 향신료가 깨어 있는 아침 칵테일",
+        abv: "14°",
+        ingredients: [
+          { label: "보드카 45", type: "base" },
+          { label: "토마토 주스 90", type: "mixer" },
+          { label: "레몬 주스 15", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "보드카" },
+          { text: "레몬 주스" },
+          { text: "토마토 주스" },
+          { text: "타바스코·소금·후추 취향껏" },
+          { text: "가볍게 스터" },
+        ],
+        noteSub: "※ 타바스코·우스터소스·후추·셀러리솔트 취향껏 가감",
+        spiritKey: "vodka",
+        requiresMixerCategories: ["tomato_juice", "lemon_juice"],
+      },
+      {
+        name: "코스모폴리탄",
+        desc: "크랜베리의 새콤달콤함과 오렌지·라임이 더한 세련된 핑크빛",
+        abv: "22°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "트리플섹 15", type: "liqueur" },
+          { label: "크랜베리 주스 30", type: "mixer" },
+          { label: "라임 주스 15", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "라임 주스" },
+          { text: "크랜베리 주스" },
+          { text: "트리플섹" },
+          { text: "보드카" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["cranberry_juice", "lime_juice"],
+      },
+      {
+        name: "모스코 뮬",
+        desc: "생강의 톡 쏘는 향과 라임의 산미, 시원한 롱드링크",
+        abv: "13°",
+        ingredients: [
+          { label: "보드카 45", type: "base" },
+          { label: "라임 주스 15", type: "mixer" },
+          { label: "진저비어 90", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "보드카" },
+          { text: "라임 주스" },
+          { text: "진저비어 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 구리 머그컵(copper mug) 사용 권장",
+        spiritKey: "vodka",
+        requiresMixerCategories: ["lime_juice", "ginger_beer"],
+      },
+      {
+        name: "발랄라이카",
+        desc: "보드카·오렌지·레몬의 세 박자가 고르게 맞아떨어지는 클래식 쇼트",
+        abv: "27°",
+        ingredients: [
+          { label: "보드카 30", type: "base" },
+          { label: "트리플섹 20", type: "liqueur" },
+          { label: "레몬 주스 20", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "레몬 주스" },
+          { text: "트리플섹" },
+          { text: "보드카" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lemon_juice"],
+      },
+      {
+        name: "솔티 독",
+        desc: "자몽의 쌉싸름한 산미와 소금 림이 만드는 절묘한 대비",
+        abv: "14°",
+        ingredients: [
+          { label: "보드카 45", type: "base" },
+          { label: "자몽 주스 90", type: "mixer" },
+          { label: "소금 (리밍)", type: "salt" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "잔 테두리 소금 리밍" },
+          { text: "보드카" },
+          { text: "자몽 주스" },
+          { text: "가볍게 스터" },
+        ],
+        spiritKey: "vodka",
+        requiresMixerCategories: ["grapefruit_juice", "salt"],
+      },
+      {
+        name: "씨 브리즈",
+        desc: "크랜베리와 자몽의 이중 산미, 가볍고 투명한 청량감",
+        abv: "12°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "크랜베리 주스 80", type: "mixer" },
+          { label: "자몽 주스 40", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "보드카" },
+          { text: "크랜베리 주스" },
+          { text: "자몽 주스" },
+          { text: "가볍게 스터" },
+        ],
+        spiritKey: "vodka",
+        requiresMixerCategories: ["cranberry_juice", "grapefruit_juice"],
+      },
+      {
+        name: "하비 월뱅어",
+        desc: "스크류드라이버 위에 갈리아노가 나른하게 스며드는 이탈리아 풍미",
+        abv: "14°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "오렌지 주스 80", type: "mixer" },
+          { label: "갈리아노 20", type: "liqueur" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "보드카" },
+          { text: "오렌지 주스" },
+          { text: "스푼 위에 갈리아노 플로트" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["galliano"],
+        requiresMixerCategories: ["orange_juice"],
+      },
+      {
+        name: "섹스 온 더 비치",
+        desc: "복숭아·크랜베리·오렌지가 어우러진 달콤하고 과즙 넘치는 리조트 칵테일",
+        abv: "13°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "피치 슈냅스 20", type: "liqueur" },
+          { label: "크랜베리 주스 40", type: "mixer" },
+          { label: "오렌지 주스 40", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "보드카" },
+          { text: "피치 슈냅스" },
+          { text: "오렌지 주스" },
+          { text: "크랜베리 주스" },
+          { text: "가볍게 스터" },
+        ],
+        spiritKey: "vodka",
+        requiresLiqueurCategories: ["peach_schnapps"],
+        requiresMixerCategories: ["cranberry_juice", "orange_juice"],
+      },
+      {
+        name: "보드카 사워",
+        desc: "레몬의 선명한 산미, 깔끔하게 떨어지는 뒷맛",
+        abv: "27°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "보드카" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "vodka",
+        requiresMixerCategories: ["lemon_juice", "sugar"],
+      },
+      {
+        name: "보드카 콜린스",
+        desc: "레몬의 산뜻함에 탄산수가 더해진 가볍고 청량한 맛",
+        abv: "15°",
+        ingredients: [
+          { label: "보드카 40", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "탄산수 40", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "보드카" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "vodka",
+        requiresMixerCategories: ["lemon_juice", "tonic_water", "sugar"],
+      },
+    ],
+  },
+
+  // ════════════ RUM ══
+  {
+    sectionKey: "rum",
+    icon: "🍹",
+    menuTitle: "Rum",
+    recipes: [
+      {
+        name: "쿠바 리브레",
+        desc: "콜라의 달콤함 속에 라임이 남기는 상쾌한 여운",
+        abv: "15°",
+        ingredients: [
+          { label: "럼 30", type: "base" },
+          { label: "콜라 120", type: "mixer" },
+          { label: "라임 주스 10", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "럼" },
+          { text: "콜라 붓기" },
+          { text: "라임 주스 마무리" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "rum",
+        requiresMixerCategories: ["cola", "lime_juice"],
+      },
+      {
+        name: "다이키리",
+        desc: "라임의 생동감 있는 산미와 깨끗한 럼의 조화",
+        abv: "27°",
+        ingredients: [
+          { label: "럼 45", type: "base" },
+          { label: "라임 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕" },
+          { text: "라임 주스" },
+          { text: "럼" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "rum",
+        requiresMixerCategories: ["lime_juice", "sugar"],
+      },
+      {
+        name: "바카디",
+        desc: "라임의 상큼함과 그레나딘의 달콤한 루비빛이 어우러진 쇼트",
+        abv: "28°",
+        ingredients: [
+          { label: "럼 45", type: "base" },
+          { label: "라임 주스 20", type: "mixer" },
+          { label: "그레나딘 2tsp", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "그레나딘" },
+          { text: "라임 주스" },
+          { text: "럼" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        noteSub: "※ Bacardi White 사용 시 공식 인증 레시피",
+        spiritKey: "rum",
+        requiresMixerCategories: ["lime_juice", "grenadine"],
+      },
+      {
+        name: "프로즌 다이키리",
+        desc: "블렌더로 갈아 만든 얼음처럼 시원하고 슬러시 같은 다이키리",
+        abv: "17°",
+        ingredients: [
+          { label: "럼 45", type: "base" },
+          { label: "라임 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "blend",
+        steps: [
+          { text: "설탕 + 라임 주스 + 럼" },
+          { text: "크러시드 아이스 1컵 추가" },
+          { text: "블렌더 고속 15-20초" },
+          { text: "슬러시 질감 확인 후 서브" },
+        ],
+        spiritKey: "rum",
+        requiresMixerCategories: ["lime_juice", "sugar"],
+      },
+      {
+        name: "피나 콜라다",
+        desc: "파인애플과 코코넛 크림의 열대 조화, 달콤하고 크리미한 섬 칵테일",
+        abv: "13°",
+        ingredients: [
+          { label: "럼 30", type: "base" },
+          { label: "파인애플 주스 90", type: "mixer" },
+          { label: "코코넛 크림 30", type: "mixer" },
+        ],
+        guideType: "blend",
+        steps: [
+          { text: "럼 + 파인애플 주스 + 코코넛 크림" },
+          { text: "크러시드 아이스 1컵 추가" },
+          { text: "블렌더 고속 15-20초" },
+          { text: "크리미한 질감 확인 후 서브" },
+        ],
+        noteSub: "※ 셰이크 방식도 가능 — 블렌더 시 더 크리미한 질감",
+        spiritKey: "rum",
+        requiresMixerCategories: ["pineapple_juice", "coconut_cream"],
+      },
+      {
+        name: "마이 타이",
+        desc: "오렌지 퀴라소와 오르젯의 이국적인 달콤함, 럼의 강렬한 여운",
+        abv: "22°",
+        ingredients: [
+          { label: "럼 40", type: "base" },
+          { label: "오렌지 퀴라소 15", type: "liqueur" },
+          { label: "라임 주스 15", type: "mixer" },
+          { label: "오르젯 시럽 15", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "오르젯" },
+          { text: "라임 주스" },
+          { text: "오렌지 퀴라소" },
+          { text: "럼" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "rum",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lime_juice", "orgeat"],
+      },
+      {
+        name: "XYZ",
+        desc: "럼·트리플섹·레몬이 동등하게 교차하는 간결하고 균형 잡힌 쇼트",
+        abv: "27°",
+        ingredients: [
+          { label: "럼 20", type: "base" },
+          { label: "트리플섹 20", type: "liqueur" },
+          { label: "레몬 주스 20", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "레몬 주스" },
+          { text: "트리플섹" },
+          { text: "럼" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "rum",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lemon_juice"],
+      },
+      {
+        name: "블루 하와이안",
+        desc: "블루 퀴라소의 선명한 청색, 파인애플과 코코넛의 달콤한 열대 세계",
+        abv: "16°",
+        ingredients: [
+          { label: "럼 30", type: "base" },
+          { label: "블루 퀴라소 15", type: "liqueur" },
+          { label: "파인애플 주스 60", type: "mixer" },
+          { label: "코코넛 크림 30", type: "mixer" },
+        ],
+        guideType: "blend",
+        steps: [
+          { text: "럼 + 블루 퀴라소 + 파인애플 주스 + 코코넛 크림" },
+          { text: "크러시드 아이스 1컵 추가" },
+          { text: "블렌더 고속 15-20초" },
+        ],
+        noteSub: "※ 셰이크 방식도 가능 — 색상 보존을 위해 블렌더 권장",
+        spiritKey: "rum",
+        requiresLiqueurCategories: ["blue_curacao"],
+        requiresMixerCategories: ["pineapple_juice", "coconut_cream"],
+      },
+      {
+        name: "모히토",
+        desc: "민트의 생생한 향과 라임·럼의 산뜻한 여름, 쿠바 정통 롱드링크",
+        abv: "12°",
+        ingredients: [
+          { label: "럼 45", type: "base" },
+          { label: "라임 주스 30", type: "mixer" },
+          { label: "설탕 2tsp", type: "sugar" },
+          { label: "민트잎 6-8장", type: "mixer" },
+          { label: "탄산수 fill", type: "mixer" },
+        ],
+        guideType: "muddle",
+        steps: [
+          { text: "민트 + 설탕 + 라임 주스" },
+          { text: "머들러로 가볍게 으깨기 (민트 찢지 않도록)" },
+          { text: "럼 투입" },
+          { text: "얼음 채우기" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 세게 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 민트는 줄기 부분을 으깨고 잎은 가볍게 — 쓴맛 방지",
+        spiritKey: "rum",
+        requiresMixerCategories: ["lime_juice", "sugar", "mint", "tonic_water"],
+      },
+      {
+        name: "럼 사워",
+        desc: "달콤함과 신맛이 균형을 이루는 고전적인 풍미",
+        abv: "27°",
+        ingredients: [
+          { label: "럼 40", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "럼" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "rum",
+        requiresMixerCategories: ["lemon_juice", "sugar"],
+      },
+      {
+        name: "럼 콜린스",
+        desc: "레몬과 탄산수가 더한 청량감, 긴 여름날 같은 맛",
+        abv: "15°",
+        ingredients: [
+          { label: "럼 40", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "탄산수 40", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "럼" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "rum",
+        requiresMixerCategories: ["lemon_juice", "tonic_water", "sugar"],
+      },
+    ],
+  },
+
+  // ════════ WHISKY ══
+  {
+    sectionKey: "whisky",
+    icon: "🥃",
+    menuTitle: "Blended",
+    recipes: [
+      {
+        name: "블랜디드 하이볼",
+        desc: "위스키의 우드 향이 탄산수에 실려 가볍게 퍼지는 맛",
+        abv: "17°",
+        ingredients: [
+          { label: "위스키 30", type: "base" },
+          { label: "탄산수 90", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "위스키" },
+          { text: "탄산수 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "whisky",
+        requiresMixerCategories: ["tonic_water"],
+      },
+    ],
+  },
+
+  // ════════ SCOTCH ══
+  {
+    sectionKey: "scotch",
+    icon: "🥃",
+    menuTitle: "Scotch",
+    recipes: [
+      {
+        name: "러스티 네일",
+        desc: "스카치의 묵직한 몰트에 드람뷔의 꿀·허브향이 녹아드는 클래식",
+        abv: "33°",
+        ingredients: [
+          { label: "스카치 40", type: "base" },
+          { label: "드람뷔 20", type: "liqueur" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "스카치" },
+          { text: "드람뷔" },
+          { text: "바 스푼으로 가볍게 스터" },
+        ],
+        noteSub: "※ 온더락 글라스에 큰 얼음 1~2개 권장",
+        spiritKey: "scotch",
+        requiresLiqueurCategories: ["drambuie"],
+      },
+      {
+        name: "롭 로이",
+        desc: "스카치 버전의 맨해튼 — 싱글몰트의 깊이와 스위트 버무스의 허브 향",
+        abv: "28°",
+        ingredients: [
+          { label: "스카치 45", type: "base" },
+          { label: "스위트 버무스 20", type: "liqueur" },
+          { label: "앙고스투라 비터스 2dash", type: "mixer" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스에 얼음" },
+          { text: "앙고스투라 비터스" },
+          { text: "스위트 버무스" },
+          { text: "스카치" },
+          { text: "바 스푼으로 30-40회 스터" },
+          { text: "차갑게 스트레이너로 걸러 서브" },
+        ],
+        noteSub: "※ 마라스키노 체리 또는 레몬 필 트위스트 가니시",
+        spiritKey: "scotch",
+        requiresLiqueurCategories: ["sweet_vermouth"],
+        requiresMixerCategories: ["bitters"],
+      },
+      {
+        name: "스카치 하이볼",
+        desc: "깊은 몰트 향이 탄산수와 함께 시원하게 퍼지는 맛",
+        abv: "17°",
+        ingredients: [
+          { label: "스카치 30", type: "base" },
+          { label: "탄산수 90", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "스카치" },
+          { text: "탄산수 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "scotch",
+        requiresMixerCategories: ["tonic_water"],
+      },
+      {
+        name: "스카치 사워",
+        desc: "싱글몰트의 복합적인 향에 레몬이 더한 날카롭고 강렬한 긴장감",
+        abv: "27°",
+        ingredients: [
+          { label: "스카치 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "스카치" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "scotch",
+        requiresMixerCategories: ["lemon_juice", "sugar"],
+      },
+      {
+        name: "갓파더",
+        desc: "스카치의 피트 스모크와 아마레또의 달콤한 아몬드 향이 만드는 클래식",
+        abv: "30°",
+        ingredients: [
+          { label: "스카치 40", type: "base" },
+          { label: "아마레또 20", type: "liqueur" },
+        ],
+        guideType: "build",
+        steps: [{ text: "스카치" }, { text: "아마레또" }, { text: "가볍게 스터" }],
+        spiritKey: "scotch",
+        requiresLiqueurCategories: ["amaretto"],
+      },
+    ],
+  },
+
+  // ═══════ BOURBON ══
+  {
+    sectionKey: "bourbon",
+    icon: "🥃",
+    menuTitle: "Bourbon",
+    recipes: [
+      {
+        name: "올드 패션드",
+        desc: "버번의 본질에 비터스와 설탕만 더한 칵테일의 원형",
+        abv: "35°",
+        ingredients: [
+          { label: "버번 60", type: "base" },
+          { label: "설탕 1tsp", type: "sugar" },
+          { label: "앙고스투라 비터스 2-3dash", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "설탕 + 비터스 + 물 1tsp → 잔에서 스터" },
+          { text: "얼음 투입" },
+          { text: "버번 나눠 붓기" },
+          { text: "오렌지 필 트위스트로 마무리" },
+        ],
+        noteSub: "※ 온더락 글라스에 큰 얼음 1개 권장",
+        spiritKey: "bourbon",
+        requiresMixerCategories: ["sugar", "bitters"],
+      },
+      {
+        name: "맨해튼",
+        desc: "버번의 달콤한 바닐라 향과 스위트 버무스의 허브·스파이스가 만드는 완벽한 균형",
+        abv: "28°",
+        ingredients: [
+          { label: "버번 45", type: "base" },
+          { label: "스위트 버무스 25", type: "liqueur" },
+          { label: "앙고스투라 비터스 2dash", type: "mixer" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스에 얼음" },
+          { text: "앙고스투라 비터스" },
+          { text: "스위트 버무스" },
+          { text: "버번" },
+          { text: "바 스푼으로 30-40회 스터" },
+          { text: "차갑게 스트레이너로 걸러 칵테일 글라스에 서브" },
+        ],
+        noteSub: "※ 마라스키노 체리 가니시 / 라이 위스키 사용 가능",
+        spiritKey: "bourbon",
+        requiresLiqueurCategories: ["sweet_vermouth"],
+        requiresMixerCategories: ["bitters"],
+      },
+      {
+        name: "뉴욕 사워",
+        desc: "버번 사워 위에 레드 와인이 살포시 얹힌 감각적인 이중 레이어",
+        abv: "22°",
+        ingredients: [
+          { label: "버번 45", type: "base" },
+          { label: "레몬 주스 25", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+          { label: "레드 와인 20 (플로트)", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕 + 레몬 주스 + 버번" },
+          { text: "강하게 셰이크 15-20초" },
+          { text: "얼음 채운 글라스에 따르기" },
+          { text: "스푼 뒤집어 레드 와인 플로트" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "bourbon",
+        requiresMixerCategories: ["lemon_juice", "sugar", "red_wine"],
+      },
+      {
+        name: "위스키 사워",
+        desc: "버번의 달콤한 바닐라·캐러멜 향이 레몬의 산미를 부드럽게 감싸는 맛",
+        abv: "27°",
+        ingredients: [
+          { label: "버번 45", type: "base" },
+          { label: "레몬 주스 15", type: "mixer" },
+          { label: "설탕 1 tsp", type: "sugar" },
+          { label: "탄산수 30", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "버번" },
+          { text: "강하게 셰이크 15-20초" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "bourbon",
+        requiresMixerCategories: ["lemon_juice", "sugar"],
+      },
+      {
+        name: "존 콜린스",
+        desc: "버번의 달콤함에 레몬과 탄산수가 더한 길고 시원한 롱드링크",
+        abv: "16°",
+        ingredients: [
+          { label: "버번 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "탄산수 60", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "버번" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "bourbon",
+        requiresMixerCategories: ["lemon_juice", "tonic_water", "sugar"],
+      },
+      {
+        name: "불바디에",
+        desc: "버번이 진 대신 들어간 네그로니 — 달콤한 바닐라 향과 캄파리의 쓴맛이 교차하는 클래식",
+        abv: "26°",
+        ingredients: [
+          { label: "버번 45", type: "base" },
+          { label: "스위트 버무스 25", type: "liqueur" },
+          { label: "캄파리 25", type: "liqueur" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스에 얼음" },
+          { text: "캄파리 → 스위트 버무스 → 버번" },
+          { text: "바 스푼으로 30-40회 스터" },
+          { text: "스트레이너로 걸러 칵테일 글라스에 서브" },
+        ],
+        noteSub: "※ 오렌지 필 트위스트 또는 마라스키노 체리 가니시 / 네그로니의 버번 버전",
+        spiritKey: "bourbon",
+        requiresLiqueurCategories: ["sweet_vermouth", "campari"],
+      },
+      {
+        name: "버번 하이볼",
+        desc: "바닐라·캐러멜 향이 탄산수에 실려 가볍게 퍼지는 맛",
+        abv: "17°",
+        ingredients: [
+          { label: "버번 30", type: "base" },
+          { label: "탄산수 90", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "버번" },
+          { text: "탄산수 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "bourbon",
+        requiresMixerCategories: ["tonic_water"],
+      },
+    ],
+  },
+
+  // ════════════ GIN ══
+  {
+    sectionKey: "gin",
+    icon: "🌿",
+    menuTitle: "Gin",
+    recipes: [
+      {
+        name: "마티니",
+        desc: "진과 드라이 버무스의 2음 화음 — 칵테일의 왕",
+        abv: "35°",
+        ingredients: [
+          { label: "진 40", type: "base" },
+          { label: "드라이 버무스 20", type: "liqueur" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스에 얼음" },
+          { text: "드라이 버무스" },
+          { text: "진" },
+          { text: "바 스푼으로 30-40회 스터" },
+          { text: "스트레이너로 걸러 칵테일 글라스에 서브" },
+        ],
+        noteSub: "※ 올리브 또는 레몬 필 트위스트 가니시",
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["dry_vermouth"],
+      },
+      {
+        name: "드라이 마티니",
+        desc: "버무스를 극도로 줄인 진의 순수함 — 마티니의 가장 드라이한 버전",
+        abv: "40°",
+        ingredients: [
+          { label: "진 50", type: "base" },
+          { label: "드라이 버무스 10", type: "liqueur" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스에 얼음" },
+          { text: "드라이 버무스" },
+          { text: "진" },
+          { text: "바 스푼으로 30-40회 스터" },
+          { text: "스트레이너로 걸러 서브" },
+        ],
+        noteSub: "※ 올리브 1개 가니시 / 진과 버무스 비율 5:1 또는 8:1",
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["dry_vermouth"],
+      },
+      {
+        name: "깁슨",
+        desc: "드라이 마티니와 동일한 레시피 — 올리브 대신 칵테일 어니언으로 구분",
+        abv: "38°",
+        ingredients: [
+          { label: "진 45", type: "base" },
+          { label: "드라이 버무스 15", type: "liqueur" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스에 얼음" },
+          { text: "드라이 버무스" },
+          { text: "진" },
+          { text: "바 스푼으로 30-40회 스터" },
+          { text: "스트레이너로 걸러 서브" },
+        ],
+        noteSub: "※ 칵테일 펄 어니언(Pearl Onion) 가니시 — 마티니와 유일한 차이",
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["dry_vermouth"],
+      },
+      {
+        name: "네그로니",
+        desc: "진·스위트 버무스·캄파리 삼위일체 — 쌉싸름하고 복잡하며 아름다운",
+        abv: "24°",
+        ingredients: [
+          { label: "진 30", type: "base" },
+          { label: "스위트 버무스 30", type: "liqueur" },
+          { label: "캄파리 30", type: "liqueur" },
+        ],
+        guideType: "stir",
+        steps: [
+          { text: "믹싱 글라스 또는 잔에 얼음" },
+          { text: "캄파리 → 스위트 버무스 → 진" },
+          { text: "바 스푼으로 20-30회 스터" },
+          { text: "오렌지 필 트위스트 가니시" },
+        ],
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["sweet_vermouth", "campari"],
+      },
+      {
+        name: "싱가포르 슬링",
+        desc: "체리 브랜디의 달콤한 과일 향과 진의 허브 향, 탄산수가 더한 이국적인 롱드링크",
+        abv: "16°",
+        ingredients: [
+          { label: "진 30", type: "base" },
+          { label: "체리 브랜디 15", type: "liqueur" },
+          { label: "레몬 주스 30", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+          { label: "탄산수 30", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕 + 레몬 주스 + 진" },
+          { text: "강하게 셰이크 15-20초" },
+          { text: "얼음 채운 잔에 따르기" },
+          { text: "탄산수 붓기" },
+          { text: "체리 브랜디 플로트" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 체리 브랜디는 마지막에 플로트 — 1919 래플스 오리지널",
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["cherry"],
+        requiresMixerCategories: ["lemon_juice", "sugar", "tonic_water"],
+      },
+      {
+        name: "파라다이스",
+        desc: "애프리콧 브랜디의 살구 향과 오렌지 주스가 녹아든 달콤하고 과일향 가득한 쇼트",
+        abv: "24°",
+        ingredients: [
+          { label: "진 30", type: "base" },
+          { label: "애프리콧 브랜디 20", type: "liqueur" },
+          { label: "오렌지 주스 20", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "오렌지 주스" },
+          { text: "애프리콧 브랜디" },
+          { text: "진" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["apricot_brandy"],
+        requiresMixerCategories: ["orange_juice"],
+      },
+      {
+        name: "핑크 레이디",
+        desc: "그레나딘의 붉은 빛과 달걀 흰자의 실크 같은 거품 — 우아하고 달콤한 클래식",
+        abv: "25°",
+        ingredients: [
+          { label: "진 40", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "그레나딘 10", type: "mixer" },
+          { label: "달걀 흰자 1ea", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "달걀 흰자 → 그레나딘 → 레몬 주스 → 진" },
+          { text: "얼음 없이 드라이 셰이크 10초 (거품 생성)" },
+          { text: "얼음 추가 후 다시 셰이크 15초" },
+          { text: "스트레이너로 걸러 칵테일 글라스에 서브" },
+        ],
+        noteSub: "※ 드라이 셰이크(얼음 없이) → 웻 셰이크(얼음 추가) 순서로 풍성한 거품 만들기",
+        spiritKey: "gin",
+        requiresMixerCategories: ["lemon_juice", "grenadine", "egg_white"],
+      },
+      {
+        name: "클로버 클럽",
+        desc: "라즈베리 시럽의 달콤새콤함과 달걀 흰자의 부드러운 거품이 어우러진 클래식 쇼트",
+        abv: "25°",
+        ingredients: [
+          { label: "진 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "라즈베리 시럽 15", type: "mixer" },
+          { label: "달걀 흰자 1ea", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "달걀 흰자 → 라즈베리 시럽 → 레몬 주스 → 진" },
+          { text: "드라이 셰이크 10초" },
+          { text: "얼음 추가 후 다시 셰이크 15초" },
+          { text: "스트레이너로 걸러 서브" },
+        ],
+        spiritKey: "gin",
+        requiresMixerCategories: ["lemon_juice", "raspberry_syrup", "egg_white"],
+      },
+      {
+        name: "진 피즈",
+        desc: "허브 향이 탄산수 속에 녹아드는 산뜻하고 가벼운 맛",
+        abv: "16°",
+        ingredients: [
+          { label: "진 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+          { label: "탄산수 fill", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕 + 레몬 주스 + 진 셰이크" },
+          { text: "얼음 채운 잔에 따르기" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "gin",
+        requiresMixerCategories: ["lemon_juice", "sugar", "tonic_water"],
+      },
+      {
+        name: "진 토닉",
+        desc: "진의 보태니컬 향과 토닉워터의 쌉싸름함이 만드는 가장 심플한 완성형",
+        abv: "13°",
+        ingredients: [
+          { label: "진 40", type: "base" },
+          { label: "토닉워터 120", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "잔에 얼음 가득" },
+          { text: "진 투입" },
+          { text: "토닉워터 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 라임 웨지 가니시 / 고품질 토닉워터일수록 진의 향이 살아남",
+        spiritKey: "gin",
+        requiresMixerCategories: ["tonic_water"],
+      },
+      {
+        name: "진 벅",
+        desc: "진저비어의 톡 쏘는 생강향과 레몬이 진의 허브 향을 살려주는 롱드링크",
+        abv: "13°",
+        ingredients: [
+          { label: "진 40", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "진저비어 fill", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "진 + 레몬 주스" },
+          { text: "진저비어 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "gin",
+        requiresMixerCategories: ["lemon_juice", "ginger_beer"],
+      },
+      {
+        name: "톰 콜린스",
+        desc: "진의 풀내음에 레몬과 탄산수가 더해진 정통 롱드링크",
+        abv: "15°",
+        ingredients: [
+          { label: "진 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+          { label: "탄산수 fill", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "진" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "gin",
+        requiresMixerCategories: ["lemon_juice", "tonic_water", "sugar"],
+      },
+      {
+        name: "애프리콧 칵테일",
+        desc: "살구 향의 달콤한 애프리콧 브랜디와 진의 허브 향, 오렌지·레몬이 더한 과일 가득 쇼트",
+        abv: "25°",
+        ingredients: [
+          { label: "진 30", type: "base" },
+          { label: "애프리콧 브랜디 20", type: "liqueur" },
+          { label: "오렌지 주스 20", type: "mixer" },
+          { label: "레몬 주스 10", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "레몬 주스" },
+          { text: "오렌지 주스" },
+          { text: "애프리콧 브랜디" },
+          { text: "진" },
+          { text: "강하게 셰이크 15–20초" },
+        ],
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["apricot_brandy"],
+        requiresMixerCategories: ["orange_juice", "lemon_juice"],
+      },
+      {
+        name: "준 벅",
+        desc: "그린 민트 리큐르의 청량함과 진저비어의 톡 쏘는 생강향, 라임이 더한 여름 롱드링크",
+        abv: "14°",
+        ingredients: [
+          { label: "진 40", type: "base" },
+          { label: "그린 크렘 드 민트 15", type: "liqueur" },
+          { label: "라임 주스 15", type: "mixer" },
+          { label: "진저비어 fill", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "진" },
+          { text: "크렘 드 민트" },
+          { text: "라임 주스" },
+          { text: "진저비어 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 진 벅(Gin Buck)의 민트 변형 — June Buck",
+        spiritKey: "gin",
+        requiresLiqueurCategories: ["creme_de_menthe"],
+        requiresMixerCategories: ["lime_juice", "ginger_beer"],
+      },
+      {
+        name: "짐렛",
+        desc: "진의 허브 향과 라임의 날카로운 산미가 공존",
+        abv: "31°",
+        ingredients: [
+          { label: "진 45", type: "base" },
+          { label: "라임 주스 15", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "라임 주스" },
+          { text: "진" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "gin",
+        requiresMixerCategories: ["lime_juice"],
+      },
+      {
+        name: "롱 아일랜드 아이스 티",
+        desc: "4종 베이스 스피릿이 콜라 속에 숨은 강렬함 — 색은 아이스 티, 맛은 전혀 다른",
+        abv: "22°",
+        nameTag: "MULTI-BASE",
+        ingredients: [
+          { label: "진 15", type: "base" },
+          { label: "보드카 15", type: "base" },
+          { label: "럼 15", type: "base" },
+          { label: "데킬라 15", type: "base" },
+          { label: "트리플섹 15", type: "liqueur" },
+          { label: "레몬 주스 30", type: "mixer" },
+          { label: "콜라 fill", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "진" },
+          { text: "보드카" },
+          { text: "럼" },
+          { text: "데킬라" },
+          { text: "트리플섹" },
+          { text: "레몬 주스" },
+          { text: "얼음 채우기" },
+          { text: "콜라 살짝 붓기 (색만 냄)" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 진·보드카·럼·데킬라 4종 모두 필요",
+        spiritKey: "gin",
+        requiresSpiritKeys: ["vodka", "rum", "tequila"],
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lemon_juice", "cola"],
+      },
+    ],
+  },
+
+  // ════════ COGNAC ══
+  {
+    sectionKey: "cognac",
+    icon: "🍷",
+    menuTitle: "Cognac",
+    recipes: [
+      {
+        name: "사이드카",
+        desc: "꼬냑의 풍부함에 오렌지 리큐르와 레몬이 더한 우아한 산미",
+        abv: "28°",
+        ingredients: [
+          { label: "꼬냑 30", type: "base" },
+          { label: "오렌지 리큐르 20", type: "liqueur" },
+          { label: "레몬 주스 15", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "레몬 주스" },
+          { text: "오렌지 리큐르" },
+          { text: "꼬냑" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        noteSub: "※ 잔 테두리에 설탕 리밍 권장",
+        spiritKey: "cognac",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lemon_juice"],
+      },
+      {
+        name: "브랜디 알렉산더",
+        desc: "꼬냑과 카카오 리큐르, 생크림이 만드는 달콤하고 부드러운 디저트 칵테일",
+        abv: "20°",
+        ingredients: [
+          { label: "꼬냑 30", type: "base" },
+          { label: "크렘 드 카카오 20", type: "liqueur" },
+          { label: "생크림 20", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "생크림" },
+          { text: "크렘 드 카카오" },
+          { text: "꼬냑" },
+          { text: "강하게 셰이크 15-20초" },
+          { text: "너트멕 파우더 가니시" },
+        ],
+        noteSub: "※ 너트멕(육두구) 파우더를 거품 위에 소량 뿌리기",
+        spiritKey: "cognac",
+        requiresLiqueurCategories: ["creme_de_cacao"],
+        requiresMixerCategories: ["cream"],
+      },
+      {
+        name: "비트윈 더 시츠",
+        desc: "꼬냑·럼·트리플섹·레몬이 동시에 존재하는 복합적이고 강렬한 쇼트",
+        abv: "28°",
+        nameTag: "MULTI-BASE",
+        ingredients: [
+          { label: "꼬냑 20", type: "base" },
+          { label: "럼 20", type: "base" },
+          { label: "트리플섹 20", type: "liqueur" },
+          { label: "레몬 주스 10", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "레몬 주스" },
+          { text: "트리플섹" },
+          { text: "럼 + 꼬냑" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        noteSub: "※ 꼬냑과 럼 모두 필요",
+        spiritKey: "cognac",
+        requiresSpiritKeys: ["rum"],
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lemon_juice"],
+      },
+      {
+        name: "스팅어",
+        desc: "꼬냑의 따뜻한 오크 향과 화이트 민트 리큐르의 서늘한 청량감의 극적 대비",
+        abv: "30°",
+        ingredients: [
+          { label: "꼬냑 40", type: "base" },
+          { label: "화이트 크렘 드 민트 20", type: "liqueur" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "크렘 드 민트" },
+          { text: "꼬냑" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        noteSub: "※ 화이트(무색) 크렘 드 민트 사용 — 칵테일 글라스에 스트레이트",
+        spiritKey: "cognac",
+        requiresLiqueurCategories: ["creme_de_menthe"],
+      },
+      {
+        name: "브랜디 사워",
+        desc: "레몬의 산미가 꼬냑의 달콤한 오크 향을 날카롭게 깨우는 맛",
+        abv: "27°",
+        ingredients: [
+          { label: "꼬냑 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕" },
+          { text: "레몬 주스" },
+          { text: "꼬냑" },
+          { text: "강하게 셰이크 15-20초" },
+        ],
+        spiritKey: "cognac",
+        requiresMixerCategories: ["lemon_juice", "sugar"],
+      },
+      {
+        name: "브랜디 하이볼",
+        desc: "꼬냑의 우아한 과일 향이 탄산수와 어우러져 가볍게 퍼지는 맛",
+        abv: "15°",
+        ingredients: [
+          { label: "꼬냑 30", type: "base" },
+          { label: "탄산수 90", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "꼬냑" },
+          { text: "탄산수 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "cognac",
+        requiresMixerCategories: ["tonic_water"],
+      },
+    ],
+  },
+
+  // ═══════ TEQUILA ══
+  {
+    sectionKey: "tequila",
+    icon: "🌵",
+    menuTitle: "Tequila",
+    recipes: [
+      {
+        name: "마가리타",
+        desc: "데킬라·트리플섹·라임의 3박자 — 소금 림과 함께 완성되는 멕시코의 상징",
+        abv: "25°",
+        ingredients: [
+          { label: "데킬라 30", type: "base" },
+          { label: "트리플섹 20", type: "liqueur" },
+          { label: "라임 주스 15", type: "mixer" },
+          { label: "소금 (리밍)", type: "salt" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "잔 테두리 소금 리밍" },
+          { text: "라임 주스 → 트리플섹 → 데킬라" },
+          { text: "강하게 셰이크 15-20초" },
+          { text: "소금 림 잔에 스트레이너로 서브" },
+        ],
+        spiritKey: "tequila",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lime_juice", "salt"],
+      },
+      {
+        name: "데킬라 선라이즈",
+        desc: "그레나딘이 오렌지 주스 아래로 가라앉아 만드는 선셋 그라데이션",
+        abv: "13°",
+        ingredients: [
+          { label: "데킬라 45", type: "base" },
+          { label: "오렌지 주스 90", type: "mixer" },
+          { label: "그레나딘 10 (플로트)", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "데킬라" },
+          { text: "오렌지 주스" },
+          { text: "스푼 뒤집어 그레나딘 천천히 침하" },
+          { text: "🚫 섞지 않음 — 그라데이션 보존", warn: true },
+        ],
+        noteSub: "※ 그레나딘은 바닥에 가라앉도록 — 스터 없이 서브",
+        spiritKey: "tequila",
+        requiresMixerCategories: ["orange_juice", "grenadine"],
+      },
+      {
+        name: "프로즌 마가리타",
+        desc: "마가리타를 블렌더로 갈아 만든 얼음 가득한 슬러시 버전",
+        abv: "18°",
+        ingredients: [
+          { label: "데킬라 30", type: "base" },
+          { label: "트리플섹 20", type: "liqueur" },
+          { label: "라임 주스 20", type: "mixer" },
+          { label: "소금 (리밍)", type: "salt" },
+        ],
+        guideType: "blend",
+        steps: [
+          { text: "잔 테두리 소금 리밍" },
+          { text: "데킬라 + 트리플섹 + 라임 주스 + 크러시드 아이스 1컵" },
+          { text: "블렌더 고속 15-20초" },
+          { text: "슬러시 질감 확인 후 소금 림 잔에 서브" },
+        ],
+        spiritKey: "tequila",
+        requiresLiqueurCategories: ["orange"],
+        requiresMixerCategories: ["lime_juice", "salt"],
+      },
+    ],
+  },
+
+  // ════ WHITE WINE ══
+  {
+    sectionKey: "white_wine",
+    icon: "🥂",
+    menuTitle: "White Wine",
+    recipes: [
+      {
+        name: "키르",
+        desc: "화이트 와인 위에 카시스의 자줏빛이 스며드는 부르고뉴 아페리티프",
+        abv: "10°",
+        ingredients: [
+          { label: "화이트 와인 120", type: "base" },
+          { label: "카시스 리큐르 15", type: "liqueur" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "카시스 먼저 잔에 넣기" },
+          { text: "차갑게 칠드된 화이트 와인 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 와인 글라스 사용 / 차게 서브 / 카시스는 바닥에",
+        spiritKey: "white_wine",
+        requiresLiqueurCategories: ["cassis"],
+      },
+      {
+        name: "스프리처",
+        desc: "화이트 와인과 탄산수의 가볍고 청량한 아페리티프",
+        abv: "8°",
+        ingredients: [
+          { label: "화이트 와인 90", type: "base" },
+          { label: "탄산수 30", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "차갑게 칠드된 화이트 와인" },
+          { text: "탄산수 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "white_wine",
+        requiresMixerCategories: ["tonic_water"],
+      },
+    ],
+  },
+
+  // ═══════ CHAMPAGNE ══
+  {
+    sectionKey: "champagne",
+    icon: "🍾",
+    menuTitle: "Champagne",
+    recipes: [
+      {
+        name: "키르 로얄",
+        desc: "샴페인의 버블에 카시스가 더한 왕족 같은 루비빛 우아함",
+        abv: "10°",
+        ingredients: [
+          { label: "샴페인/스파클링 120", type: "base" },
+          { label: "카시스 리큐르 15", type: "liqueur" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "카시스 먼저 플루트 글라스에 넣기" },
+          { text: "차갑게 칠드된 샴페인 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 플루트 글라스 / 샴페인은 차갑게 칠드",
+        spiritKey: "champagne",
+        requiresLiqueurCategories: ["cassis"],
+      },
+      {
+        name: "벨리니",
+        desc: "복숭아 퓨레와 프로세코의 청아한 조화 — 베니스 해리스 바의 클래식",
+        abv: "8°",
+        ingredients: [
+          { label: "프로세코/샴페인 90", type: "base" },
+          { label: "피치 퓨레 30", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "피치 퓨레를 플루트 잔에 먼저" },
+          { text: "차갑게 칠드된 프로세코 천천히 붓기" },
+          { text: "바 스푼으로 가볍게 한 번만 스터" },
+        ],
+        noteSub: "※ 신선한 복숭아 퓨레 또는 모닌 피치 퓨레 사용",
+        spiritKey: "champagne",
+        requiresMixerCategories: ["peach_puree"],
+      },
+      {
+        name: "미모사",
+        desc: "샴페인과 오렌지 주스의 황금빛 브런치 칵테일",
+        abv: "8°",
+        ingredients: [
+          { label: "샴페인 90", type: "base" },
+          { label: "오렌지 주스 30", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "오렌지 주스를 플루트 잔에 먼저" },
+          { text: "차갑게 칠드된 샴페인 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 1:3 비율 (OJ:샴페인) / 생과즙 사용 권장",
+        spiritKey: "champagne",
+        requiresMixerCategories: ["orange_juice"],
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════ APPLE BRANDY ══
+  {
+    sectionKey: "apple_brandy",
+    icon: "🍎",
+    menuTitle: "Apple Brandy",
+    recipes: [
+      {
+        name: "허니문",
+        desc: "사과 브랜디·베네딕틴·트리플섹·레몬의 네 재료가 꿀처럼 달콤하게 어우러지는 프리-프로히비션 클래식",
+        abv: "26°",
+        ingredients: [
+          { label: "사과 브랜디 20", type: "base" },
+          { label: "베네딕틴 20", type: "liqueur" },
+          { label: "트리플섹 20", type: "liqueur" },
+          { label: "레몬 주스 20", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "레몬 주스" },
+          { text: "트리플섹" },
+          { text: "베네딕틴" },
+          { text: "사과 브랜디" },
+          { text: "강하게 셰이크 15–20초" },
+          { text: "스트레이너로 걸러 칵테일 글라스에 서브" },
+        ],
+        noteSub: "※ 사과 브랜디(Applejack / Calvados) 사용 · 베네딕틴은 D.O.M. 표기",
+        spiritKey: "apple_brandy",
+        requiresLiqueurCategories: ["benedictine", "orange"],
+        requiresMixerCategories: ["lemon_juice"],
+      },
+    ],
+  },
+
+  // ════ SLOE GIN ══
+  {
+    sectionKey: "sloe_gin",
+    icon: "🫐",
+    menuTitle: "Sloe Gin",
+    recipes: [
+      {
+        name: "슬로 진 피즈",
+        desc: "슬로베리(야생 자두)의 달콤씁쓸한 베리 향과 탄산수가 더한 청량감",
+        abv: "13°",
+        ingredients: [
+          { label: "슬로 진 45", type: "base" },
+          { label: "레몬 주스 20", type: "mixer" },
+          { label: "설탕 1tsp", type: "sugar" },
+          { label: "탄산수 fill", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "설탕 + 레몬 주스 + 슬로 진 셰이크" },
+          { text: "얼음 채운 잔에 따르기" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        spiritKey: "sloe_gin",
+        requiresMixerCategories: ["lemon_juice", "sugar", "tonic_water"],
+      },
+    ],
+  },
+
+  // ═════ LIQUEUR ══
+  {
+    sectionKey: "liqueur",
+    icon: "☕",
+    menuTitle: "Liqueur",
+    recipes: [
+      {
+        name: "엔젤 키스",
+        desc: "커피 리큐르 위에 초콜릿 크림이 녹아드는 실크 같은 달콤함",
+        abv: "17°",
+        ingredients: [
+          { label: "커피 리큐르 30", type: "liqueur" },
+          { label: "초콜릿 크림 리큐르 30", type: "liqueur" },
+        ],
+        guideType: "layer",
+        steps: [
+          { text: "커피 리큐르" },
+          { text: "스푼 뒤집어 잔 벽면에 대고" },
+          { text: "초콜릿 크림 리큐르 천천히" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        requiresLiqueurCategories: ["coffee", "chocolate_cream"],
+      },
+      {
+        name: "B-52",
+        desc: "커피, 크림, 오렌지가 층층이 쌓인 풍미의 삼중주",
+        abv: "24°",
+        ingredients: [
+          { label: "커피 리큐르 20", type: "liqueur" },
+          { label: "초콜릿 크림 리큐르 20", type: "liqueur" },
+          { label: "오렌지 리큐르 20", type: "liqueur" },
+        ],
+        guideType: "layer",
+        steps: [
+          { text: "커피 리큐르 (가장 무거움, 바닥)" },
+          { text: "스푼 대고 초콜릿 크림 리큐르" },
+          { text: "스푼 대고 오렌지 리큐르 (가장 가벼움, 위)" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 밀도 순서: 커피 리큐르 → 베일리스 → 트리플섹",
+        requiresLiqueurCategories: ["coffee", "chocolate_cream", "orange"],
+      },
+      {
+        name: "그래스호퍼",
+        desc: "그린 민트·화이트 민트·생크림이 만드는 민트 초코 같은 달콤하고 청량한 디저트 칵테일",
+        abv: "19°",
+        ingredients: [
+          { label: "그린 크렘 드 민트 20", type: "liqueur" },
+          { label: "화이트 크렘 드 민트 20", type: "liqueur" },
+          { label: "생크림 20", type: "mixer" },
+        ],
+        guideType: "shake",
+        steps: [
+          { text: "생크림" },
+          { text: "화이트 크렘 드 민트" },
+          { text: "그린 크렘 드 민트" },
+          { text: "강하게 셰이크 15-20초" },
+          { text: "칵테일 글라스에 스트레이너로 서브" },
+        ],
+        noteSub: "※ 그린과 화이트 크렘 드 민트 동량 — 연한 민트 그린 색상",
+        requiresLiqueurCategories: ["creme_de_menthe"],
+        requiresMixerCategories: ["cream"],
+      },
+      {
+        name: "푸스 카페 레인보우",
+        desc: "다섯 가지 리큐르가 밀도 순으로 쌓인 무지개빛 레이어드 클래식",
+        abv: "24°",
+        nameTag: "ADVANCED",
+        ingredients: [
+          { label: "그레나딘 시럽 1/5", type: "mixer" },
+          { label: "크렘 드 카카오 1/5", type: "liqueur" },
+          { label: "크렘 드 민트 1/5", type: "liqueur" },
+          { label: "오렌지 리큐르 1/5", type: "liqueur" },
+          { label: "꼬냑 1/5", type: "base" },
+        ],
+        guideType: "layer",
+        steps: [
+          { text: "그레나딘 시럽 (가장 무거움, 바닥)" },
+          { text: "스푼 대고 크렘 드 카카오" },
+          { text: "스푼 대고 크렘 드 민트" },
+          { text: "스푼 대고 오렌지 리큐르" },
+          { text: "스푼 대고 꼬냑 (가장 가벼움, 위)" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 밀도 높은 순서로 레이어링 / 콜드포쉐(Cordial) 글라스 사용",
+        spiritKey: "cognac",
+        requiresLiqueurCategories: ["creme_de_cacao", "creme_de_menthe", "orange"],
+        requiresMixerCategories: ["grenadine"],
+      },
+      {
+        name: "아메리카노",
+        desc: "캄파리의 쌉싸름함과 스위트 버무스의 허브 향, 탄산수가 더한 이탈리안 아페리티프",
+        abv: "15°",
+        ingredients: [
+          { label: "캄파리 30", type: "liqueur" },
+          { label: "스위트 버무스 30", type: "liqueur" },
+          { label: "탄산수 fill", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "캄파리" },
+          { text: "스위트 버무스" },
+          { text: "얼음 투입" },
+          { text: "탄산수 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 오렌지 슬라이스 또는 레몬 필 트위스트 가니시",
+        requiresLiqueurCategories: ["campari", "sweet_vermouth"],
+        requiresMixerCategories: ["tonic_water"],
+      },
+      {
+        name: "캄파리 소다",
+        desc: "캄파리의 선명한 루비빛과 쌉쌀한 허브 향이 탄산수에 퍼지는 아페리티프",
+        abv: "10°",
+        ingredients: [
+          { label: "캄파리 40", type: "liqueur" },
+          { label: "탄산수 80", type: "mixer" },
+        ],
+        guideType: "build",
+        steps: [
+          { text: "캄파리" },
+          { text: "탄산수 천천히 붓기" },
+          { text: "🚫 섞지 않음", warn: true },
+        ],
+        noteSub: "※ 오렌지 슬라이스 가니시",
+        requiresLiqueurCategories: ["campari"],
+        requiresMixerCategories: ["tonic_water"],
+      },
+    ],
+  },
+];
