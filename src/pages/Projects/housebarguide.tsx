@@ -574,7 +574,7 @@ const SearchBar: React.FC<{
           onFocus={(e) => (e.currentTarget.style.borderColor = C.build)}
           onBlur={(e)  => (e.currentTarget.style.borderColor = C.border)}
         />
-        <span style={{ position: "absolute", left: "8px", top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: "calc(0.75rem * 1.25)", pointerEvents: "none" as const }}>
+        <span style={{ position: "absolute", left: "8px", top: "50%", transform: "translateY(-55%)", color: C.muted, fontSize: "calc(0.75rem * 1.5)", pointerEvents: "none" as const }}>
           ⌕
         </span>
       </div>
@@ -615,7 +615,7 @@ const HouseBarGuide: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParam = searchParams.get("q") ?? "";
   const [inputValue, setInputValue]     = useState(queryParam);
-  const [sidebarOpen, setSidebarOpen]   = useState(true);
+  const [sidebarOpen, setSidebarOpen]   = useState(false);
 
   const filteredSections = useMemo(() => getFilteredSections(queryParam), [queryParam]);
   const totalResults     = filteredSections.reduce((s, sec) => s + sec.recipes.length, 0);
@@ -643,7 +643,7 @@ const HouseBarGuide: React.FC = () => {
         ::-webkit-scrollbar-thumb { background:#1a2230; border-radius:2px; }
         @media (max-width:820px) {
           .guide-layout { flex-direction:column !important; }
-          .guide-sidebar-wrap { width:100% !important; height:auto !important; position:static !important; border-left:none !important; border-top:1px solid #1a2230; }
+          .guide-sidebar-wrap { width:100% !important; height:auto !important; position:absolute !important; border-left:none !important; border-top:1px solid #1a2230; }
         }
       `}</style>
 
