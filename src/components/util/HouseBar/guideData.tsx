@@ -1532,7 +1532,7 @@ export const allSections: UnifiedSection[] = [
           { text: "트리플섹" },
           { text: "베네딕틴" },
           { text: "사과 브랜디" },
-          { text: "강하게 셰이크 15–20초" },
+          { text: "강하게 셰이크 15-20초" },
           { text: "스트레이너로 걸러 칵테일 글라스에 서브" },
         ],
         noteSub: "※ 사과 브랜디(Applejack / Calvados) 사용 · 베네딕틴은 D.O.M. 표기",
