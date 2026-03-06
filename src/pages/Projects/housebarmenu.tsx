@@ -94,12 +94,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "calc(0.82rem * 1.25)", color: "#c9a84c",
     whiteSpace: "nowrap", marginLeft: "12px",
   },
-  noteTag: {
-    fontSize: "calc(0.65rem * 1.125)",
-    background: "rgba(201,168,76,0.12)", color: "#c9a84c",
-    padding: "2px 7px", borderRadius: "20px",
-    marginLeft: "8px", letterSpacing: "0.05em", verticalAlign: "middle",
-  },
   footer: {
     textAlign: "center", marginTop: "72px",
     color: "#7a6e60", fontSize: "0.72rem",
@@ -137,6 +131,7 @@ function getFilteredSections(): FilteredSection[] {
         isRecipeAvailable({
           guideType: r.guideType,
           spiritKey: r.spiritKey,
+          requiresSpiritKeys: r.requiresSpiritKeys,
           requiresLiqueurCategories: r.requiresLiqueurCategories,
           requiresMixerCategories: r.requiresMixerCategories,
         })
@@ -159,7 +154,6 @@ const DrinkItem: React.FC<{ recipe: UnifiedRecipe }> = ({ recipe }) => {
       <div style={styles.drinkInfo}>
         <span style={styles.drinkName}>
           {recipe.name}
-          {recipe.nameTag && <span style={styles.noteTag}>{recipe.nameTag}</span>}
         </span>
         <span style={styles.drinkDesc}>{recipe.desc}</span>
       </div>
