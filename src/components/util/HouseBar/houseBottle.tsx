@@ -19,7 +19,7 @@ import { BaseSpirit, LiqueurBottle, LiqueurCategory, Mixer, MixerCategory, Spiri
 
 export const hasUtil = {
   /** 쉐이커 보유 여부 */
-  Shaker: false,
+  Shaker: true,
   /** 블렌더 보유 여부 */
   Blender: false,
   /** 머들러 보유 여부 */

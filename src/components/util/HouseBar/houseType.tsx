@@ -40,6 +40,8 @@ export type LiqueurCategory =
   | "galliano"         // 갈리아노 (Harvey Wallbanger)
   | "apricot_brandy"   // 볼스 애프리콧 브랜디 (Paradise)
   | "benedictine"      // 베네딕틴 (B&B)
+  | "melon_liqueur"    // 미도리 등 멜론 리큐르 (June Bug)
+  | "banana_liqueur"   // 크렘 드 바나나 등 (June Bug)
 
 /**
  * 음료·첨가제 카테고리 (상품 무관)
@@ -59,11 +61,12 @@ export type MixerCategory =
   | "tomato_juice"     // 블러디 메리
   | "coconut_cream"    // 피나 콜라다, 블루 하와이안
   | "cream"            // 화이트 러시안, 브랜디 알렉산더
+  | "milk"             // 그래스 호퍼
   | "grenadine"        // 바카디, 데킬라 선라이즈, 싱가포르 슬링
   | "orgeat"           // 마이 타이
   | "raspberry_syrup"  // 클로버 클럽
   | "peach_puree"      // 벨리니
-  | "red_wine"         // 뉴욕 사워 (플로트)
+  | "red_wine"         // 
   | "mint"             // 모히토
   | "bitters"          // 올드 패션드, 맨해튼, 롭 로이
   | "egg_white"        // 핑크 레이디, 클로버 클럽
