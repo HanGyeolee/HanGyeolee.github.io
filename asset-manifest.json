@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.c79ae239.css",
-    "main.js": "/static/js/main.59ce0663.js",
+    "main.js": "/static/js/main.d9f54c66.js",
     "static/js/4858.5aed3a1e.chunk.js": "/static/js/4858.5aed3a1e.chunk.js",
     "static/js/7487.40d7ddde.chunk.js": "/static/js/7487.40d7ddde.chunk.js",
     "static/css/4243.4b875a76.chunk.css": "/static/css/4243.4b875a76.chunk.css",
@@ -103,9 +103,14 @@
     "static/media/Pretendard-Regular.ttf": "/static/media/Pretendard-Regular.fbe5b096111efa3e3bc2.ttf",
     "static/media/medical-platform.png": "/static/media/medical-platform.ab1690d8d6fe0a818468.png",
     "static/media/texture-paper.jpg": "/static/media/texture-paper.0db5792744fe8d7c5ec4.jpg",
+    "static/media/tarot.png": "/static/media/tarot.c6d02852561203007e46.png",
+    "static/media/koreagold-chart.png": "/static/media/koreagold-chart.51454d413f3827e6292e.png",
+    "static/media/barmenu.png": "/static/media/barmenu.c727aabe41b6ac89c93c.png",
     "static/media/eog-music-compose.png": "/static/media/eog-music-compose.e143a21f0436586346be.png",
+    "static/media/pdf-editor.png": "/static/media/pdf-editor.a71b91cba1797e829903.png",
     "static/media/blackhole.png": "/static/media/blackhole.964beff650d70d16f90d.png",
     "static/media/emotion-ai-app.png": "/static/media/emotion-ai-app.f665186d9e00cac6301c.png",
+    "static/media/script-editor.png": "/static/media/script-editor.c5894b0310a8fb5eb10c.png",
     "static/media/codicon.ttf": "/static/media/codicon.f6283f7ccaed1249d9eb.ttf",
     "static/media/emg-middleware.png": "/static/media/emg-middleware.5c01b5b9ca30fc5dfdca.png",
     "static/media/test.jpg": "/static/media/test.654ecfdcfb53ba30a151.jpg",
@@ -115,6 +120,6 @@
   },
   "entrypoints": [
     "static/css/main.c79ae239.css",
-    "static/js/main.59ce0663.js"
+    "static/js/main.d9f54c66.js"
   ]
 }
