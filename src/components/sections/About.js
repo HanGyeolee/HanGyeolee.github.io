@@ -103,7 +103,7 @@ const AboutSection = () => {
             </p>
 
             <p className="about-paragraph text-gray-200 text-lg leading-relaxed">
-              팀 리더로서 <span className="text-white font-semibold">적극적인 소통과 협업</span>을 통해 
+              <span className="text-white font-semibold">적극적인 소통과 협업</span>을 통해 
               더 나은 서비스를 만들어가는 것을 중요하게 생각합니다. Github Action을 활용한 CI/CD 환경 구축,
               코드 리뷰 문화 정착 등 팀의 개발 문화를 발전시키는 데도 기여하고 있습니다.
             </p>
