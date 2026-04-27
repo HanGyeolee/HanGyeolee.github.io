@@ -9,8 +9,54 @@ import emgMiddlewareImage  from '../../image/emg-middleware.png'
 import eogMusicComposeImage  from '../../image/eog-music-compose.png'
 import restAPIImage  from '../../image/restapi-image.png'
 import blackHoleImage  from '../../image/blackhole.png'
+import tarot from '../../image/tarot.png'
+import barmenu from '../../image/barmenu.png'
+import goldChart from '../../image/koreagold-chart.png'
+import pdfEditor from '../../image/pdf-editor.png'
+import scriptEditor from '../../image/script-editor.png'
 
 const ProjectList:ProjectProps[] = [
+{
+    title: '시뮬레이션 게임 대사 편집기',
+    thumbnail: scriptEditor,
+    type: IconType.PERSONAL,
+    description: '시뮬레이션 게임의 대사를 편집할 수 있는 크로스 플랫폼 앱. 사용자는 NPC, 슬롯, 장소, 대사, 아이템, 이벤트 등 다양한 요소를 편집할 수 있다',
+    techStack: ['React.js', 'Typescript', 'Tauri 2.0', 'Rust'],
+    period: '2026.04 - 진행 중'
+},
+{
+    title: 'PDF 웹 편집기',
+    thumbnail: pdfEditor,
+    type: IconType.PERSONAL,
+    description: 'PDF 파일을 편집할 수 있는 웹 앱. 사용자는 업로드한 PDF 파일의 페이지 순서를 변경할 수 있다. 이미지, 텍스트, 도형 등의 다양한 레이어 편집 기능 추가 예정',
+    techStack: ['Javascript'],
+    period: '2026.03 - 진행 중'
+},
+{
+    title: '금 시세 예측 프로젝트',
+    thumbnail: goldChart,
+    type: IconType.PERSONAL,
+    description: '금 시세 예측을 위한 시계열 분석 및 가격 변동 예측 모델 개발 프로젝트. 2014년 ~ 현재 까지의 데이터 자동 수집 구현 완료. 모델 개발은 기획 중',
+    techStack: ['Python'],
+    period: '2026.03 - 진행 중'
+},
+{
+    title: '홈 칵테일을 위한 연습 웹페이지',
+    thumbnail: barmenu,
+    document: 'https://hangyeolee.github.io/#/projects/housebar/menu',
+    type: IconType.PERSONAL,
+    description: '여러 칵테일 레시피를 제공하며 사용자가 재료를 선택하여 만들 수 있는 칵테일을 추천하는 웹 앱',
+    techStack: ['React.js', 'Typescript'],
+    period: '2026.03'
+},
+{
+    title: '타로 AI 프론트/백 엔드',
+    thumbnail: tarot,
+    type: IconType.TEAM,
+    description: '인공지능 기반 타로 카드 리딩 웹 앱의 프론트 및 백엔드 개발. React.js와 Spring Boot를 활용하여 사용자 친화적인 인터페이스와 안정적인 서버 아키텍처 구현',
+    techStack: ['React.js', 'Typescript', 'Java', 'Kotlin', 'Spring Boot'],
+    period: '2025.10 - 2025.12'
+},
 {
     title: '블랙홀 시뮬레이션',
     thumbnail: blackHoleImage,
@@ -21,21 +67,21 @@ const ProjectList:ProjectProps[] = [
     period: '2025.09'
 },
 {
+    title: '조성 검색 사이트',
+    thumbnail: keySignImage,
+    document: 'https://hangyeolee.github.io/#/projects/tonality',
+    type: IconType.PERSONAL,
+    description: '조성별 기능화성 진행을 시각화하여 제공하는 웹 기반 음악 이론 참조 시스템',
+    techStack: ['React.js', 'Javascript', 'Typescript'],
+    period: '2025.03 - 2025.04'
+},
+{
     title: '동물용 기기 중앙 관리 서버',
     thumbnail: restAPIImage,
     type: IconType.COMPANY,
     description: '관리자 및 사용자 권한 기반 아키텍처 설계를 통한 동물용 기기 중앙 관리 서버 개발',
     techStack: ['Java', 'Kotlin', 'Spring Boot', 'CI/CD', 'MySQL', 'SMTP', 'HAProxy', 'Docker', 'Thymeleaf'],
-    period: '2023.11 ~ 2025.07'
-},
-{
-    title: '조성 검색 사이트',
-    thumbnail: keySignImage,
-    document: 'https://hangyeolee.github.io/#/projects/tonality',
-    type: IconType.PERSONAL,
-    description: '조성별 기능화성 진행을 시각화하여 제공하는 웹 기반 음악 이론 참조 시스템 구축',
-    techStack: ['React.js', 'Javascript', 'Typescript'],
-    period: '2025.03 ~ 2025.04'
+    period: '2023.11 - 2025.07'
 },
 {
     title: '안드로이드 PDF 라이브러리',
@@ -43,7 +89,7 @@ const ProjectList:ProjectProps[] = [
     type: IconType.PERSONAL | IconType.GITHUB,
     description: 'PDF 1.4 표준 준수 바이너리 파일 생성 라이브러리 개발 및 오픈소스 배포',
     techStack: ['Android', 'Java', 'Library', 'PDF', 'Binary', 'Maven'],
-    period: '2024.11 ~'
+    period: '2024.11 - 진행 중'
 },
 {
     title: '생체 신호 시각화 어플리케이션',
@@ -52,13 +98,13 @@ const ProjectList:ProjectProps[] = [
     type: IconType.COMPANY,
     description: '생체신호 기반 시각화 모바일 플랫폼 개발 및 구글 스토어 출시',
     techStack: ['Android', 'Java', 'Kotlin', 'MVVM', 'CI/CD', 'JNI', 'SIMD', 'DataBinding'],
-    period: '2022.06 ~ 2023.11'
+    period: '2022.06 - 2023.11'
 },
 {
     title: '인공지능 다이어리 어플리케이션',
     thumbnail: emotionAIAppImage,
     type: IconType.TEAM,
-    description: '자연어 처리 기반 감정 분석 AI 모델을 활용한 스마트 다이어리 애플리케이션 개발',
+    description: '자연어 처리 기반 감정 분석 AI 모델을 활용한 스마트 다이어리 앱 개발',
     techStack: ['Android', 'JAVA', 'Python', 'Pytorch', 'Tokenizer'],
     period: '2021.03 - 2021.06'
 },
@@ -82,7 +128,7 @@ const ProjectList:ProjectProps[] = [
     title: '음악 동아리 어플리케이션',
     thumbnail: musicAppImage,
     type: IconType.TEAM,
-    description: '크로스 플랫폼 기반 대학 음악 동아리 전용 모바일 애플리케이션 개발 및 구글 스토어 출시. 서버 인프라 이슈로 인한 임시 서비스 중단 상태',
+    description: '크로스 플랫폼 기반 대학 음악 동아리 전용 모바일 앱 개발 및 구글 스토어 출시. 서버 인프라 이슈로 인한 임시 서비스 중단 상태',
     techStack: ['Android', 'iOS', 'Xamarin', 'C#', 'Firebase'],
     period: '2019.01 - 2019.09'
 },
